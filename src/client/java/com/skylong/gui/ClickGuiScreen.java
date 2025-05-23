@@ -349,16 +349,21 @@ public class ClickGuiScreen extends Screen {
 
                 if (set.getClass() == ListSetting.class) {
                     display = Text.literal(
-                        set.getName() + ": " + set.getValue() + (((ListSetting<?>) set).isExpanded() ? " [+]" : " [-]")
+                        set.getName() + ": " + set.getValue()
                     );
                 } else if (set.getValue() != null) {
                     display = Text.literal(
-                        set.getName() + ": " + (
-                            set.getValue().getClass() == Boolean.class ? (
-                                (boolean) set.getValue() ? "1" : "0"
-                            ) : set.getValue()
-                        )
+                        set.getName() + ": " + set.getValue()
                     );
+
+                    if (set.getValue().getClass() == Boolean.class) {
+                        display = Text.literal(set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0"));
+                        if ((boolean) set.getValue()) {
+                            color = GetColor.getColor(255, 230, 255, alphaColor);
+                        } else {
+                            color = GetColor.getColor(230, 255, 255, alphaColor);
+                        }
+                    }
                 } else {
                     display = Text.literal(set.getName());
                     color = GetColor.getColor(200, 200, 200, alphaColor);

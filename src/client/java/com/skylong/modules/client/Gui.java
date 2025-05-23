@@ -6,7 +6,7 @@ import com.skylong.modules.settings.*;
 import java.util.*;
 
 public class Gui extends Parent {
-    public TextSetting header = new TextSetting("settings");
+    public TextSetting header = new TextSetting("test text");
     public Setting<Float> attackRange = new Setting<>("move speed", "mouse_move_speed", 3.5f, 1.0f, 6.0f);
     public Setting<Boolean> autoAttack = new Setting<>("move", "mouse_move", true);
     public ListSetting<String> targetMode = new ListSetting<>(
