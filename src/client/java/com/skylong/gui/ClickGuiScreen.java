@@ -260,7 +260,7 @@ public class ClickGuiScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (bindingModule != null) {
             int value = (keyCode == GLFW.GLFW_KEY_ESCAPE) ? -1 : keyCode;
-            bindingModule.setValue("keybind", value);
+            bindingModule.setKeybind(value);
             bindAnimReverse = true;
             return true;
         }
