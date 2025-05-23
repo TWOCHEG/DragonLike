@@ -182,6 +182,7 @@ public class ClickGuiScreen extends Screen {
 
                 List<Setting<?>> sets = module.getSettings();
                 int winHeight = 0;
+                float xDifference = 0;
                 if (setAnimations.containsKey(module) && !module.getSettings().isEmpty()) {
                     winHeight = drawSettings(module, sets, context, yOffset, xColStart, columnWidth, scale, baseTextHeight);
                 } else if (module.getSettings().isEmpty() && setAnimations.containsKey(module)) {
@@ -189,18 +190,17 @@ public class ClickGuiScreen extends Screen {
                     // эта переменная может быть от 15
                     int percent = (int) setAnimations.get(module);
 
-                    float xDifference = 0;
                     if (percent % 2 == 0) {
                         xDifference -= 5f;
                     } else {
                         xDifference += 5f;
                     }
-                    xColStart += xDifference * percent / 100;
+                    xDifference = xDifference * percent / 100;
                 }
 
-                // Рисуем с масштабом
+                // Рисуем с масштабомx
                 context.getMatrices().push();
-                context.getMatrices().translate(xColStart, yOffset, 4);
+                context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
                 context.getMatrices().scale(scale, scale, 4);
                 context.drawTextWithShadow(textRenderer, display, 0, 0, color);
                 context.getMatrices().pop();

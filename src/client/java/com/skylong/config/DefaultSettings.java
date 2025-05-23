@@ -16,6 +16,11 @@ public class DefaultSettings {
         killAura.put("enable", false);
         configMap.put("kill_aura", killAura);
 
+        Map<String, Object> example = new HashMap<>();
+        killAura.put("keybind", -1);
+        killAura.put("enable", false);
+        configMap.put("example", killAura);
+
         return configMap;
     }
 }
