@@ -25,7 +25,7 @@ public class ClickGui {
                 if (currentScreen instanceof ClickGuiScreen clickGuiScreen) {
                     clickGuiScreen.animReverse = true;
                 } else if (currentScreen == null || currentScreen instanceof TitleScreen) {
-                    client.setScreen(new ClickGuiScreen(client.currentScreen, moduleManager.getModules()));
+                    client.setScreen(new ClickGuiScreen(client.currentScreen, moduleManager));
                 }
             }
             key = isRightShiftPressed;

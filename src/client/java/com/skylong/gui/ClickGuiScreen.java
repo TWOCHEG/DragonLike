@@ -1,6 +1,8 @@
 package com.skylong.gui;
 
 import com.skylong.config.ConfigManager;
+import com.skylong.modules.ModuleManager;
+import com.skylong.modules.client.Gui;
 import com.skylong.modules.settings.*;
 import com.skylong.utils.GetColor;
 import com.skylong.modules.Parent;
@@ -11,6 +13,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.TextureManager;
+import net.minecraft.resource.Resource;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -18,16 +25,17 @@ import java.util.*;
 
 public class ClickGuiScreen extends Screen {
     private ConfigManager config = ConfigManager.getInstance("click_gui");
+    private ModuleManager moduleManager;
 
     private final Map<String, List<Parent>> modules;
 
     public static final String hintsText = "← ↑ ↓ → - move gui\nleft shift - percent binds\nmouse middle - bind module";
 
     public Parent bindingModule = null;
-    public int bindAnimPercent = 0;
+    public float bindAnimPercent = 0;
     public boolean bindAnimReverse = true;
 
-    public int animPercent = 0;
+    public float animPercent = 0;
     public boolean animReverse = false;
 
     public int showKeybind = 0;
@@ -48,10 +56,11 @@ public class ClickGuiScreen extends Screen {
 
     public List<ModuleArea> moduleAreas = new ArrayList<>();
 
-    public ClickGuiScreen(Screen previous, Map<String, List<Parent>> modules) {
-        super(Text.literal("ClickGui"));
+    public ClickGuiScreen(Screen previous, ModuleManager moduleManager) {
+        super(Text.literal("SkyLong Gui"));
         this.previous = previous;
-        this.modules = modules;
+        this.modules = moduleManager.getModules();
+        this.moduleManager = moduleManager;
     }
 
     @Override
@@ -66,15 +75,66 @@ public class ClickGuiScreen extends Screen {
         if (previous != null) {
             previous.render(context, mouseX, mouseY, delta);
         }
-        animHandler(client);
+
+        int animDiff = 10;
+
+        animHandler(client, animDiff);
         if (animReverse && animPercent == 0) {
             client.setScreen(null);
             return;
         }
 
+        String image = config.get("image");
+        if (!image.equals("none")) {
+            Gui GuiModule = moduleManager.getModuleById("click_gui");
+            String path = GuiModule.getImages().get(image);
+            Identifier texture = Identifier.of("skylong", path);
+
+            try {
+                Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+                NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
+
+                float imageWidth = nativeImage.getWidth();
+                float imageHeight = nativeImage.getHeight();
+
+                nativeImage.close();
+
+                float screenWidth = context.getScaledWindowWidth();
+                float screenHeight = context.getScaledWindowHeight();
+
+                float screenMin = Math.min(screenWidth, screenHeight);
+                float fixedSize = screenMin * 0.5f;
+
+                float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
+
+                float scaledWidth = imageWidth * scale;
+                float scaledHeight = imageHeight * scale;
+
+                float x = screenWidth - (scaledWidth * animPercent / 100);
+                float y = screenHeight - (scaledHeight * animPercent / 100);
+
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, 2);
+                context.drawTexture(
+                    RenderLayer::getGuiTextured,
+                    texture,
+                    (int) x,
+                    (int) y,
+                    0, 0,
+                    (int) scaledWidth,
+                    (int) scaledHeight,
+                    (int) scaledWidth,
+                    (int) scaledHeight
+                );
+                context.getMatrices().pop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         // Фон с градиентом
-        int alphaTop = 200 * animPercent / 100;
-        int alphaBottom = 50 * animPercent / 100;
+        int alphaTop = 200 * (int) animPercent / 100;
+        int alphaBottom = 50 * (int) animPercent / 100;
         context.getMatrices().push();
         context.getMatrices().translate(0, 0, 1);
         context.getMatrices().scale(1, 1, 1);
@@ -85,7 +145,7 @@ public class ClickGuiScreen extends Screen {
         context.getMatrices().pop();
         // подсказки
         float hintsScale = 0.7f;
-        int alpha = 150 * animPercent / 100;
+        int alpha = 150 * (int) animPercent / 100;
         int colorHints = GetColor.getColor(255, 255, 255, alpha);
         int xHints = 5;
         int yHints = height - textRenderer.fontHeight - 17;
@@ -102,7 +162,7 @@ public class ClickGuiScreen extends Screen {
         moduleAreas.clear();
 
         // параметры
-        int yStart = (10 + yMove) * animPercent / 100;
+        float yStart = (10 + yMove) * animPercent / 100;
         int baseTextHeight = textRenderer.fontHeight;
         int spacing = 10;
         int spacingColumns = 10;
@@ -125,7 +185,7 @@ public class ClickGuiScreen extends Screen {
                 Text.literal(category).formatted(Formatting.BOLD),
                 0,
                 0,
-                GetColor.getColor(255, 255, 255, 255 * animPercent / 100)
+                GetColor.getColor(255, 255, 255, 255 * (int) animPercent / 100)
             );
             context.getMatrices().pop();
 
@@ -147,7 +207,7 @@ public class ClickGuiScreen extends Screen {
                 int hoverPercent = (int) hoverAnimations.getOrDefault(module, 0);
                 double t = hoverPercent / 100.0;
                 // крутая ease-in-out анимация
-                int maxStep = 10;
+                int maxStep = animDiff;
                 int easeDelta = (int) Math.ceil(maxStep * (hovered ? (1 - t) : t));
                 easeDelta = Math.max(easeDelta, 1);
                 if (hovered) {
@@ -157,22 +217,21 @@ public class ClickGuiScreen extends Screen {
                 }
                 hoverAnimations.put(module, hoverPercent);
 
-                // Коэффициент масштабирования: от 1.0 до 1.2 (можно подкорректировать)
-                float maxScaleDelta = 0.2f;
+                float maxScaleDelta = 0.3f;
                 float scale = 1.0f + maxScaleDelta * (hoverPercent / 100f);
                 float scaledHeight = baseTextHeight * scale;
 
                 // Готовим текст
                 int keyBind = module.getKeybind();
                 String moduleName = module.getName();
-                String name = moduleName;  // по умолчанию — имя модуля
+                String name = moduleName;
                 if (showKeybind > 1) {
                     if (keyBind != -1) {
                         String key = keyName(keyBind);
                         name = getAnimText(moduleName, key, showKeybind);
                     }
                 } else if (bindAnimPercent > 1 && bindingModule == module) {
-                    name = getAnimText(moduleName, "...", bindAnimPercent);
+                    name = getAnimText(moduleName, "...", (int) bindAnimPercent);
                 }
                 Formatting fmt = module.getEnable()
                         ? Formatting.UNDERLINE
@@ -180,14 +239,14 @@ public class ClickGuiScreen extends Screen {
                 Text display = Text.literal(name).formatted(fmt);
 
                 // Цвет текста
-                int baseAlpha = 255 * animPercent / 100;
+                int baseAlpha = 255 * (int) animPercent / 100;
                 int color = GetColor.getColor(255, 255, 255, baseAlpha);
 
                 List<Setting<?>> sets = module.getSettings();
                 float winHeight = 0;
                 float xDifference = 0;
                 if (setAnimations.containsKey(module) && !module.getSettings().isEmpty()) {
-                    winHeight = drawSettings(module, sets, context, yOffset, xColStart, columnWidth, scale, baseTextHeight);
+                    winHeight = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
                 } else if (module.getSettings().isEmpty() && setAnimations.containsKey(module)) {
                     setAnimReverse.put(module, true);
                     // эта переменная может быть от 15
@@ -201,7 +260,6 @@ public class ClickGuiScreen extends Screen {
                     xDifference = xDifference * percent / 100;
                 }
 
-                // Рисуем с масштабомx
                 context.getMatrices().push();
                 context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
                 context.getMatrices().scale(scale, scale, 4);
@@ -231,16 +289,14 @@ public class ClickGuiScreen extends Screen {
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj != null) {
-                if (obj instanceof Parent module) {
-                    module.setEnable(!module.getEnable());
-                    return true;
-                } else if (obj instanceof ListSetting set) {
+                if (obj instanceof ListSetting set) {
                     int i = set.getOptions().indexOf(set.getValue());
                     i += 1;
                     if (i > set.getOptions().size() - 1) {
                         i = 0;
                     }
                     set.setValue(set.getOptions().get(i));
+                    return true;
                 } else if (obj instanceof Setting set) {
                     if (set.getValue() instanceof Boolean) {
                         set.setValue(! (Boolean) set.getValue());
@@ -255,27 +311,23 @@ public class ClickGuiScreen extends Screen {
                             Math.clamp(value, (int) set.min, (int) set.max)
                         );
                     }
+                    return true;
+                } else if (obj instanceof Parent module) {
+                    module.setEnable(!module.getEnable());
+                    return true;
                 }
             }
-        }
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj != null) {
-                if (obj instanceof Parent module) {
-                    if (!setAnimations.containsKey(module)) {
-                        setAnimations.put(module, 0);
-                        setAnimReverse.put(module, false);
-                    } else {
-                        setAnimReverse.put(module, true);
-                    }
-                    return true;
-                } else if (obj instanceof ListSetting set) {
+                if (obj instanceof ListSetting set) {
                     int i = set.getOptions().indexOf(set.getValue());
                     i -= 1;
                     if (i < 0) {
                         i = set.getOptions().size() - 1;
                     }
                     set.setValue(set.getOptions().get(i));
+                    return true;
                 } else if (obj instanceof Setting set) {
                     if (set.getValue() instanceof Boolean) {
                         set.setValue(! (Boolean) set.getValue());
@@ -290,10 +342,18 @@ public class ClickGuiScreen extends Screen {
                             Math.clamp(value, (int) set.min, (int) set.max)
                         );
                     }
+                    return true;
+                } else if (obj instanceof Parent module) {
+                    if (!setAnimations.containsKey(module)) {
+                        setAnimations.put(module, 0);
+                        setAnimReverse.put(module, false);
+                    } else {
+                        setAnimReverse.put(module, true);
+                    }
+                    return true;
                 }
             }
-        }
-        if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj != null) {
                 if (obj instanceof Parent module) {
@@ -374,14 +434,13 @@ public class ClickGuiScreen extends Screen {
         DrawContext context,
         float yOffset,
         float xColStart,
-        int columnWidth,
         float scale,
         int baseTextHeight
     ) {
         // параметры
         int zDepth = 3;
         int setAnimPercent = (int) setAnimations.get(module);
-        int alphaColor = (255 * animPercent / 100) * setAnimPercent / 100;
+        int alphaColor = (255 * (int) animPercent / 100) * setAnimPercent / 100;
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
@@ -441,20 +500,8 @@ public class ClickGuiScreen extends Screen {
                 ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
             }
         }
+
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;
-
-        // можно вернуть если захочется
-
-//        context.getMatrices().push();
-//        context.getMatrices().translate(0, 0, zDepth);
-//        context.fill(
-//            (int) xColStart,
-//            rectY,
-//            (int) (xColStart + columnWidth),
-//            rectY + ySetOffset,
-//            GetColor.getColor(0, 0, 0, alphaWindow)
-//        );
-//        context.getMatrices().pop();
 
         return ySetOffset;
     }
@@ -482,20 +529,19 @@ public class ClickGuiScreen extends Screen {
     }
 
     private Object getModuleUnderMouse(int mouseX, int mouseY) {
-        for (ModuleArea area : moduleAreas) {
-            if (
-                mouseX >= area.x
-                && mouseX <= area.x + area.width
-                && mouseY >= area.y
-                && mouseY <= area.y + area.height
-            ) {
+        for (int i = moduleAreas.size() - 1; i >= 0; i--) {
+            ModuleArea area = moduleAreas.get(i);
+            if (mouseX >= area.x
+                    && mouseX <= area.x + area.width
+                    && mouseY >= area.y
+                    && mouseY <= area.y + area.height) {
                 return area.module;
             }
         }
         return null;
     }
 
-    public void animHandler(MinecraftClient client) {
+    public void animHandler(MinecraftClient client, int animDiff) {
         if (animPercent > 99) {
             GLFW.glfwSetScrollCallback(client.getWindow().getHandle(), (window, xoffset, yoffset) -> {
                 if (client.currentScreen == this) {
@@ -507,9 +553,9 @@ public class ClickGuiScreen extends Screen {
 
         // Анимация открытия/закрытия
         if (!animReverse && animPercent < 100) {
-            animPercent += Math.max(1, (15 * (100 - animPercent)) / 100);
+            animPercent += Math.max(0.1f, (animDiff * (100 - animPercent)) / 100);
         } else if (animReverse && animPercent > 0) {
-            animPercent -= Math.max(1, (15 * animPercent) / 100);
+            animPercent -= Math.max(0.1f, (animDiff * animPercent) / 100);
         }
         animPercent = Math.clamp(animPercent, 0, 100);
 
@@ -518,21 +564,21 @@ public class ClickGuiScreen extends Screen {
         if (!animReverse && animPercent >= 100) {
             boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
             if (shiftDown && showKeybind < 100) {
-                showKeybind += Math.max(1, (15 * (100 - showKeybind)) / 100);
+                showKeybind += Math.max(0.1f, (animDiff * (100 - showKeybind)) / 100);
             } else if (!shiftDown && showKeybind > 0) {
-                showKeybind -= Math.max(1, (15 * showKeybind) / 100);
+                showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
             }
         }
         else if (animReverse && showKeybind > 0) {
-            showKeybind -= Math.max(1, (15 * showKeybind) / 100);
+            showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
         }
         showKeybind = Math.clamp(showKeybind, 0, 100);
 
         // анимация бинда
         if (!bindAnimReverse && bindAnimPercent < 100) {
-            bindAnimPercent += Math.max(1, (15 * (100 - bindAnimPercent)) / 100);
+            bindAnimPercent += Math.max(0.1f, (animDiff * (100 - bindAnimPercent)) / 100);
         } else if (bindAnimReverse && bindAnimPercent > 0) {
-            bindAnimPercent -= Math.max(1, (15 * bindAnimPercent) / 100);
+            bindAnimPercent -= Math.max(0.1f, (animDiff * bindAnimPercent) / 100);
         }
         bindAnimPercent = Math.clamp(bindAnimPercent, 0, 100);
         if (bindAnimReverse && bindAnimPercent < 1) {
@@ -548,9 +594,9 @@ public class ClickGuiScreen extends Screen {
                 boolean reverse = (boolean) setAnimReverse.getOrDefault(module, false);
 
                 if (!reverse && percent < 100) {
-                    percent += Math.max(1, (15 * (100 - percent)) / 100);
+                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
                 } else if (reverse && percent > 0) {
-                    percent -= Math.max(1, (15 * percent) / 100);
+                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
                 }
 
                 percent = Math.clamp(percent, 0, 100);

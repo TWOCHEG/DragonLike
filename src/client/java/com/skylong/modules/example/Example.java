@@ -18,6 +18,6 @@ public class Example extends Parent {
     );
 
     public Example() {
-        super("example", "example", "category");
+        super("example", "example", "pvp");
     }
 }

@@ -13,13 +13,11 @@ public class Skylong implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-
 		ModuleManager moduleManager = new ModuleManager(
 			new ArrayList(List.of(
-					new Gui(),
-					new KillAura()
-				)
-			)
+				new Gui(),
+				new KillAura()
+			))
 		);
 		ClickGui.init(moduleManager);
 	}

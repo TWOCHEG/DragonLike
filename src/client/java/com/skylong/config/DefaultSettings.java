@@ -18,6 +18,11 @@ public class DefaultSettings {
         killAura.put("enable", false);
         configMap.put("kill_aura", killAura);
 
+        Map<String, Object> example = new HashMap<>();
+        killAura.put("image", "none");
+        killAura.put("mouse_move", false);
+        configMap.put("example", example);
+
         return configMap;
     }
 }
