@@ -16,7 +16,7 @@ public abstract class Parent {
 
     public Parent(String name, String id, String category) {
         this.name = name;
-        this.config = ConfigManager.getInstance(id);
+        this.config = new ConfigManager(id);
         this.id = id;
         this.enable = config.get("enable");
         this.keybindCode = config.get("keybind");

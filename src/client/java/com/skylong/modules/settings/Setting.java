@@ -1,6 +1,7 @@
 package com.skylong.modules.settings;
 
 import com.skylong.modules.Parent;
+import com.skylong.config.ConfigManager;
 
 public class Setting<T> {
     private final String key;
@@ -31,7 +32,6 @@ public class Setting<T> {
         return value;
     }
     public void setValue(T value) {
-        System.out.println(value);
         this.value = value;
         module.setValue(key, value);
     }

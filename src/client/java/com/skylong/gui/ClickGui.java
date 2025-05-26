@@ -9,15 +9,15 @@ import net.minecraft.client.util.InputUtil;
 
 public class ClickGui {
     private static boolean key = false;
-    private static final ConfigManager config = ConfigManager.getInstance("click_gui");
+    private static final ConfigManager config = new ConfigManager("click_gui");
 
     public static void init(ModuleManager moduleManager) {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client == null) return;
 
             boolean isRightShiftPressed = InputUtil.isKeyPressed(
-                    client.getWindow().getHandle(),
-                    config.get("keybind")
+                client.getWindow().getHandle(),
+                config.get("keybind")
             );
             Screen currentScreen = client.currentScreen;
 

@@ -24,7 +24,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 
 public class ClickGuiScreen extends Screen {
-    private ConfigManager config = ConfigManager.getInstance("click_gui");
+    private ConfigManager config = new ConfigManager("click_gui");
     private ModuleManager moduleManager;
 
     private final Map<String, List<Parent>> modules;
@@ -111,7 +111,7 @@ public class ClickGuiScreen extends Screen {
                 float scaledHeight = imageHeight * scale;
 
                 float x = screenWidth - (scaledWidth * animPercent / 100);
-                float y = screenHeight - (scaledHeight * animPercent / 100);
+                float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
 
                 context.getMatrices().push();
                 context.getMatrices().translate(0, 0, 2);
