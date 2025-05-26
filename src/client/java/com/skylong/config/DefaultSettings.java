@@ -9,17 +9,14 @@ public class DefaultSettings {
 
         Map<String, Object> clickGui = new HashMap<>();
         clickGui.put("keybind", 344);
+        clickGui.put("mouse_move", true);
+        clickGui.put("image", "none");
         configMap.put("click_gui", clickGui);
 
         Map<String, Object> killAura = new HashMap<>();
         killAura.put("keybind", -1);
         killAura.put("enable", false);
         configMap.put("kill_aura", killAura);
-
-        Map<String, Object> example = new HashMap<>();
-        killAura.put("keybind", -1);
-        killAura.put("enable", false);
-        configMap.put("example", killAura);
 
         return configMap;
     }

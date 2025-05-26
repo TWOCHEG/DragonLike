@@ -1,5 +1,6 @@
 package com.skylong.gui;
 
+import com.skylong.config.ConfigManager;
 import com.skylong.modules.settings.*;
 import com.skylong.utils.GetColor;
 import com.skylong.modules.Parent;
@@ -16,6 +17,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 
 public class ClickGuiScreen extends Screen {
+    private ConfigManager config = ConfigManager.getInstance("click_gui");
+
     private final Map<String, List<Parent>> modules;
 
     public static final String hintsText = "← ↑ ↓ → - move gui\nleft shift - percent binds\nmouse middle - bind module";
@@ -181,7 +184,7 @@ public class ClickGuiScreen extends Screen {
                 int color = GetColor.getColor(255, 255, 255, baseAlpha);
 
                 List<Setting<?>> sets = module.getSettings();
-                int winHeight = 0;
+                float winHeight = 0;
                 float xDifference = 0;
                 if (setAnimations.containsKey(module) && !module.getSettings().isEmpty()) {
                     winHeight = drawSettings(module, sets, context, yOffset, xColStart, columnWidth, scale, baseTextHeight);
@@ -209,9 +212,9 @@ public class ClickGuiScreen extends Screen {
                 moduleAreas.add(new ModuleArea(
                     module,
                     xColStart,
-                    (int) yOffset,
-                    (int) (textRenderer.getWidth(name) * scale),
-                    (int) scaledHeight
+                    yOffset,
+                    (textRenderer.getWidth(name) * scale),
+                    scaledHeight
                 ));
 
                 // Сдвигаем yOffset на высоту отрисованного текста + отступ
@@ -224,33 +227,80 @@ public class ClickGuiScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // еее навалим говно кода, погнали
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
-            Parent module = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (module != null) {
-                module.setEnable(!module.getEnable());
-                return true;
+            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+            if (obj != null) {
+                if (obj instanceof Parent module) {
+                    module.setEnable(!module.getEnable());
+                    return true;
+                } else if (obj instanceof ListSetting set) {
+                    int i = set.getOptions().indexOf(set.getValue());
+                    i += 1;
+                    if (i > set.getOptions().size() - 1) {
+                        i = 0;
+                    }
+                    set.setValue(set.getOptions().get(i));
+                } else if (obj instanceof Setting set) {
+                    if (set.getValue() instanceof Boolean) {
+                        set.setValue(! (Boolean) set.getValue());
+                    } else if (set.getValue() instanceof Float) {
+                        float value = (float) set.getValue() + 0.1f;
+                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
+                        value = Math.round(value * 10f) / 10f;
+                        set.setValue(value);
+                    } else if (set.getValue() instanceof Integer) {
+                        int value = (int) set.getValue() + 1;
+                        set.setValue(
+                            Math.clamp(value, (int) set.min, (int) set.max)
+                        );
+                    }
+                }
             }
         }
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
-            Parent module = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (module != null) {
-                if (!setAnimations.containsKey(module)) {
-                    // запускаем анимацию открытия
-                    setAnimations.put(module, 0);
-                    setAnimReverse.put(module, false);
-                } else {
-                    // переключаем направление на закрытие
-                    setAnimReverse.put(module, true);
+            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+            if (obj != null) {
+                if (obj instanceof Parent module) {
+                    if (!setAnimations.containsKey(module)) {
+                        setAnimations.put(module, 0);
+                        setAnimReverse.put(module, false);
+                    } else {
+                        setAnimReverse.put(module, true);
+                    }
+                    return true;
+                } else if (obj instanceof ListSetting set) {
+                    int i = set.getOptions().indexOf(set.getValue());
+                    i -= 1;
+                    if (i < 0) {
+                        i = set.getOptions().size() - 1;
+                    }
+                    set.setValue(set.getOptions().get(i));
+                } else if (obj instanceof Setting set) {
+                    if (set.getValue() instanceof Boolean) {
+                        set.setValue(! (Boolean) set.getValue());
+                    } else if (set.getValue() instanceof Float) {
+                        float value = (float) set.getValue() - 0.1f;
+                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
+                        value = Math.round(value * 10f) / 10f;
+                        set.setValue(value);
+                    } else if (set.getValue() instanceof Integer) {
+                        int value = (int) set.getValue() - 1;
+                        set.setValue(
+                            Math.clamp(value, (int) set.min, (int) set.max)
+                        );
+                    }
                 }
-                return true;
             }
         }
         if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
-            Parent module = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (module != null) {
-                bindingModule = module;
-                bindAnimReverse = false;
-                return true;
+            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+            if (obj != null) {
+                if (obj instanceof Parent module) {
+                    bindingModule = module;
+                    bindAnimReverse = false;
+                    return true;
+                }
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -265,10 +315,10 @@ public class ClickGuiScreen extends Screen {
             return true;
         }
         if (
-                keyCode == GLFW.GLFW_KEY_RIGHT ||
-                        keyCode == GLFW.GLFW_KEY_LEFT ||
-                        keyCode == GLFW.GLFW_KEY_DOWN ||
-                        keyCode == GLFW.GLFW_KEY_UP
+            keyCode == GLFW.GLFW_KEY_RIGHT ||
+            keyCode == GLFW.GLFW_KEY_LEFT ||
+            keyCode == GLFW.GLFW_KEY_DOWN ||
+            keyCode == GLFW.GLFW_KEY_UP
         ) {
             if (keyCode == GLFW.GLFW_KEY_UP) {
                 yMove -= moveDifference;
@@ -293,7 +343,7 @@ public class ClickGuiScreen extends Screen {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
-        if (client != null && client.player != null && animPercent >= 100 && !animReverse) {
+        if (client != null && client.player != null && animPercent >= 100 && !animReverse && (boolean) config.get("mouse_move")) {
             double deltaX = mouseX - lastMouseX;
             double deltaY = mouseY - lastMouseY;
 
@@ -318,7 +368,7 @@ public class ClickGuiScreen extends Screen {
         super.mouseMoved(mouseX, mouseY);
     }
 
-    public int drawSettings(
+    public float drawSettings(
         Parent module,
         List<Setting<?>> sets,
         DrawContext context,
@@ -336,7 +386,7 @@ public class ClickGuiScreen extends Screen {
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
 
-        int ySetOffset = paddingBelowText + rectY;
+        float ySetOffset = paddingBelowText + rectY;
 
         for (Setting set : sets) {
             if (
@@ -344,38 +394,49 @@ public class ClickGuiScreen extends Screen {
                 set.getClass() == TextSetting.class ||
                 set.getClass() == ListSetting.class
             ) {
-                Text display;
                 int color = GetColor.getColor(255, 255, 255, alphaColor);
+                String name;
 
                 if (set.getClass() == ListSetting.class) {
-                    display = Text.literal(
-                        set.getName() + ": " + set.getValue()
-                    );
+                    name = set.getName() + ": " + set.getValue();
                 } else if (set.getValue() != null) {
-                    display = Text.literal(
-                        set.getName() + ": " + set.getValue()
-                    );
+                    name = set.getName() + ": " + set.getValue();
 
                     if (set.getValue().getClass() == Boolean.class) {
-                        display = Text.literal(set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0"));
+                        name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
                         if ((boolean) set.getValue()) {
-                            color = GetColor.getColor(255, 230, 255, alphaColor);
+                            color = GetColor.getColor(230, 255, 230, alphaColor);
                         } else {
-                            color = GetColor.getColor(230, 255, 255, alphaColor);
+                            color = GetColor.getColor(255, 230, 230, alphaColor);
                         }
                     }
+
                 } else {
-                    display = Text.literal(set.getName());
+                    name = set.getName();
                     color = GetColor.getColor(200, 200, 200, alphaColor);
                 }
 
                 float textScale = 0.8f;
+                float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
+                float drawX = xColStart;
+                float drawY = ySetOffset + drawOffsetY;
+                float width = textRenderer.getWidth(name) * textScale;
+                float height = textRenderer.fontHeight * textScale;
+                Text display = Text.literal(name);
 
                 context.getMatrices().push();
-                context.getMatrices().translate(xColStart, ySetOffset + (10 * (setAnimPercent - 100) / 100), zDepth);
+                context.getMatrices().translate(drawX, drawY, zDepth);
                 context.getMatrices().scale(textScale, textScale, zDepth);
                 context.drawTextWithShadow(textRenderer, display, 0, 0, color);
                 context.getMatrices().pop();
+
+                moduleAreas.add(new ModuleArea(
+                    set,
+                    drawX,
+                    drawY,
+                    width,
+                    height
+                ));
 
                 ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
             }
@@ -420,12 +481,14 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
-    private Parent getModuleUnderMouse(int mouseX, int mouseY) {
+    private Object getModuleUnderMouse(int mouseX, int mouseY) {
         for (ModuleArea area : moduleAreas) {
-            if (mouseX >= area.x
-                    && mouseX <= area.x + area.width
-                    && mouseY >= area.y
-                    && mouseY <= area.y + area.height) {
+            if (
+                mouseX >= area.x
+                && mouseX <= area.x + area.width
+                && mouseY >= area.y
+                && mouseY <= area.y + area.height
+            ) {
                 return area.module;
             }
         }
@@ -502,13 +565,13 @@ public class ClickGuiScreen extends Screen {
     }
 
     private static class ModuleArea {
-        private final Parent module;
+        private final Object module;
         private final float x;
         private final float y;
-        private final int width;
-        private final int height;
+        private final float width;
+        private final float height;
 
-        public ModuleArea(Parent module, float x, float y, int width, int height) {
+        public ModuleArea(Object module, float x, float y, float width, float height) {
             this.module = module;
             this.x = x;
             this.y = y;

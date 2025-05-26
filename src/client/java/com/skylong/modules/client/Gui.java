@@ -6,18 +6,16 @@ import com.skylong.modules.settings.*;
 import java.util.*;
 
 public class Gui extends Parent {
-    public TextSetting header = new TextSetting("test text");
-    public Setting<Float> attackRange = new Setting<>("move speed", "mouse_move_speed", 3.5f, 1.0f, 6.0f);
-    public Setting<Boolean> autoAttack = new Setting<>("move", "mouse_move", true);
-    public ListSetting<String> targetMode = new ListSetting<>(
-            "image",
-            "image",
-            "none",
-            Arrays.asList("none", "furry", "cat")
+    public Setting<Boolean> mouseMove = new Setting<>("move", "mouse_move", config.get("mouse_move"));
+    public ListSetting<String> image = new ListSetting<>(
+        "image",
+        "image",
+        config.get("image"),
+        Arrays.asList("none", "furry", "cat")
     );
 
     public Gui() {
-        super("click gui", "click_gui");
+        super("click gui", "click_gui", "interface");
     }
 
     @Override

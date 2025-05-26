@@ -7,7 +7,7 @@ public class Setting<T> {
     private final String name;
     private T value;
     private final T defaultValue;
-    private T min, max;
+    public T min, max;
     private Parent module;
 
     public Setting(String name, String key, T defaultValue) {
@@ -27,7 +27,9 @@ public class Setting<T> {
     // Геттеры/сеттеры
     public String getKey() { return key; }
     public String getName() { return name; }
-    public T getValue() { return value; }
+    public T getValue() {
+        return value;
+    }
     public void setValue(T value) {
         this.value = value;
         module.setValue(key, value);

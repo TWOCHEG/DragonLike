@@ -11,7 +11,7 @@ public class ClickGui {
     private static boolean key = false;
     private static final ConfigManager config = ConfigManager.getInstance("click_gui");
 
-    public static void init() {
+    public static void init(ModuleManager moduleManager) {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client == null) return;
 
@@ -25,7 +25,7 @@ public class ClickGui {
                 if (currentScreen instanceof ClickGuiScreen clickGuiScreen) {
                     clickGuiScreen.animReverse = true;
                 } else if (currentScreen == null || currentScreen instanceof TitleScreen) {
-                    client.setScreen(new ClickGuiScreen(client.currentScreen ,ModuleManager.getModules()));
+                    client.setScreen(new ClickGuiScreen(client.currentScreen, moduleManager.getModules()));
                 }
             }
             key = isRightShiftPressed;
