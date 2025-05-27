@@ -17,7 +17,7 @@ public class ClickGui {
 
             boolean isRightShiftPressed = InputUtil.isKeyPressed(
                 client.getWindow().getHandle(),
-                config.get("keybind")
+                config.get("keybind", 344) // код 344 - правый шифт
             );
             Screen currentScreen = client.currentScreen;
 

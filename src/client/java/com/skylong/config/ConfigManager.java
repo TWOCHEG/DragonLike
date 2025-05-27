@@ -9,9 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.awt.Desktop;
+import java.io.File;
 
 public class ConfigManager {
-    private final Path configDir = Path.of(System.getProperty("user.home"), ".skl");
+    public final Path configDir = Path.of(System.getProperty("user.home"), ".skl");
     private static final Gson GSON = new GsonBuilder()
         .disableHtmlEscaping()
         .setPrettyPrinting()
@@ -25,7 +27,7 @@ public class ConfigManager {
         this.moduleName = optionalParam;
     }
 
-    public <T> T get(String key) {
+    public <T> T get(String key, T defaultValue) {
         try {
             Map<String, Object> config = readJson();
             if (moduleName != null) {
@@ -33,15 +35,20 @@ public class ConfigManager {
             }
 
             Object result = config.get(key);
+            if (result == null) {
+                return defaultValue;
+            }
             if (result instanceof Number) {
                 result = normalizeNumber(result);
             }
             return (T) result;
         } catch (IOException | RuntimeException e) {
-            return null;
+            return defaultValue;
         }
     }
-
+    public <T> T get(String key) {
+        return get(key, null);
+    }
 
     public void set(String key, Object value) {
         try {
@@ -82,40 +89,20 @@ public class ConfigManager {
 
             String jsonOutput = GSON.toJson(root);
             Files.writeString(configPath, jsonOutput, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException | RuntimeException e) {}
+        } catch (IOException | RuntimeException ignored) {}
     }
-
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> readJson() throws IOException {
-        Map<String, Object> defaults = DefaultSettings.get();
-
         Path path = getActiveConfig();
         if (Files.exists(path) && Files.isRegularFile(path)) {
             String content = Files.readString(path, StandardCharsets.UTF_8);
             if (!content.isBlank()) {
                 Map<String, Object> loaded = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
-                return deepMerge(defaults, loaded);
+                return loaded;
             }
         }
-        return defaults;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> deepMerge(Map<String, Object> base, Map<String, Object> override) {
-        for (Map.Entry<String, Object> entry : override.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-
-            if (value instanceof Map && base.get(key) instanceof Map) {
-                Map<String, Object> baseMap = (Map<String, Object>) base.get(key);
-                Map<String, Object> overrideMap = (Map<String, Object>) value;
-                base.put(key, deepMerge(baseMap, overrideMap));
-            } else {
-                base.put(key, value);
-            }
-        }
-        return base;
+        return new HashMap<>();
     }
 
     private Object normalizeNumber(Object value) {
@@ -130,12 +117,58 @@ public class ConfigManager {
         return value;
     }
 
-    private Path getActiveConfig() {
+    public void setActiveConfig(Path activePath) {
+        try {
+            if (!Files.exists(activePath)) {
+                return;
+            }
+
+            // Устанавливаем current = true в указанном файле
+            Map<String, Object> activeData;
+            String content = Files.readString(activePath, StandardCharsets.UTF_8);
+            if (!content.isBlank()) {
+                activeData = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
+            } else {
+                activeData = new HashMap<>();
+            }
+            activeData.put("current", true);
+            String updatedActiveContent = GSON.toJson(activeData);
+            Files.writeString(activePath, updatedActiveContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            // Устанавливаем current = false во всех остальных файлах
+            for (Path configFile : configFiles()) {
+                if (configFile.equals(activePath)) continue;
+
+                try {
+                    String fileContent = Files.readString(configFile, StandardCharsets.UTF_8);
+                    if (fileContent.isBlank()) continue;
+
+                    Map<String, Object> fileData = GSON.fromJson(fileContent, new TypeToken<Map<String, Object>>() {}.getType());
+                    if (fileData != null) {
+                        fileData.put("current", false);
+                        String updatedContent = GSON.toJson(fileData);
+                        Files.writeString(configFile, updatedContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    }
+                } catch (IOException | RuntimeException ignored) {}
+            }
+        } catch (IOException | RuntimeException ignored) {}
+    }
+
+    public List<Path> configFiles() {
         try {
             List<Path> list = Files.list(configDir)
                     .filter(p -> p.toString().endsWith(".json"))
                     .sorted()
                     .collect(Collectors.toList());
+            return list;
+        } catch (IOException | RuntimeException e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private Path getActiveConfig() {
+        try {
+            List<Path> list = configFiles();
             for (Path p : list) {
                 try {
                     String content = Files.readString(p, StandardCharsets.UTF_8);
@@ -146,15 +179,79 @@ public class ConfigManager {
                             return p;
                         }
                     }
-                } catch (Exception ignored) {
-                }
+                } catch (Exception ignored) {}
             }
             if (list.isEmpty()) {
                 Path defaultFile = configDir.resolve("default.json");
                 return defaultFile;
             }
             return list.get(0);
-        } catch (IOException | RuntimeException e) {}
+        } catch (RuntimeException ignored) {}
         return null;
+    }
+
+    public void openConfigDir() {
+        try {
+            if (!Files.exists(configDir)) {
+                Files.createDirectories(configDir);
+            }
+            File dir = configDir.toFile();
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.OPEN)) {
+                    desktop.open(dir);
+                    return;
+                }
+            }
+
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                new ProcessBuilder("explorer.exe", dir.getAbsolutePath()).start();
+            } else if (os.contains("mac")) {
+                new ProcessBuilder("open", dir.getAbsolutePath()).start();
+            } else {
+                new ProcessBuilder("xdg-open", dir.getAbsolutePath()).start();
+            }
+        } catch (IOException ignored) {}
+    }
+
+    public boolean deleteConfig(Path path) {
+        try {
+            if (path != null && Files.exists(path) && path.toString().endsWith(".json") && path.getParent().equals(configDir)) {
+                Files.delete(path);
+                return true;
+            }
+        } catch (IOException | RuntimeException ignored) {}
+        return false;
+    }
+
+    public Path createConfig(String name) {
+        if (name == null || name.isBlank()) return null;
+
+        try {
+            if (!Files.exists(configDir)) {
+                Files.createDirectories(configDir);
+            }
+
+            if (!name.endsWith(".json")) {
+                name += ".json";
+            }
+
+            Path filePath = configDir.resolve(name);
+
+            if (Files.exists(filePath)) {
+                return filePath;
+            }
+
+            Map<String, Object> content = new HashMap<>();
+            content.put("current", false);
+            String json = GSON.toJson(content);
+
+            Files.writeString(filePath, json, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
+            return filePath;
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
     }
 }

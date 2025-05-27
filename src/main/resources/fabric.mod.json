@@ -6,7 +6,6 @@
 	"authors": [
 		"TWOCHEG"
 	],
-	"icon": "assets/skylong/icon-1024.png",
 	"environment": "*",
 	"entrypoints": {
 		"client": [

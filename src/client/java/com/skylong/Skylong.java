@@ -1,13 +1,15 @@
 package com.skylong;
 
-import com.skylong.modules.client.Gui;
-import com.skylong.modules.combat.KillAura;
 import net.fabricmc.api.ClientModInitializer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.skylong.gui.ClickGui;
 import com.skylong.modules.ModuleManager;
+
+import com.skylong.modules.ui.Gui;
+import com.skylong.modules.combat.KillAura;
+import com.skylong.modules.ui.ConfigMenu;
 
 public class Skylong implements ClientModInitializer {
 
@@ -16,7 +18,8 @@ public class Skylong implements ClientModInitializer {
 		ModuleManager moduleManager = new ModuleManager(
 			new ArrayList(List.of(
 				new Gui(),
-				new KillAura()
+				new KillAura(),
+				new ConfigMenu()
 			))
 		);
 		ClickGui.init(moduleManager);

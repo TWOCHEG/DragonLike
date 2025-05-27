@@ -18,8 +18,8 @@ public abstract class Parent {
         this.name = name;
         this.config = new ConfigManager(id);
         this.id = id;
-        this.enable = config.get("enable");
-        this.keybindCode = config.get("keybind");
+        this.enable = config.get("enable", false);
+        this.keybindCode = config.get("keybind", -1);
         this.category = category;
     }
 
@@ -53,8 +53,7 @@ public abstract class Parent {
         keybindCode = code;
     }
 
-    public void setValue(String name, Object value) {
-        String key = name.replace(' ', '_');
+    public void setValue(String key, Object value) {
         config.set(key, value);
     }
 

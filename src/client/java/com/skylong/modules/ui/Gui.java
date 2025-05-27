@@ -1,4 +1,4 @@
-package com.skylong.modules.client;
+package com.skylong.modules.ui;
 
 import com.skylong.modules.*;
 import com.skylong.modules.settings.*;
@@ -15,16 +15,16 @@ public class Gui extends Parent {
         "sonic", "textures/gui/sonic.png"
     );
 
-    public Setting<Boolean> mouseMove = new Setting<>("move", "mouse_move", config.get("mouse_move"));
+    public Setting<Boolean> mouseMove = new Setting<>("move", "mouse_move", config.get("mouse_move", true));
     public ListSetting<String> image = new ListSetting<>(
         "image",
         "image",
-        config.get("image"),
+        config.get("image", "none"),
         new ArrayList<>(images.keySet())
     );
 
     public Gui() {
-        super("click gui", "click_gui", "interface");
+        super("click gui", "click_gui", "ui");
     }
 
     public Map<String, String> getImages() {
@@ -32,12 +32,11 @@ public class Gui extends Parent {
     }
 
     @Override
-    public void setValue(String name, Object value) {
-        if (name == "keybind" && (int) value == -1) {
-            return;
+    public void setKeybind(int code) {
+        if (code != -1) {
+            config.set("keybind", code);
+            keybindCode = code;
         }
-        String key = name.replace(' ', '_');
-        config.set(key, value);
     }
 
     @Override

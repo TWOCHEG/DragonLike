@@ -7,14 +7,12 @@ public class Setting<T> {
     private final String key;
     private final String name;
     private T value;
-    private final T defaultValue;
     public T min, max;
     private Parent module;
 
     public Setting(String name, String key, T defaultValue) {
         this.key = key;
         this.name = name;
-        this.defaultValue = defaultValue;
         this.value = defaultValue;
     }
 

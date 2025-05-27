@@ -2,7 +2,7 @@ package com.skylong.gui;
 
 import com.skylong.config.ConfigManager;
 import com.skylong.modules.ModuleManager;
-import com.skylong.modules.client.Gui;
+import com.skylong.modules.ui.Gui;
 import com.skylong.modules.settings.*;
 import com.skylong.utils.GetColor;
 import com.skylong.modules.Parent;
@@ -16,7 +16,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.Resource;
 
 import org.lwjgl.glfw.GLFW;
@@ -43,9 +42,8 @@ public class ClickGuiScreen extends Screen {
     public double lastMouseX = 0;
     public double lastMouseY = 0;
 
-    public int xMove = 0;
-    public int yMove = 0;
-    public static int moveDifference = 10;
+    public float xMove = 0;
+    public float yMove = 0;
 
     private final Screen previous;
 
@@ -71,64 +69,61 @@ public class ClickGuiScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) return;
         if (previous != null) {
             previous.render(context, mouseX, mouseY, delta);
         }
 
         int animDiff = 10;
 
-        animHandler(client, animDiff);
+        animHandler(client, animDiff, mouseX, mouseY);
         if (animReverse && animPercent == 0) {
             client.setScreen(null);
             return;
         }
 
-        String image = config.get("image");
-        if (!image.equals("none")) {
-            Gui GuiModule = moduleManager.getModuleById("click_gui");
-            String path = GuiModule.getImages().get(image);
+        Gui GuiModule = (Gui) moduleManager.getModuleById("click_gui");
+        if (GuiModule != null && GuiModule.image.getValue() != "none") {
+            String path = GuiModule.getImages().get(GuiModule.image.getValue());
             Identifier texture = Identifier.of("skylong", path);
+            if (texture != null) {
+                try {
+                    Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+                    NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
 
-            try {
-                Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
-                NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
+                    float imageWidth = nativeImage.getWidth();
+                    float imageHeight = nativeImage.getHeight();
 
-                float imageWidth = nativeImage.getWidth();
-                float imageHeight = nativeImage.getHeight();
+                    nativeImage.close();
 
-                nativeImage.close();
+                    float screenWidth = context.getScaledWindowWidth();
+                    float screenHeight = context.getScaledWindowHeight();
 
-                float screenWidth = context.getScaledWindowWidth();
-                float screenHeight = context.getScaledWindowHeight();
+                    float screenMin = Math.min(screenWidth, screenHeight);
+                    float fixedSize = screenMin * 0.5f;
 
-                float screenMin = Math.min(screenWidth, screenHeight);
-                float fixedSize = screenMin * 0.5f;
+                    float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
 
-                float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
+                    float scaledWidth = imageWidth * scale;
+                    float scaledHeight = imageHeight * scale;
 
-                float scaledWidth = imageWidth * scale;
-                float scaledHeight = imageHeight * scale;
+                    float x = screenWidth - (scaledWidth * animPercent / 100);
+                    float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
 
-                float x = screenWidth - (scaledWidth * animPercent / 100);
-                float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
-
-                context.getMatrices().push();
-                context.getMatrices().translate(0, 0, 2);
-                context.drawTexture(
-                    RenderLayer::getGuiTextured,
-                    texture,
-                    (int) x,
-                    (int) y,
-                    0, 0,
-                    (int) scaledWidth,
-                    (int) scaledHeight,
-                    (int) scaledWidth,
-                    (int) scaledHeight
-                );
-                context.getMatrices().pop();
-            } catch (Exception e) {
-                e.printStackTrace();
+                    context.getMatrices().push();
+                    context.getMatrices().translate(0, 0, 2);
+                    context.drawTexture(
+                        RenderLayer::getGuiTextured,
+                        texture,
+                        (int) x,
+                        (int) y,
+                        0, 0,
+                        (int) scaledWidth,
+                        (int) scaledHeight,
+                        (int) scaledWidth,
+                        (int) scaledHeight
+                    );
+                    context.getMatrices().pop();
+                } catch (Exception ignored) {}
             }
         }
 
@@ -169,7 +164,7 @@ public class ClickGuiScreen extends Screen {
         int numCols = modules.size();
         int columnWidth = Math.min(70, (width - spacingColumns * (numCols - 1)) / numCols);
         int totalColsWidth = numCols * columnWidth + (numCols - 1) * spacingColumns;
-        float xColStart = (float) ((width + xMove) - totalColsWidth) / 2;
+        float xColStart = ((width + xMove) - totalColsWidth) / 2;
 
         for (Map.Entry<String, List<Parent>> entry : modules.entrySet()) {
             String category = entry.getKey();
@@ -300,16 +295,6 @@ public class ClickGuiScreen extends Screen {
                 } else if (obj instanceof Setting set) {
                     if (set.getValue() instanceof Boolean) {
                         set.setValue(! (Boolean) set.getValue());
-                    } else if (set.getValue() instanceof Float) {
-                        float value = (float) set.getValue() + 0.1f;
-                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
-                        value = Math.round(value * 10f) / 10f;
-                        set.setValue(value);
-                    } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() + 1;
-                        set.setValue(
-                            Math.clamp(value, (int) set.min, (int) set.max)
-                        );
                     }
                     return true;
                 } else if (obj instanceof Parent module) {
@@ -331,16 +316,6 @@ public class ClickGuiScreen extends Screen {
                 } else if (obj instanceof Setting set) {
                     if (set.getValue() instanceof Boolean) {
                         set.setValue(! (Boolean) set.getValue());
-                    } else if (set.getValue() instanceof Float) {
-                        float value = (float) set.getValue() - 0.1f;
-                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
-                        value = Math.round(value * 10f) / 10f;
-                        set.setValue(value);
-                    } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() - 1;
-                        set.setValue(
-                            Math.clamp(value, (int) set.min, (int) set.max)
-                        );
                     }
                     return true;
                 } else if (obj instanceof Parent module) {
@@ -381,16 +356,16 @@ public class ClickGuiScreen extends Screen {
             keyCode == GLFW.GLFW_KEY_UP
         ) {
             if (keyCode == GLFW.GLFW_KEY_UP) {
-                yMove -= moveDifference;
+                yMove -= 10;
             }
             if (keyCode == GLFW.GLFW_KEY_DOWN) {
-                yMove += moveDifference;
+                yMove += 10;
             }
             if (keyCode == GLFW.GLFW_KEY_RIGHT) {
-                xMove += moveDifference;
+                xMove += 10;
             }
             if (keyCode == GLFW.GLFW_KEY_LEFT) {
-                xMove -= moveDifference;
+                xMove -= 10;
             }
             return true;
         }
@@ -541,7 +516,7 @@ public class ClickGuiScreen extends Screen {
         return null;
     }
 
-    public void animHandler(MinecraftClient client, int animDiff) {
+    public void animHandler(MinecraftClient client, int animDiff, int mouseX, int mouseY) {
         if (animPercent > 99) {
             GLFW.glfwSetScrollCallback(client.getWindow().getHandle(), (window, xoffset, yoffset) -> {
                 if (client.currentScreen == this) {
@@ -549,6 +524,46 @@ public class ClickGuiScreen extends Screen {
                     yMove -= yoffset * 4;
                 }
             });
+            boolean left = GLFW.glfwGetMouseButton(
+                client.getInstance().getWindow().getHandle(),
+                GLFW.GLFW_MOUSE_BUTTON_LEFT
+            ) == GLFW.GLFW_PRESS;
+            if (left) {
+                Object obj = getModuleUnderMouse(mouseX, mouseY);
+                if (obj != null && obj instanceof Setting set) {
+                    if (set.getValue() instanceof Float) {
+                        float value = (float) set.getValue() + 0.1f;
+                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
+                        value = Math.round(value * 10f) / 10f;
+                        set.setValue(value);
+                    } else if (set.getValue() instanceof Integer) {
+                        int value = (int) set.getValue() + 1;
+                        set.setValue(
+                            Math.clamp(value, (int) set.min, (int) set.max)
+                        );
+                    }
+                }
+            }
+            boolean right = GLFW.glfwGetMouseButton(
+                    client.getInstance().getWindow().getHandle(),
+                    GLFW.GLFW_MOUSE_BUTTON_RIGHT
+            ) == GLFW.GLFW_PRESS;
+            if (right) {
+                Object obj = getModuleUnderMouse(mouseX, mouseY);
+                if (obj != null && obj instanceof Setting set) {
+                    if (set.getValue() instanceof Float) {
+                        float value = (float) set.getValue() - 0.1f;
+                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
+                        value = Math.round(value * 10f) / 10f;
+                        set.setValue(value);
+                    } else if (set.getValue() instanceof Integer) {
+                        int value = (int) set.getValue() - 1;
+                        set.setValue(
+                            Math.clamp(value, (int) set.min, (int) set.max)
+                        );
+                    }
+                }
+            }
         }
 
         // Анимация открытия/закрытия

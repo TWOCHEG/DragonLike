@@ -26,10 +26,10 @@ public class ModuleManager {
         return grouped;
     }
 
-    public <T> T getModuleById(String id) {
+    public Parent getModuleById(String id) {
         for (Parent module : modules) {
             if (module.getId() == id) {
-                return (T) module;
+                return module;
             }
         }
         return null;
