@@ -10,9 +10,12 @@ public class Gui extends Parent {
         "none", "none",
         "furry", "textures/gui/furry.png",
         "billy", "textures/gui/billy.png",
-        "boykisser", "textures/gui/boykisser.png",
         "nya", "textures/gui/nya.png",
-        "sonic", "textures/gui/sonic.png"
+        "sonic", "textures/gui/sonic.png",
+        "shayrma", "textures/gui/shayrma.png",
+        "furry2", "textures/gui/furry2.png",
+        "skala", "textures/gui/skala.png",
+        "smalik", "textures/gui/smalik.png"
     );
 
     public Setting<Boolean> mouseMove = new Setting<>("move", "mouse_move", config.get("mouse_move", true));

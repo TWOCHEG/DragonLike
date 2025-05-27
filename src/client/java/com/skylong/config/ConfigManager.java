@@ -23,8 +23,8 @@ public class ConfigManager {
     public ConfigManager() {
         this.moduleName = null;
     }
-    public ConfigManager(String optionalParam) {
-        this.moduleName = optionalParam;
+    public ConfigManager(String moduleName) {
+        this.moduleName = moduleName;
     }
 
     public <T> T get(String key, T defaultValue) {
@@ -157,37 +157,36 @@ public class ConfigManager {
     public List<Path> configFiles() {
         try {
             List<Path> list = Files.list(configDir)
-                    .filter(p -> p.toString().endsWith(".json"))
-                    .sorted()
-                    .collect(Collectors.toList());
+                .filter(p -> p.toString().endsWith(".json"))
+                .sorted(Comparator.comparing(p -> p.getFileName().toString()))
+                .collect(Collectors.toList());
+            if (list.isEmpty()) {
+                list.add(configDir.resolve("default.json"));
+            }
             return list;
         } catch (IOException | RuntimeException e) {
-            return new ArrayList<>();
+            return new ArrayList(List.of(configDir.resolve("default.json")));
         }
     }
 
-    private Path getActiveConfig() {
-        try {
-            List<Path> list = configFiles();
-            for (Path p : list) {
+    public Path getActiveConfig() {
+        List<Path> list = configFiles();
+
+        for (Path p : list) {
+            if (Files.isRegularFile(p) && p.toString().endsWith(".json")) {
                 try {
                     String content = Files.readString(p, StandardCharsets.UTF_8);
                     if (!content.isBlank()) {
-                        Map<?, ?> tree = GSON.fromJson(content, new TypeToken<Map<?, ?>>() {
-                        }.getType());
-                        if (Boolean.TRUE.equals(tree.get("current"))) {
+                        Map<String, Object> loaded = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
+                        boolean value = (boolean) loaded.getOrDefault("current", false);
+                        if (value) {
                             return p;
                         }
                     }
-                } catch (Exception ignored) {}
+                } catch (IOException ignored) {}
             }
-            if (list.isEmpty()) {
-                Path defaultFile = configDir.resolve("default.json");
-                return defaultFile;
-            }
-            return list.get(0);
-        } catch (RuntimeException ignored) {}
-        return null;
+        }
+        return list.getFirst();
     }
 
     public void openConfigDir() {
@@ -226,16 +225,17 @@ public class ConfigManager {
         return false;
     }
 
-    public Path createConfig(String name) {
-        if (name == null || name.isBlank()) return null;
+    public Path createConfig() {
+        String name = String.valueOf(configFiles().size() + 1);
+        while (configFiles().contains(configDir.resolve(name + ".json"))) {
+            name += "-c";
+        }
+
+        name += ".json";
 
         try {
             if (!Files.exists(configDir)) {
                 Files.createDirectories(configDir);
-            }
-
-            if (!name.endsWith(".json")) {
-                name += ".json";
             }
 
             Path filePath = configDir.resolve(name);
@@ -245,13 +245,13 @@ public class ConfigManager {
             }
 
             Map<String, Object> content = new HashMap<>();
-            content.put("current", false);
             String json = GSON.toJson(content);
 
             Files.writeString(filePath, json, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
             return filePath;
         } catch (IOException | RuntimeException e) {
-            return null;
+            e.printStackTrace();
         }
+        return null;
     }
 }

@@ -1,9 +1,12 @@
 package com.skylong.modules.ui;
 
+import com.skylong.gui.ClickGuiScreen;
 import com.skylong.gui.ConfigsGui;
 import com.skylong.modules.*;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.gui.screen.Screen;
+import com.skylong.gui.ClickGuiScreen;
 
 import java.util.*;
 
@@ -20,9 +23,17 @@ public class ConfigMenu extends Parent {
         }
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (enable && !show) {
-                client.setScreen(null);
-                client.setScreen(new ConfigsGui(client.currentScreen, this));
-                show = true;
+                boolean retr = false;
+                if (client.currentScreen != null) {
+                    if (client.currentScreen instanceof ClickGuiScreen screen) {
+                        screen.animReverse = true;
+                        retr = true;
+                    }
+                }
+                if (!retr) {
+                    client.setScreen(new ConfigsGui(client.currentScreen, this));
+                    show = true;
+                }
             }
         });
     }

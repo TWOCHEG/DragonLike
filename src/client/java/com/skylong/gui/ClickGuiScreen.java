@@ -378,7 +378,7 @@ public class ClickGuiScreen extends Screen {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
-        if (client != null && client.player != null && animPercent >= 100 && !animReverse && (boolean) config.get("mouse_move")) {
+        if (client != null && client.player != null && animPercent >= 100 && !animReverse && config.get("mouse_move", true)) {
             double deltaX = mouseX - lastMouseX;
             double deltaY = mouseY - lastMouseY;
 
