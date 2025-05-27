@@ -1,5 +1,5 @@
 > [!WARNING]
-> this project is under active development
+> this project is under active development, not ready yet
 
 <div align="center">
 
