@@ -25,3 +25,4 @@ public class Skylong implements ClientModInitializer {
 		ClickGui.init(moduleManager);
 	}
 }
+// тут был Егорушка 
