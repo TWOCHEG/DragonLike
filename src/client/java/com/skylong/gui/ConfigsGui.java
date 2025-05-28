@@ -18,32 +18,38 @@ import java.util.*;
 
 public class ConfigsGui extends Screen {
     private final Screen previous;
-    public ConfigMenu configMenu;
+    private final ConfigMenu configMenu;
     private final ConfigManager config = new ConfigManager("click_gui");
 
-    public static final String hintsText = "click on title - open path\nCONTROL + M - create\nMOUSE RIGHT - delete";
+    private static final String hintsText = "click on title - open path\nR - edit name\nM - create\nBACKSPACE | X | DEL - delete";
 
-    private Identifier texturePlus = Identifier.of("skylong", "textures/gui/plus.png");
-    private String texturePlusName = "plus";
-    private Identifier textureDel = Identifier.of("skylong", "textures/gui/delete.png");
-    private String textureDelName = "Del";
+    private final Identifier texturePlus = Identifier.of("skylong", "textures/gui/plus.png");
+    private final String texturePlusName = "plus";
+    private final Identifier textureDel = Identifier.of("skylong", "textures/gui/delete.png");
+    private final String textureDelName = "Del";
+    private final Identifier textureEdit = Identifier.of("skylong", "textures/gui/edit.png");
+    private final String textureEditName = "Edit";
 
-    private String guiTextId = "openPath";
+    private final String guiTextId = "openPath";
 
-    public Map<String, Integer> clickAnimations = new HashMap<>();
-    public Map<String, Boolean> clickAnimReverse = new HashMap<>();
+    private final Map<String, Integer> clickAnimations = new HashMap<>();
+    private final Map<String, Boolean> clickAnimReverse = new HashMap<>();
 
-    private ArrayList<Integer> keyDeleteList = new ArrayList<>(List.of(GLFW.GLFW_KEY_X, GLFW.GLFW_KEY_DELETE, GLFW.GLFW_KEY_BACKSPACE));
+    private final ArrayList<Integer> keyDeleteList = new ArrayList<>(List.of(GLFW.GLFW_KEY_X, GLFW.GLFW_KEY_DELETE, GLFW.GLFW_KEY_BACKSPACE));
 
     private List<Path> oldListpaths = new ArrayList<>();
 
-    public float animPercent = 0;
+    private float animInput = 0;
+    private boolean animInputReverse = true;
+    private String inputText = "";
+
+    private float animPercent = 0;
     public boolean animReverse = false;
 
-    public double lastMouseX = 0;
-    public double lastMouseY = 0;
+    private double lastMouseX = 0;
+    private double lastMouseY = 0;
 
-    public List<ModuleArea> moduleAreas = new ArrayList<>();
+    private final List<ModuleArea> moduleAreas = new ArrayList<>();
 
     public ConfigsGui(Screen previous, ConfigMenu configMenu) {
         super(Text.literal("Configs Gui"));
@@ -65,6 +71,9 @@ public class ConfigsGui extends Screen {
             return;
         }
 
+        float screenWidth = context.getScaledWindowWidth();
+        float screenHeight = context.getScaledWindowHeight();
+
         // Фон с градиентом
         int alphaTop = 100 * (int) animPercent / 100;
         int alphaBottom = 200 * (int) animPercent / 100;
@@ -77,12 +86,13 @@ public class ConfigsGui extends Screen {
         );
         context.getMatrices().pop();
 
+        // подсказки
+        String[] lines = hintsText.split("\n");
         float hintsScale = 0.7f;
         int alpha = 150 * (int) animPercent / 100;
         int colorHints = GetColor.getColor(255, 255, 255, alpha);
         int xHints = 5;
-        int yHints = height - textRenderer.fontHeight - 17;
-        String[] lines = hintsText.split("\n");
+        float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
         context.getMatrices().push();
         context.getMatrices().translate(xHints, yHints, 2);
         context.getMatrices().scale(hintsScale, hintsScale, 2);
@@ -92,7 +102,6 @@ public class ConfigsGui extends Screen {
         }
         context.getMatrices().pop();
 
-        float screenWidth = context.getScaledWindowWidth();
         int imgSize = 16;
         int animDiff = (imgSize / 4);
         float imgX = 5;
@@ -118,7 +127,6 @@ public class ConfigsGui extends Screen {
         );
         context.getMatrices().pop();
         moduleAreas.add(new ModuleArea(texturePlusName, imgX, imgY, imgSize, imgSize));
-
         // === КНОПКА DELETE ===
         int delAnim = clickAnimations.getOrDefault(textureDelName, 0);
         int delSize = animDiff * delAnim / 100;
@@ -142,8 +150,31 @@ public class ConfigsGui extends Screen {
         );
         context.getMatrices().pop();
         moduleAreas.add(new ModuleArea(textureDelName, delX, imgY, imgSize, imgSize));
+        // === КНОПКА EDIT ===
+        int editAnim = clickAnimations.getOrDefault(textureEditName, 0);
+        int editSize = animDiff * editAnim / 100;
+        if (editSize == animDiff) {
+            clickAnimReverse.put(textureEditName, true);
+        }
+        int editTotalSize = imgSize + editSize;
+        float editOffset = editSize / 2.0f;
 
-        Text display = Text.literal("configs gui").formatted(Formatting.BOLD);
+        float editX = 2 * (imgX + imgSize) + imgX;
+
+        context.getMatrices().push();
+        context.getMatrices().translate(editX - editOffset, imgY - editOffset, 2);
+        context.drawTexture(
+            RenderLayer::getGuiTextured,
+            textureEdit,
+            0, 0,
+            0, 0,
+            editTotalSize, editTotalSize,
+            editTotalSize, editTotalSize
+        );
+        context.getMatrices().pop();
+        moduleAreas.add(new ModuleArea(textureEditName, editX, imgY, imgSize, imgSize));
+
+        Text display = Text.literal("configs").formatted(Formatting.BOLD);
         int textWidth = textRenderer.getWidth(display);
         float titleX = (screenWidth / 2) - ((float) textWidth / 2);
         float titleY = 10 + (50 * (100 -  animPercent) / 100);
@@ -211,6 +242,35 @@ public class ConfigsGui extends Screen {
         }
 
         oldListpaths = filesList;
+
+        if (animInput > 1) {
+            // Фон с градиентом
+            context.getMatrices().push();
+            context.getMatrices().translate(0, 0, 3);
+            context.getMatrices().scale(1, 1, 3);
+            context.fillGradient(0, 0, width, height,
+                GetColor.getColor(0, 0, 0, 200 * (int) animInput / 100),
+                GetColor.getColor(0, 0, 0, 220 * (int) animInput / 100)
+            );
+            context.getMatrices().pop();
+
+            String name = inputText.isEmpty() ? "..." : inputText;
+            Text inputText = Text.literal(name);
+            context.getMatrices().push();
+            context.getMatrices().translate(
+                (screenWidth / 2) - textRenderer.getWidth(inputText),
+                (screenHeight / 2) - textRenderer.fontHeight,
+                4
+            );
+            context.getMatrices().scale(2, 2, 4);
+            context.drawTextWithShadow(
+                textRenderer,
+                inputText,
+                0, 0,
+                GetColor.getColor(255, 255, 255, (int) (255 * animInput / 100))
+            );
+            context.getMatrices().pop();
+        }
     }
 
     @Override
@@ -224,41 +284,58 @@ public class ConfigsGui extends Screen {
                 } else if (str.equals(textureDelName)) {
                     clickAnimations.put(textureDelName, 1);
                     onDelete(config.getActiveConfig());
+                } else if (str.equals(textureEditName)) {
+                    clickAnimations.put(textureEditName, 1);
+                    animInputReverse = false;
                 } else if (str.equals(guiTextId)) {
                     config.openConfigDir();
                 }
             } else if (obj instanceof Path p) {
                 onSetActive(p);
             }
-        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj instanceof Path p) {
-                onDelete(p);
-            }
+            return true;
         }
+        animInputReverse = true;
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (!animInputReverse) {
+            inputText += chr;
+            return true;
+        }
+        return super.charTyped(chr, modifiers);
+    }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyDeleteList.contains(keyCode)) {
-
-            MinecraftClient client = MinecraftClient.getInstance();
-            double scaleFactor = client.getWindow().getScaleFactor();
-            double mouseX = client.mouse.getX() / scaleFactor;
-            double mouseY = client.mouse.getY() / scaleFactor;
-
-            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj instanceof Path p) {
-                onDelete(p);
-                return true;
+        if (animInput > 20 && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            if (!inputText.isEmpty()) {
+                inputText = inputText.substring(0, inputText.length() - 1);
             }
+            return true;
         }
         if (keyCode == GLFW.GLFW_KEY_M) {
-            if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0) {
-                onCreate();
-                return true;
-            }
+            onCreate();
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_R) {
+            animInputReverse = false;
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ENTER && !animInputReverse) {
+            animInputReverse = true;
+            onRename(config.getActiveConfig(), inputText);
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && !animInputReverse) {
+            animInputReverse = true;
+            return true;
+        }
+        if (keyDeleteList.contains(keyCode)) {
+            onDelete(config.getActiveConfig());
+            return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             close();
@@ -312,6 +389,17 @@ public class ConfigsGui extends Screen {
             animPercent -= Math.max(0.1f, (animDiff * animPercent) / 100);
         }
         animPercent = Math.clamp(animPercent, 0, 100);
+
+        // анимация ввода
+        if (!animInputReverse && animInput < 100) {
+            animInput += Math.max(0.1f, (animDiff * (100 - animInput)) / 100);
+        } else if (animInputReverse && animInput > 0) {
+            animInput -= Math.max(0.1f, (animDiff * animInput) / 100);
+        }
+        animInput = Math.clamp(animInput, 0, 100);
+        if (animInput < 1) {
+            inputText = "";
+        }
 
         // анимация клика
         if (!clickAnimations.isEmpty()) {

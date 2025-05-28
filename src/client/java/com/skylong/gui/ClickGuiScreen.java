@@ -81,50 +81,48 @@ public class ClickGuiScreen extends Screen {
             return;
         }
 
+        float screenHeight = context.getScaledWindowHeight();
+        float screenWidth = context.getScaledWindowWidth();
+
         Gui GuiModule = (Gui) moduleManager.getModuleById("click_gui");
         if (GuiModule != null && GuiModule.image.getValue() != "none") {
             String path = GuiModule.getImages().get(GuiModule.image.getValue());
             Identifier texture = Identifier.of("skylong", path);
-            if (texture != null) {
-                try {
-                    Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
-                    NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
+            try {
+                Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+                NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
 
-                    float imageWidth = nativeImage.getWidth();
-                    float imageHeight = nativeImage.getHeight();
+                float imageWidth = nativeImage.getWidth();
+                float imageHeight = nativeImage.getHeight();
 
-                    nativeImage.close();
+                nativeImage.close();
 
-                    float screenWidth = context.getScaledWindowWidth();
-                    float screenHeight = context.getScaledWindowHeight();
+                float screenMin = Math.min(screenWidth, screenHeight);
+                float fixedSize = screenMin * 0.5f;
 
-                    float screenMin = Math.min(screenWidth, screenHeight);
-                    float fixedSize = screenMin * 0.5f;
+                float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
 
-                    float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
+                float scaledWidth = imageWidth * scale;
+                float scaledHeight = imageHeight * scale;
 
-                    float scaledWidth = imageWidth * scale;
-                    float scaledHeight = imageHeight * scale;
+                float x = screenWidth - (scaledWidth * animPercent / 100);
+                float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
 
-                    float x = screenWidth - (scaledWidth * animPercent / 100);
-                    float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
-
-                    context.getMatrices().push();
-                    context.getMatrices().translate(0, 0, 2);
-                    context.drawTexture(
-                        RenderLayer::getGuiTextured,
-                        texture,
-                        (int) x,
-                        (int) y,
-                        0, 0,
-                        (int) scaledWidth,
-                        (int) scaledHeight,
-                        (int) scaledWidth,
-                        (int) scaledHeight
-                    );
-                    context.getMatrices().pop();
-                } catch (Exception ignored) {}
-            }
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, 2);
+                context.drawTexture(
+                    RenderLayer::getGuiTextured,
+                    texture,
+                    (int) x,
+                    (int) y,
+                    0, 0,
+                    (int) scaledWidth,
+                    (int) scaledHeight,
+                    (int) scaledWidth,
+                    (int) scaledHeight
+                );
+                context.getMatrices().pop();
+            } catch (Exception ignored) {}
         }
 
         // Фон с градиентом
@@ -134,17 +132,18 @@ public class ClickGuiScreen extends Screen {
         context.getMatrices().translate(0, 0, 1);
         context.getMatrices().scale(1, 1, 1);
         context.fillGradient(0, 0, width, height,
-                GetColor.getColor(0, 0, 0, alphaTop),
-                GetColor.getColor(0, 0, 0, alphaBottom)
+            GetColor.getColor(0, 0, 0, alphaTop),
+            GetColor.getColor(0, 0, 0, alphaBottom)
         );
         context.getMatrices().pop();
+
         // подсказки
+        String[] lines = hintsText.split("\n");
         float hintsScale = 0.7f;
         int alpha = 150 * (int) animPercent / 100;
         int colorHints = GetColor.getColor(255, 255, 255, alpha);
         int xHints = 5;
-        int yHints = height - textRenderer.fontHeight - 17;
-        String[] lines = hintsText.split("\n");
+        float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
         context.getMatrices().push();
         context.getMatrices().translate(xHints, yHints, 2);
         context.getMatrices().scale(hintsScale, hintsScale, 2);
@@ -283,59 +282,53 @@ public class ClickGuiScreen extends Screen {
         // еее навалим говно кода, погнали
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj != null) {
-                if (obj instanceof ListSetting set) {
-                    int i = set.getOptions().indexOf(set.getValue());
-                    i += 1;
-                    if (i > set.getOptions().size() - 1) {
-                        i = 0;
-                    }
-                    set.setValue(set.getOptions().get(i));
-                    return true;
-                } else if (obj instanceof Setting set) {
-                    if (set.getValue() instanceof Boolean) {
-                        set.setValue(! (Boolean) set.getValue());
-                    }
-                    return true;
-                } else if (obj instanceof Parent module) {
-                    module.setEnable(!module.getEnable());
-                    return true;
+            if (obj instanceof ListSetting set) {
+                int i = set.getOptions().indexOf(set.getValue());
+                i += 1;
+                if (i > set.getOptions().size() - 1) {
+                    i = 0;
                 }
+                set.setValue(set.getOptions().get(i));
+                return true;
+            } else if (obj instanceof Setting set) {
+                if (set.getValue() instanceof Boolean) {
+                    set.setValue(! (Boolean) set.getValue());
+                }
+                return true;
+            } else if (obj instanceof Parent module) {
+                module.setEnable(!module.getEnable());
+                return true;
             }
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj != null) {
-                if (obj instanceof ListSetting set) {
-                    int i = set.getOptions().indexOf(set.getValue());
-                    i -= 1;
-                    if (i < 0) {
-                        i = set.getOptions().size() - 1;
-                    }
-                    set.setValue(set.getOptions().get(i));
-                    return true;
-                } else if (obj instanceof Setting set) {
-                    if (set.getValue() instanceof Boolean) {
-                        set.setValue(! (Boolean) set.getValue());
-                    }
-                    return true;
-                } else if (obj instanceof Parent module) {
-                    if (!setAnimations.containsKey(module)) {
-                        setAnimations.put(module, 0);
-                        setAnimReverse.put(module, false);
-                    } else {
-                        setAnimReverse.put(module, true);
-                    }
-                    return true;
+            if (obj instanceof ListSetting set) {
+                int i = set.getOptions().indexOf(set.getValue());
+                i -= 1;
+                if (i < 0) {
+                    i = set.getOptions().size() - 1;
                 }
+                set.setValue(set.getOptions().get(i));
+                return true;
+            } else if (obj instanceof Setting set) {
+                if (set.getValue() instanceof Boolean) {
+                    set.setValue(! (Boolean) set.getValue());
+                }
+                return true;
+            } else if (obj instanceof Parent module) {
+                if (!setAnimations.containsKey(module)) {
+                    setAnimations.put(module, 0);
+                    setAnimReverse.put(module, false);
+                } else {
+                    setAnimReverse.put(module, true);
+                }
+                return true;
             }
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj != null) {
-                if (obj instanceof Parent module) {
-                    bindingModule = module;
-                    bindAnimReverse = false;
-                    return true;
-                }
+            if (obj instanceof Parent module) {
+                bindingModule = module;
+                bindAnimReverse = false;
+                return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
