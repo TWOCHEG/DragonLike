@@ -254,4 +254,29 @@ public class ConfigManager {
         }
         return null;
     }
+
+    public Path renameConfig(Path path, String newName) {
+        if (path == null || !Files.exists(path) || !path.toString().endsWith(".json") || !path.getParent().equals(configDir)) {
+            return null;
+        }
+        String cleanedName = newName.replaceAll("[\\\\/:*?\"<>|]", "").trim();
+
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+        if (!cleanedName.endsWith(".json")) {
+            cleanedName += ".json";
+        }
+
+        Path newPath = configDir.resolve(cleanedName);
+
+        try {
+            if (Files.exists(newPath)) {
+                return null;
+            }
+            return Files.move(path, newPath);
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
+    }
 }
