@@ -287,6 +287,13 @@ public class ConfigsGui extends Screen {
                 } else if (str.equals(textureEditName)) {
                     clickAnimations.put(textureEditName, 1);
                     animInputReverse = false;
+                    Path path = config.getActiveConfig();
+                    String name = path.getFileName().toString();
+                    int dotIndex = name.lastIndexOf('.');
+                    if (dotIndex > 0) {
+                        name = name.substring(0, dotIndex);
+                    }
+                    inputText = name;
                 } else if (str.equals(guiTextId)) {
                     config.openConfigDir();
                 }
@@ -322,6 +329,13 @@ public class ConfigsGui extends Screen {
         }
         if (keyCode == GLFW.GLFW_KEY_R) {
             animInputReverse = false;
+            Path path = config.getActiveConfig();
+            String name = path.getFileName().toString();
+            int dotIndex = name.lastIndexOf('.');
+            if (dotIndex > 0) {
+                name = name.substring(0, dotIndex);
+            }
+            inputText = name;
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ENTER && !animInputReverse) {
