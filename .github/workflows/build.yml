@@ -1,0 +1,51 @@
+name: Build and Release Minecraft Mod
+
+on:
+  push:
+    tags:
+      - 'v*' # Срабатывает при создании тега, начинающегося с "v" (например, v1.0.0)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Клонируем репозиторий
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Настраиваем JDK 21 (указано в fabric.mod.json)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 3. Настраиваем Gradle
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      # 4. Делаем Gradle скрипт исполняемым
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      # 5. Собираем мод
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # 6. Загружаем собранный .jar файл как артефакт
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: skylong-mod
+          path: build/libs/skylong-*.jar
+
+      # 7. Создаем релиз на GitHub
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/libs/skylong-*.jar
+          draft: false
+          prerelease: false
+          token: ${{ secrets.TOKEN }}
