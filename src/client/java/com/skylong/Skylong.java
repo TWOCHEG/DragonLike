@@ -10,6 +10,7 @@ import com.skylong.modules.ModuleManager;
 import com.skylong.modules.ui.Gui;
 import com.skylong.modules.combat.KillAura;
 import com.skylong.modules.ui.ConfigMenu;
+import com.skylong.modules.world.FakePlayer;
 
 public class Skylong implements ClientModInitializer {
 
@@ -19,7 +20,8 @@ public class Skylong implements ClientModInitializer {
 			new ArrayList(List.of(
 				new Gui(),
 				new KillAura(),
-				new ConfigMenu()
+				new ConfigMenu(),
+				new FakePlayer()
 			))
 		);
 		ClickGui.init(moduleManager);

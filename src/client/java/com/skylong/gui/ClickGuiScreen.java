@@ -211,7 +211,7 @@ public class ClickGuiScreen extends Screen {
                 }
                 hoverAnimations.put(module, hoverPercent);
 
-                float maxScaleDelta = 0.3f;
+                float maxScaleDelta = 0.2f;
                 float scale = 1.0f + maxScaleDelta * (hoverPercent / 100f);
                 float scaledHeight = baseTextHeight * scale;
 
@@ -510,13 +510,7 @@ public class ClickGuiScreen extends Screen {
     }
 
     public void animHandler(MinecraftClient client, int animDiff, int mouseX, int mouseY) {
-        if (animPercent > 99) {
-            GLFW.glfwSetScrollCallback(client.getWindow().getHandle(), (window, xoffset, yoffset) -> {
-                if (client.currentScreen == this) {
-                    xMove += xoffset * 4;
-                    yMove -= yoffset * 4;
-                }
-            });
+        if (animPercent == 100) {
             boolean left = GLFW.glfwGetMouseButton(
                 client.getInstance().getWindow().getHandle(),
                 GLFW.GLFW_MOUSE_BUTTON_LEFT
