@@ -2,7 +2,8 @@ package com.skylong.modules.world;
 
 import com.mojang.authlib.GameProfile;
 import com.skylong.modules.Parent;
-import com.skylong.modules.settings.Setting;
+import com.skylong.modules.settings.*;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,14 +11,19 @@ import net.minecraft.entity.data.TrackedData;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import java.lang.reflect.Field;
-import java.util.UUID;
+import java.util.*;
 
 public class FakePlayer extends Parent {
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private OtherClientPlayerEntity fakePlayerEntity;
     private final String fakeName = "fakePlayer";
     private final float health = 20.0f;
+    private long lastMoveTime = 0;
+
     private final Setting<Boolean> copyInv = new Setting<>("copy inv", "copy_inv", config.get("copy_inv", false));
+    private final Setting<Boolean> look = new Setting<>("look", "look", config.get("look", true));
+    private final Setting<Boolean> move = new Setting<>("move", "move", config.get("move", false));
+    public Setting<Float> moveSpeed = new Setting<>("move speed", "move_speed", config.get("move_speed", 3.0f), 0.1f, 3.0f);
 
     public FakePlayer() {
         super("fake player", "fake_player", "world");
@@ -27,7 +33,16 @@ public class FakePlayer extends Parent {
             if (fakePlayerEntity == null) {
                 spawn();
             } else {
-                updateLook();
+                if (look.getValue()) {
+                    updateLook();
+                }
+                if (move.getValue()) {
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - lastMoveTime >= (long)(moveSpeed.getValue() * 1000f)) {
+                        randomMove();
+                        lastMoveTime = currentTime;
+                    }
+                }
             }
         });
     }
@@ -49,7 +64,15 @@ public class FakePlayer extends Parent {
             fakePlayerEntity.setAbsorptionAmount(health - 20);
         }
         if (copyInv.getValue()) fakePlayerEntity.getInventory().clone(sourcePlayer.getInventory());
+
         mc.world.addEntity(fakePlayerEntity);
+    }
+
+    public void despawn() {
+        if (fakePlayerEntity != null && mc.world != null) {
+            mc.world.removeEntity(fakePlayerEntity.getId(), OtherClientPlayerEntity.RemovalReason.DISCARDED);
+            fakePlayerEntity = null;
+        }
     }
 
     private void copyRotations(PlayerEntity source) {
@@ -114,12 +137,22 @@ public class FakePlayer extends Parent {
         return angle;
     }
 
-    public void despawn() {
-        if (fakePlayerEntity != null && mc.world != null) {
-            mc.world.removeEntity(fakePlayerEntity.getId(), OtherClientPlayerEntity.RemovalReason.DISCARDED);
-            fakePlayerEntity = null;
-        }
+    private void randomMove() {
+        if (fakePlayerEntity == null) return;
+
+        double angle = Math.random() * 2 * Math.PI;
+        double distance = 0.5 + Math.random(); // между 0.5 и 1.5 блоками
+
+        double dx = Math.cos(angle) * distance;
+        double dz = Math.sin(angle) * distance;
+
+        fakePlayerEntity.updatePosition(
+                fakePlayerEntity.getX() + dx,
+                fakePlayerEntity.getY(),
+                fakePlayerEntity.getZ() + dz
+        );
     }
+
 
     public boolean isSpawned() {
         return fakePlayerEntity != null;

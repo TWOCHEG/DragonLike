@@ -34,4 +34,13 @@ public class ModuleManager {
         }
         return null;
     }
+
+    public Parent getModuleByClass(Class c) {
+        for (Parent module : modules) {
+            if (module.getClass() == c) {
+                return module;
+            }
+        }
+        return null;
+    }
 }

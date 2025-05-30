@@ -84,7 +84,7 @@ public class ClickGuiScreen extends Screen {
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
 
-        Gui GuiModule = (Gui) moduleManager.getModuleById("click_gui");
+        Gui GuiModule = (Gui) moduleManager.getModuleByClass(Gui.class);
         if (GuiModule != null && GuiModule.image.getValue() != "none") {
             String path = GuiModule.getImages().get(GuiModule.image.getValue());
             Identifier texture = Identifier.of("skylong", path);
