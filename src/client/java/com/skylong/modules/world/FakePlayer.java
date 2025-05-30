@@ -16,14 +16,14 @@ import java.util.*;
 public class FakePlayer extends Parent {
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private OtherClientPlayerEntity fakePlayerEntity;
-    private final String fakeName = "fakePlayer";
+    private final String nickName = "fakePlayer";
     private final float health = 20.0f;
     private long lastMoveTime = 0;
 
     private final Setting<Boolean> copyInv = new Setting<>("copy inv", "copy_inv", config.get("copy_inv", false));
     private final Setting<Boolean> look = new Setting<>("look", "look", config.get("look", true));
     private final Setting<Boolean> move = new Setting<>("move", "move", config.get("move", false));
-    public Setting<Float> moveSpeed = new Setting<>("move speed", "move_speed", config.get("move_speed", 3.0f), 0.1f, 3.0f);
+    public Setting<Float> moveSpeed = new Setting<>("move speed", "move_speed", config.get("move_speed", 3.0f), 0.1f, 6.0f);
 
     public FakePlayer() {
         super("fake player", "fake_player", "world");
@@ -53,7 +53,7 @@ public class FakePlayer extends Parent {
     }
 
     private void spawn(PlayerEntity sourcePlayer) {
-        fakePlayerEntity = new OtherClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), fakeName));
+        fakePlayerEntity = new OtherClientPlayerEntity(mc.world, new GameProfile(UUID.randomUUID(), nickName));
         fakePlayerEntity.copyPositionAndRotation(sourcePlayer);
         copyRotations(sourcePlayer);
         copyModelParts(sourcePlayer);
