@@ -317,6 +317,10 @@ public class ConfigsGui extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (animInput > 20) {
+            return true;
+        }
+
         if (animInput > 20 && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
             if (!inputText.isEmpty()) {
                 inputText = inputText.substring(0, inputText.length() - 1);
@@ -352,7 +356,7 @@ public class ConfigsGui extends Screen {
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            close();
+            closeGui();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -390,7 +394,7 @@ public class ConfigsGui extends Screen {
         super.mouseMoved(mouseX, mouseY);
     }
 
-    public void close() {
+    public void closeGui() {
         configMenu.setEnable(false);
         animReverse = true;
     }

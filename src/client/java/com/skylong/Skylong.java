@@ -11,6 +11,7 @@ import com.skylong.modules.ui.Gui;
 import com.skylong.modules.combat.KillAura;
 import com.skylong.modules.ui.ConfigMenu;
 import com.skylong.modules.world.FakePlayer;
+import com.skylong.modules.world.Nuker;
 
 public class Skylong implements ClientModInitializer {
 
@@ -21,7 +22,8 @@ public class Skylong implements ClientModInitializer {
 				new Gui(),
 				new KillAura(),
 				new ConfigMenu(),
-				new FakePlayer()
+				new FakePlayer(),
+				new Nuker()
 			))
 		);
 		ClickGui.init(moduleManager);
