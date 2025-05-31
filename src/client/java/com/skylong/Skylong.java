@@ -10,6 +10,7 @@ import com.skylong.modules.ModuleManager;
 import com.skylong.modules.ui.Gui;
 import com.skylong.modules.combat.KillAura;
 import com.skylong.modules.ui.ConfigMenu;
+import com.skylong.modules.ui.Keybinds;
 import com.skylong.modules.world.FakePlayer;
 import com.skylong.modules.world.Nuker;
 
@@ -27,6 +28,7 @@ public class Skylong implements ClientModInitializer {
 			))
 		);
 		ClickGui.init(moduleManager);
+		Keybinds.init(moduleManager);
 	}
 }
 // тут был Егорушка 

@@ -187,6 +187,7 @@ public class ClickGuiScreen extends Screen {
             float yOffset = yStart + (baseTextHeight + spacing);
 
             for (Parent module : list) {
+                if (!module.getVisible()) continue;
                 boolean hovered = (
                     (
                         mouseX >= xColStart

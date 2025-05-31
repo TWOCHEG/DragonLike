@@ -42,6 +42,7 @@ public class ConfigsGui extends Screen {
     private float animInput = 0;
     private boolean animInputReverse = true;
     private String inputText = "";
+    private Path renamePath = null;
 
     private float animPercent = 0;
     public boolean animReverse = false;
@@ -216,6 +217,16 @@ public class ConfigsGui extends Screen {
             Text text = active ? Text.literal(name).formatted(Formatting.BOLD) : Text.literal(name);
             int w = textRenderer.getWidth(text);
 
+            boolean hovered = (
+                mouseX >= x
+                && mouseX <= x + w
+                && mouseY >= y
+                && mouseY <= y + textRenderer.fontHeight
+            );
+            if (hovered) {
+                text = ((net.minecraft.text.MutableText) text).formatted(Formatting.UNDERLINE);
+            }
+
             // Перенос на новую строку, если не влезает
             if (x + w > screenWidth - 20) {
                 x = startX;
@@ -231,7 +242,7 @@ public class ConfigsGui extends Screen {
             );
             context.drawTextWithShadow(
                 textRenderer,
-                text,
+                    text,
                 0, 0,
                 GetColor.getColor(255, 255, 255, (int) (255 * animPercent / 100))
             );
@@ -254,6 +265,22 @@ public class ConfigsGui extends Screen {
             );
             context.getMatrices().pop();
 
+            Text oldName = Text.literal(getPathName(renamePath) + " to:");
+            context.getMatrices().push();
+            context.getMatrices().translate(
+                (screenWidth / 2) - ((float) textRenderer.getWidth(oldName) / 2),
+                20,
+                4
+            );
+            context.getMatrices().scale(1, 1, 4);
+            context.drawTextWithShadow(
+                textRenderer,
+                oldName,
+                0, 0,
+                GetColor.getColor(255, 255, 255, (int) (140 * animInput / 100))
+            );
+            context.getMatrices().pop();
+
             String name = inputText.isEmpty() ? "..." : inputText;
             Text inputText = Text.literal(name);
             context.getMatrices().push();
@@ -270,6 +297,8 @@ public class ConfigsGui extends Screen {
                 GetColor.getColor(255, 255, 255, (int) (255 * animInput / 100))
             );
             context.getMatrices().pop();
+        } else {
+            renamePath = null;
         }
     }
 
@@ -283,17 +312,25 @@ public class ConfigsGui extends Screen {
                     onCreate();
                 } else if (str.equals(textureDelName)) {
                     clickAnimations.put(textureDelName, 1);
-                    onDelete(config.getActiveConfig());
-                } else if (str.equals(textureEditName)) {
-                    clickAnimations.put(textureEditName, 1);
-                    animInputReverse = false;
                     Path path = config.getActiveConfig();
-                    String name = path.getFileName().toString();
-                    int dotIndex = name.lastIndexOf('.');
-                    if (dotIndex > 0) {
-                        name = name.substring(0, dotIndex);
+                    Object objUnder = getModuleUnderMouse((int) mouseX, (int) mouseY);
+                    if (objUnder instanceof Path p) {
+                        path = p;
                     }
-                    inputText = name;
+                    onDelete(path);
+                } else if (str.equals(textureEditName)) {
+                    animInputReverse = false;
+
+                    Path path = config.getActiveConfig();
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    Object objUnder = getModuleUnderMouse((int) client.mouse.getX(), (int) client.mouse.getY());
+                    if (objUnder instanceof Path p) {
+                        path = p;
+                    }
+
+                    inputText = getPathName(path);
+                    renamePath = path;
+                    return true;
                 } else if (str.equals(guiTextId)) {
                     config.openConfigDir();
                 }
@@ -308,7 +345,7 @@ public class ConfigsGui extends Screen {
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if (!animInputReverse) {
+        if (animInput > 10) {
             inputText += chr;
             return true;
         }
@@ -317,42 +354,57 @@ public class ConfigsGui extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (animInput > 20) {
-            return true;
-        }
-
-        if (animInput > 20 && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+        if (renamePath != null && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
             if (!inputText.isEmpty()) {
                 inputText = inputText.substring(0, inputText.length() - 1);
             }
             return true;
         }
+
+        if (animInput > 20) {
+            return true;
+        }
+
+        if (keyCode == GLFW.GLFW_KEY_R) {
+            animInputReverse = false;
+
+            Path path = config.getActiveConfig();
+            Object objUnderMouse = getModuleUnderMouse(
+                (int) client.mouse.getX(),
+                (int) client.mouse.getY()
+            );
+            if (objUnderMouse instanceof Path p) {
+                path = p;
+            }
+
+            inputText = getPathName(path);
+            renamePath = path;
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ENTER && renamePath != null) {
+            animInputReverse = true;
+            onRename(renamePath, inputText);
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && renamePath != null) {
+            animInputReverse = true;
+            return true;
+        }
+
         if (keyCode == GLFW.GLFW_KEY_M) {
             onCreate();
             return true;
         }
-        if (keyCode == GLFW.GLFW_KEY_R) {
-            animInputReverse = false;
-            Path path = config.getActiveConfig();
-            String name = path.getFileName().toString();
-            int dotIndex = name.lastIndexOf('.');
-            if (dotIndex > 0) {
-                name = name.substring(0, dotIndex);
-            }
-            inputText = name;
-            return true;
-        }
-        if (keyCode == GLFW.GLFW_KEY_ENTER && !animInputReverse) {
-            animInputReverse = true;
-            onRename(config.getActiveConfig(), inputText);
-            return true;
-        }
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE && !animInputReverse) {
-            animInputReverse = true;
-            return true;
-        }
         if (keyDeleteList.contains(keyCode)) {
-            onDelete(config.getActiveConfig());
+            Path path = config.getActiveConfig();
+            Object objUnder = getModuleUnderMouse(
+                (int) client.mouse.getX(),
+                (int) client.mouse.getY()
+            );
+            if (objUnder instanceof Path p) {
+                path = p;
+            }
+            onDelete(path);
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -471,6 +523,15 @@ public class ConfigsGui extends Screen {
             }
         }
         return null;
+    }
+
+    private String getPathName(Path path) {
+        String name = path.getFileName().toString();
+        int dotIndex = name.lastIndexOf('.');
+        if (dotIndex > 0) {
+            name = name.substring(0, dotIndex);
+        }
+        return name;
     }
 
     private static class ModuleArea {

@@ -12,16 +12,10 @@ public class Nuker extends Parent {
         "avoid_lava", 
         config.get("avoid_lava", true)
     );
-    public ListSetting<String> worldMode = new ListSetting<>(
-        "break bloks",
-        "break_bloks",
-        "auto",
-        Arrays.asList("nether", "overworld", "auto world")
-    );
     public Setting<Float> breakRange = new Setting<>(
         "break range",
-        "break_range", 
-        config.get("break_range", 6.0f), 
+        "break_range",
+        config.get("break_range", 6.0f),
         1.0f, 6.0f
     );
 

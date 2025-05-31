@@ -1,6 +1,5 @@
 package com.skylong.modules.ui;
 
-import com.skylong.gui.ClickGuiScreen;
 import com.skylong.gui.ConfigsGui;
 import com.skylong.modules.*;
 
@@ -24,16 +23,16 @@ public class ConfigMenu extends Parent {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (enable && !show) {
                 boolean retr = false;
-                if (client.currentScreen != null) {
-                    if (client.currentScreen instanceof ClickGuiScreen screen) {
-                        screen.animReverse = true;
-                        retr = true;
-                    }
+                if (client.currentScreen instanceof ClickGuiScreen screen) {
+                    screen.animReverse = true;
+                    retr = true;
                 }
                 if (!retr) {
                     client.setScreen(new ConfigsGui(client.currentScreen, this));
                     show = true;
                 }
+            } else if (!enable && client.currentScreen instanceof ConfigsGui screen) {
+                screen.closeGui();
             }
         });
     }

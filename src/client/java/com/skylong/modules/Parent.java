@@ -13,13 +13,14 @@ public abstract class Parent {
     protected final String id;
     protected boolean enable;
     protected int keybindCode;
+    protected boolean visible = true;
 
     public Parent(String name, String id, String category) {
         this.name = name;
         this.config = new ConfigManager(id);
         this.id = id;
         this.enable = config.get("enable", false);
-        this.keybindCode = config.get("keybind", -1);
+        this.keybindCode = config.get("keybind", -1.0f).intValue();
         this.category = category;
     }
 
@@ -85,5 +86,9 @@ public abstract class Parent {
         settingList.forEach(s -> s.setModule(this));
 
         return settingList;
+    }
+
+    public boolean getVisible() {
+        return visible;
     }
 }

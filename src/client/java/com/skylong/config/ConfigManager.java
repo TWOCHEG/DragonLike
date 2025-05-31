@@ -20,6 +20,8 @@ public class ConfigManager {
         .create();
     private String moduleName;
 
+    public final String currentKeyName = "current";
+
     public ConfigManager() {
         this.moduleName = null;
     }
@@ -42,9 +44,8 @@ public class ConfigManager {
                 result = normalizeNumber(result);
             }
             return (T) result;
-        } catch (IOException | RuntimeException e) {
-            return defaultValue;
-        }
+        } catch (RuntimeException ignored) {}
+        return defaultValue;
     }
     public <T> T get(String key) {
         return get(key, null);
@@ -93,25 +94,29 @@ public class ConfigManager {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> readJson() throws IOException {
-        Path path = getActiveConfig();
-        if (Files.exists(path) && Files.isRegularFile(path)) {
-            String content = Files.readString(path, StandardCharsets.UTF_8);
-            if (!content.isBlank()) {
-                Map<String, Object> loaded = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
-                return loaded;
+    public Map<String, Object> readJson() {
+        try {
+            Path path = getActiveConfig();
+            if (Files.exists(path) && Files.isRegularFile(path)) {
+                String content = Files.readString(path, StandardCharsets.UTF_8);
+                if (!content.isBlank()) {
+                    Map<String, Object> loaded = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {
+                    }.getType());
+                    return loaded;
+                }
             }
-        }
+        } catch (IOException ignored) {}
         return new HashMap<>();
     }
 
-    private Object normalizeNumber(Object value) {
+    public Object normalizeNumber(Object value) {
         if (value instanceof Double) {
             double d = (Double) value;
+            if (d == (float) d) {
+                return (float) d;
+            }
             if (d == (int) d) {
                 return (int) d;
-            } else {
-                return (float) d;
             }
         }
         return value;
@@ -131,7 +136,7 @@ public class ConfigManager {
             } else {
                 activeData = new HashMap<>();
             }
-            activeData.put("current", true);
+            activeData.put(currentKeyName, true);
             String updatedActiveContent = GSON.toJson(activeData);
             Files.writeString(activePath, updatedActiveContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -178,7 +183,7 @@ public class ConfigManager {
                     String content = Files.readString(p, StandardCharsets.UTF_8);
                     if (!content.isBlank()) {
                         Map<String, Object> loaded = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
-                        boolean value = (boolean) loaded.getOrDefault("current", false);
+                        boolean value = (boolean) loaded.getOrDefault(currentKeyName, false);
                         if (value) {
                             return p;
                         }
