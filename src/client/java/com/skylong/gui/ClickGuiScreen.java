@@ -73,8 +73,6 @@ public class ClickGuiScreen extends Screen {
             previous.render(context, mouseX, mouseY, delta);
         }
 
-        applyBlur();
-
         int animDiff = 10;
 
         animHandler(client, animDiff, mouseX, mouseY);
