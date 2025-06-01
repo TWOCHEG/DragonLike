@@ -361,6 +361,16 @@ public class ConfigsGui extends Screen {
             return true;
         }
 
+        if (keyCode == GLFW.GLFW_KEY_ENTER && renamePath != null) {
+            animInputReverse = true;
+            onRename(renamePath, inputText);
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && renamePath != null) {
+            animInputReverse = true;
+            return true;
+        }
+
         if (animInput > 20) {
             return true;
         }
@@ -379,15 +389,6 @@ public class ConfigsGui extends Screen {
 
             inputText = getPathName(path);
             renamePath = path;
-            return true;
-        }
-        if (keyCode == GLFW.GLFW_KEY_ENTER && renamePath != null) {
-            animInputReverse = true;
-            onRename(renamePath, inputText);
-            return true;
-        }
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE && renamePath != null) {
-            animInputReverse = true;
             return true;
         }
 

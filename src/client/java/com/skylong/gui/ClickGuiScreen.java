@@ -73,6 +73,8 @@ public class ClickGuiScreen extends Screen {
             previous.render(context, mouseX, mouseY, delta);
         }
 
+        applyBlur();
+
         int animDiff = 10;
 
         animHandler(client, animDiff, mouseX, mouseY);
@@ -520,12 +522,12 @@ public class ClickGuiScreen extends Screen {
                 Object obj = getModuleUnderMouse(mouseX, mouseY);
                 if (obj != null && obj instanceof Setting set) {
                     if (set.getValue() instanceof Float) {
-                        float value = (float) set.getValue() + 0.1f;
+                        float value = (float) set.getValue() - 0.1f;
                         value = Math.min(Math.max(value, (float) set.min), (float) set.max);
                         value = Math.round(value * 10f) / 10f;
                         set.setValue(value);
                     } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() + 1;
+                        int value = (int) set.getValue() - 1;
                         set.setValue(
                             Math.clamp(value, (int) set.min, (int) set.max)
                         );
@@ -540,12 +542,12 @@ public class ClickGuiScreen extends Screen {
                 Object obj = getModuleUnderMouse(mouseX, mouseY);
                 if (obj != null && obj instanceof Setting set) {
                     if (set.getValue() instanceof Float) {
-                        float value = (float) set.getValue() - 0.1f;
+                        float value = (float) set.getValue() + 0.1f;
                         value = Math.min(Math.max(value, (float) set.min), (float) set.max);
                         value = Math.round(value * 10f) / 10f;
                         set.setValue(value);
                     } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() - 1;
+                        int value = (int) set.getValue() + 1;
                         set.setValue(
                             Math.clamp(value, (int) set.min, (int) set.max)
                         );

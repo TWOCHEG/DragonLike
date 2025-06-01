@@ -7,17 +7,17 @@ import com.skylong.modules.settings.*;
 import java.util.*;
 
 public class Example extends Parent {
-    public TextSetting header = new TextSetting("эээ короче текст да");
-    public Setting<Float> attackRange = new Setting<>("move speed", "mouse_move_speed", 3.5f, 1.0f, 6.0f);
-    public Setting<Boolean> autoAttack = new Setting<>("move", "mouse_move", true);
+    public TextSetting header = new TextSetting("header");
+    public Setting<Float> attackRange = new Setting<>("int", "int", 3.0f, 1.0f, 6.0f);
+    public Setting<Boolean> autoAttack = new Setting<>("bool", "bool", true);
     public ListSetting<String> targetMode = new ListSetting<>(
-        "image",
-        "image",
-        "none",
-        Arrays.asList("none", "furry", "cat")
+        "list",
+        "list",
+        "1",
+        Arrays.asList("1", "2", "3")
     );
 
     public Example() {
-        super("example", "example", "pvp");
+        super("example", "example", "category");
     }
 }

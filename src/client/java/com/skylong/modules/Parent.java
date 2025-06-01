@@ -91,4 +91,8 @@ public abstract class Parent {
     public boolean getVisible() {
         return visible;
     }
+
+    public ConfigManager getConfig() {
+        return config;
+    }
 }
