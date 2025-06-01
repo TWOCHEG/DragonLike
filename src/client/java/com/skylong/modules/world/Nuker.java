@@ -1,23 +1,31 @@
 package com.skylong.modules.world;
 
-import java.util.Arrays;
+import java.util.*;
 
 import com.skylong.modules.Parent;
-import com.skylong.modules.settings.ListSetting;
-import com.skylong.modules.settings.Setting;
+import com.skylong.modules.settings.*;
 
 public class Nuker extends Parent {
-    public Setting<Boolean> avoidLava = new Setting<>(
+    private Setting<Boolean> avoidLava = new Setting<>(
         "avoid lava", 
         "avoid_lava", 
         config.get("avoid_lava", true)
     );
-    public Setting<Float> breakRange = new Setting<>(
+    private Setting<Float> breakRange = new Setting<>(
         "break range",
         "break_range",
         config.get("break_range", 6.0f),
         1.0f, 6.0f
     );
+    private TextSetting header = new TextSetting(">nuker blocks");
+    private ListSetting<String> blockMode = new ListSetting<>(
+        "blocks mode",
+        "block_mode",
+        "whitelist",
+        Arrays.asList("whitelist", "blacklist")
+    );
+
+    private final List<String> targetBlocks = new ArrayList<>();
 
     public Nuker() {
         super("nuker", "nuker", "world");
