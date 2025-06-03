@@ -11,7 +11,7 @@ public class ClickGui {
     private static boolean key = false;
     private static final ConfigManager config = new ConfigManager("click_gui");
 
-    public static void init(ModuleManager moduleManager) {
+    public ClickGui(ModuleManager moduleManager) {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client == null) return;
 

@@ -27,8 +27,8 @@ public class Skylong implements ClientModInitializer {
 				new Nuker()
 			))
 		);
-		ClickGui.init(moduleManager);
-		Keybinds.init(moduleManager);
+		new ClickGui(moduleManager);
+		new Keybinds(moduleManager);
 	}
 }
 // тут был Егорушка 

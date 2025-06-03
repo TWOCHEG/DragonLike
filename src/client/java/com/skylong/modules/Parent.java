@@ -2,6 +2,7 @@ package com.skylong.modules;
 
 import com.skylong.config.ConfigManager;
 import com.skylong.modules.settings.Setting;
+import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -14,6 +15,7 @@ public abstract class Parent {
     protected boolean enable;
     protected int keybindCode;
     protected boolean visible = true;
+    protected MinecraftClient client = MinecraftClient.getInstance();
 
     public Parent(String name, String id, String category) {
         this.name = name;
@@ -23,6 +25,12 @@ public abstract class Parent {
         this.keybindCode = config.get("keybind", -1.0f).intValue();
         this.category = category;
     }
+
+    protected void onUpdate() {}
+
+    protected void onEnable() {}
+
+    protected void onDisable() {}
 
     public String getName() {
         return name;
@@ -41,6 +49,11 @@ public abstract class Parent {
     }
 
     public void setEnable(boolean value) {
+        if (value) {
+            onEnable();
+        } else {
+            onDisable();
+        }
         config.set("enable", value);
         enable = value;
     }
@@ -55,6 +68,8 @@ public abstract class Parent {
     }
 
     public void setValue(String key, Object value) {
+        onUpdate();
+
         config.set(key, value);
     }
 

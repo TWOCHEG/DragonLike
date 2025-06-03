@@ -141,15 +141,15 @@ public class FakePlayer extends Parent {
         if (fakePlayerEntity == null) return;
 
         double angle = Math.random() * 2 * Math.PI;
-        double distance = 0.5 + Math.random(); // между 0.5 и 1.5 блоками
+        double distance = 0.5 + Math.random();
 
         double dx = Math.cos(angle) * distance;
         double dz = Math.sin(angle) * distance;
 
         fakePlayerEntity.updatePosition(
-                fakePlayerEntity.getX() + dx,
-                fakePlayerEntity.getY(),
-                fakePlayerEntity.getZ() + dz
+            fakePlayerEntity.getX() + dx,
+            fakePlayerEntity.getY(),
+            fakePlayerEntity.getZ() + dz
         );
     }
 
@@ -159,10 +159,7 @@ public class FakePlayer extends Parent {
     }
 
     @Override
-    public void setEnable(boolean value) {
-        super.setEnable(value);
-        if (!value) {
-            despawn();
-        }
+    public void onDisable() {
+        despawn();
     }
 }

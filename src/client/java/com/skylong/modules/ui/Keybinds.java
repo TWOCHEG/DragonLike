@@ -4,6 +4,8 @@ import com.skylong.config.ConfigManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import org.lwjgl.glfw.GLFW;
 import com.skylong.modules.*;
+import com.skylong.gui.ClickGuiScreen;
+import com.skylong.gui.ConfigsGui;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +14,9 @@ public class Keybinds {
     private static Map<Integer, Boolean> callbacks = new HashMap<>();
     private static ConfigManager config = new ConfigManager();
 
-    public static void init(ModuleManager moduleManager) {
+    public Keybinds(ModuleManager moduleManager) {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.currentScreen instanceof ClickGuiScreen || client.currentScreen instanceof ConfigsGui) return;
             if (client.getWindow() != null) {
                 Map<String, Object> json = config.readJson();
                 long handle = client.getWindow().getHandle();
@@ -28,7 +31,6 @@ public class Keybinds {
                         Parent module = moduleManager.getModuleById(key);
                         if (module != null) {
                             module.setEnable(!module.getEnable());
-                            System.out.println(module.getEnable());
                         }
                     } else if (state == GLFW.GLFW_RELEASE && callback) {
                         callbacks.put(keykode, false);
