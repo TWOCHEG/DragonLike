@@ -1,11 +1,11 @@
-package com.skylong.modules.ui;
+package com.purr.modules.ui;
 
-import com.skylong.config.ConfigManager;
+import com.purr.config.ConfigManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import org.lwjgl.glfw.GLFW;
-import com.skylong.modules.*;
-import com.skylong.gui.ClickGuiScreen;
-import com.skylong.gui.ConfigsGui;
+import com.purr.modules.*;
+import com.purr.gui.ClickGuiScreen;
+import com.purr.gui.ConfigsGui;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.skylong.utils;
+package com.purr.utils;
 
 public class GetColor {
     public static int getColor(int r, int g, int b, int a) {

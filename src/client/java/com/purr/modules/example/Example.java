@@ -1,8 +1,8 @@
 // пример модуля для создания
-package com.skylong.modules.example;
+package com.purr.modules.example;
 
-import com.skylong.modules.*;
-import com.skylong.modules.settings.*;
+import com.purr.modules.*;
+import com.purr.modules.settings.*;
 
 import java.util.*;
 

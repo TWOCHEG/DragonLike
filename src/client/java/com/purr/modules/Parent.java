@@ -1,7 +1,7 @@
-package com.skylong.modules;
+package com.purr.modules;
 
-import com.skylong.config.ConfigManager;
-import com.skylong.modules.settings.Setting;
+import com.purr.config.ConfigManager;
+import com.purr.modules.settings.Setting;
 import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.Field;

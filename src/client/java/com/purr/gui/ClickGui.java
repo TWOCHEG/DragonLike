@@ -1,7 +1,7 @@
-package com.skylong.gui;
+package com.purr.gui;
 
-import com.skylong.config.ConfigManager;
-import com.skylong.modules.ModuleManager;
+import com.purr.config.ConfigManager;
+import com.purr.modules.ModuleManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;

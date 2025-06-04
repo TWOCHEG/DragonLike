@@ -1,6 +1,6 @@
-package com.skylong.modules.combat;
+package com.purr.modules.combat;
 
-import com.skylong.modules.Parent;
+import com.purr.modules.Parent;
 
 public class KillAura extends Parent {
     public KillAura() {

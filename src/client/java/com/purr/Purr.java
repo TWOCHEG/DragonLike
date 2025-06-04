@@ -1,20 +1,20 @@
-package com.skylong;
+package com.purr;
 
 import net.fabricmc.api.ClientModInitializer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.skylong.gui.ClickGui;
-import com.skylong.modules.ModuleManager;
+import com.purr.gui.ClickGui;
+import com.purr.modules.ModuleManager;
 
-import com.skylong.modules.ui.Gui;
-import com.skylong.modules.combat.KillAura;
-import com.skylong.modules.ui.ConfigMenu;
-import com.skylong.modules.ui.Keybinds;
-import com.skylong.modules.world.FakePlayer;
-import com.skylong.modules.world.Nuker;
+import com.purr.modules.ui.Gui;
+import com.purr.modules.combat.KillAura;
+import com.purr.modules.ui.ConfigMenu;
+import com.purr.modules.ui.Keybinds;
+import com.purr.modules.world.FakePlayer;
+import com.purr.modules.world.Nuker;
 
-public class Skylong implements ClientModInitializer {
+public class Purr implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {

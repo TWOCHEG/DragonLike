@@ -1,13 +1,10 @@
-package com.skylong.modules.ui;
+package com.purr.modules.ui;
 
-import com.skylong.gui.ConfigsGui;
-import com.skylong.modules.*;
+import com.purr.gui.ConfigsGui;
+import com.purr.modules.*;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.gui.screen.Screen;
-import com.skylong.gui.ClickGuiScreen;
-
-import java.util.*;
+import com.purr.gui.ClickGuiScreen;
 
 public class ConfigMenu extends Parent {
     public boolean show = false;

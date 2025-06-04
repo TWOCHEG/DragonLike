@@ -1,6 +1,6 @@
-package com.skylong.gui;
+package com.purr.gui;
 
-import com.skylong.config.ConfigManager;
+import com.purr.config.ConfigManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -10,8 +10,8 @@ import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 import net.minecraft.util.Identifier;
 
-import com.skylong.modules.ui.ConfigMenu;
-import com.skylong.utils.GetColor;
+import com.purr.modules.ui.ConfigMenu;
+import com.purr.utils.GetColor;
 
 import java.nio.file.Path;
 import java.util.*;

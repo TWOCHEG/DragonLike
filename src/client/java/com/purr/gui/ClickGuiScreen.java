@@ -1,11 +1,11 @@
-package com.skylong.gui;
+package com.purr.gui;
 
-import com.skylong.config.ConfigManager;
-import com.skylong.modules.ModuleManager;
-import com.skylong.modules.ui.Gui;
-import com.skylong.modules.settings.*;
-import com.skylong.utils.GetColor;
-import com.skylong.modules.Parent;
+import com.purr.config.ConfigManager;
+import com.purr.modules.ModuleManager;
+import com.purr.modules.ui.Gui;
+import com.purr.modules.settings.*;
+import com.purr.utils.GetColor;
+import com.purr.modules.Parent;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -55,7 +55,7 @@ public class ClickGuiScreen extends Screen {
     public List<ModuleArea> moduleAreas = new ArrayList<>();
 
     public ClickGuiScreen(Screen previous, ModuleManager moduleManager) {
-        super(Text.literal("SkyLong Gui"));
+        super(Text.literal("Purr Gui"));
         this.previous = previous;
         this.modules = moduleManager.getModules();
         this.moduleManager = moduleManager;
@@ -87,7 +87,7 @@ public class ClickGuiScreen extends Screen {
         Gui GuiModule = (Gui) moduleManager.getModuleByClass(Gui.class);
         if (GuiModule != null && GuiModule.image.getValue() != "none") {
             String path = GuiModule.getImages().get(GuiModule.image.getValue());
-            Identifier texture = Identifier.of("skylong", path);
+            Identifier texture = Identifier.of("purr", path);
             try {
                 Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
                 NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());

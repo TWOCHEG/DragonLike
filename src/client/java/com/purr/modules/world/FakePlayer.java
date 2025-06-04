@@ -1,8 +1,8 @@
-package com.skylong.modules.world;
+package com.purr.modules.world;
 
 import com.mojang.authlib.GameProfile;
-import com.skylong.modules.Parent;
-import com.skylong.modules.settings.*;
+import com.purr.modules.Parent;
+import com.purr.modules.settings.*;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;

@@ -1,18 +1,18 @@
 {
 	"schemaVersion": 1,
-	"id": "skylong",
+	"id": "purr",
 	"version": "${version}",
-	"name": "SkyLong",
+	"name": "Purr",
 	"authors": [
 		"TWOCHEG"
 	],
 	"environment": "*",
 	"entrypoints": {
 		"client": [
-			"com.skylong.Skylong"
+			"com.purr.Purr"
 		]
 	},
-	"access_widener": "skylong.accesswidener",
+	"access_widener": "purr.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.16.10",
 		"minecraft": "~1.21.5",

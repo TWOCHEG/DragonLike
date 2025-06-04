@@ -1,7 +1,7 @@
-package com.skylong.modules.ui;
+package com.purr.modules.ui;
 
-import com.skylong.modules.*;
-import com.skylong.modules.settings.*;
+import com.purr.modules.*;
+import com.purr.modules.settings.*;
 
 import java.util.*;
 

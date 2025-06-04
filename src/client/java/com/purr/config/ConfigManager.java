@@ -1,4 +1,4 @@
-package com.skylong.config;
+package com.purr.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,7 +13,7 @@ import java.awt.Desktop;
 import java.io.File;
 
 public class ConfigManager {
-    public final Path configDir = Path.of(System.getProperty("user.home"), ".skl");
+    public final Path configDir = Path.of(System.getProperty("user.home"), ".prr");
     private static final Gson GSON = new GsonBuilder()
         .disableHtmlEscaping()
         .setPrettyPrinting()

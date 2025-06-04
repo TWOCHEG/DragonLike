@@ -1,7 +1,7 @@
-package com.skylong.modules.settings;
+package com.purr.modules.settings;
 
-import com.skylong.config.ConfigManager;
-import com.skylong.modules.Parent;
+import com.purr.config.ConfigManager;
+import com.purr.modules.Parent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -64,7 +64,7 @@ public class BlockSelected{
                                     BlockState blockState = blockArg.getBlockState();
                                     String blockId = blockState.getBlock().getTranslationKey();
 
-                                    onBlocksAdd(new ArrayList<>(List.of(blockId)));
+                                    onBlocksAdd(new ArrayList<>(List.of(convertId(blockId))));
 
                                     sendMessage("added:");
                                     MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(getBlockName(blockId));
@@ -80,7 +80,7 @@ public class BlockSelected{
                                     BlockState blockState = blockArg.getBlockState();
                                     String blockId = blockState.getBlock().getTranslationKey();
 
-                                    onBlocksRemove(new ArrayList<>(List.of(blockId)));
+                                    onBlocksRemove(new ArrayList<>(List.of(convertId(blockId))));
 
                                     sendMessage("remove:");
                                     MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(getBlockName(blockId));
@@ -101,7 +101,7 @@ public class BlockSelected{
     }
 
     private Text getBlockName(String blockId) {
-        String idString = blockId.replace("block.", "").replace('.', ':');
+        String idString = convertId(blockId);
         Identifier id = Identifier.of(idString);
         Block block = Registries.BLOCK.get(id);
         if (block != Blocks.AIR) {
@@ -140,5 +140,9 @@ public class BlockSelected{
 
     public List<String> getValue() {
         return config.get(key, new ArrayList<>());
+    }
+
+    private String convertId(String id) {
+        return id.replace("block.", "").replace(".", ":");
     }
 }

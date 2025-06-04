@@ -1,4 +1,4 @@
-package com.skylong.modules.settings;
+package com.purr.modules.settings;
 
 import java.util.*;
 

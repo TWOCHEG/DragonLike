@@ -1,7 +1,6 @@
-package com.skylong.modules.settings;
+package com.purr.modules.settings;
 
-import com.skylong.modules.Parent;
-import com.skylong.config.ConfigManager;
+import com.purr.modules.Parent;
 
 public class Setting<T> {
     private final String key;
