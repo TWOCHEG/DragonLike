@@ -103,7 +103,8 @@ public class Nuker extends Parent {
             int n = 1;
             if (randomDelay.getValue()) {
                 Random rnd = new Random();
-                n = rnd.nextInt(-5, 0);
+                n = rnd.nextInt(0, 5);
+
             }
             delayTimer -= n;
             return;
