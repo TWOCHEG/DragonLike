@@ -67,7 +67,11 @@ public class Nuker extends Parent {
 
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable) {
-                boolean isPlayerMining = client.options.attackKey.isPressed();
+                boolean isPlayerMining = (
+                    net.fabricmc.api.EnvType.CLIENT == null ?
+                        false :
+                        org.lwjgl.glfw.GLFW.glfwGetMouseButton(client.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1) == org.lwjgl.glfw.GLFW.GLFW_PRESS
+                );
                 boolean isPlayerMoving = client.player.getVelocity().equals(Vec3d.ZERO);
                 if (!isPlayerMining && !isPlayerMoving) {
                     process();
