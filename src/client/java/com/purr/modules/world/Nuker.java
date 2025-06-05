@@ -63,7 +63,7 @@ public class Nuker extends Parent {
     private int delayTimer = 0;
 
     public Nuker() {
-        super("nuker", "nuker", "world");
+        super("legit nuker", "legit_nuker", "world");
 
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable) {
