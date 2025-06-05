@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -25,6 +26,11 @@ public class Nuker extends Parent {
             "avoid lava",
             "avoid_lava",
             config.get("avoid_lava", true)
+    );
+    private Setting<Boolean> avoidGravel = new Setting<>(
+            "avoid gravel",
+            "avoid_gravel",
+            config.get("avoid_gravel", true)
     );
     private Setting<Boolean> randomDelay = new Setting<>(
             "randomization delay",
@@ -62,7 +68,8 @@ public class Nuker extends Parent {
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable) {
                 boolean isPlayerMining = client.options.attackKey.isPressed();
-                if (!isPlayerMining) {
+                boolean isPlayerMoving = client.player.getVelocity().equals(Vec3d.ZERO);
+                if (!isPlayerMining && !isPlayerMoving) {
                     process();
                 }
             }
@@ -132,7 +139,7 @@ public class Nuker extends Parent {
                     if (mode.equals("whitelist") && !configured.contains(idStr)) continue;
                     if (mode.equals("blacklist") && configured.contains(idStr)) continue;
 
-                    if (checkLava(pos)) continue;
+                    if (checkAvoid(pos)) continue;
                     if (!canReach(pos)) continue;
 
                     if (distSq < bestDistSq) {
@@ -157,21 +164,51 @@ public class Nuker extends Parent {
         }
     }
 
-    private boolean checkLava(BlockPos pos) {
+    private boolean canReach(BlockPos pos) {
+        ClientPlayerEntity player = client.player;
+        Vec3d eyePos = player.getCameraPosVec(1.0f);
+
+        double effectiveRange = breakRange.getValue();
+
+        double centerX = pos.getX() + 0.5;
+        double centerY = pos.getY() + 0.5;
+        double centerZ = pos.getZ() + 0.5;
+        double distSq = player.getPos().squaredDistanceTo(centerX, centerY, centerZ);
+        if (distSq > effectiveRange * effectiveRange) {
+            return false;
+        }
+
+        Vec3d targetCenter = new Vec3d(centerX, centerY, centerZ);
+        BlockHitResult ray = client.world.raycast(new RaycastContext(
+                eyePos,
+                targetCenter,
+                RaycastContext.ShapeType.OUTLINE,
+                RaycastContext.FluidHandling.NONE,
+                player
+        ));
+
+        return (
+                ray.getType() == HitResult.Type.BLOCK &&
+                        ray.getBlockPos().equals(pos) &&
+                        client.world.getBlockState(pos).getBlock().getHardness() != -1
+        );
+    }
+
+    private boolean checkAvoid(BlockPos pos) {
         if (avoidLava.getValue()) {
-            boolean adjacentToLava = false;
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = pos.offset(dir);
                 BlockState neighborState = client.world.getBlockState(neighborPos);
                 if (neighborState.isOf(Blocks.LAVA) || neighborState.isOf(Blocks.LAVA_CAULDRON)) {
-                    adjacentToLava = true;
-                    break;
+                    return true;
                 }
-            }
-
-            // Если вокруг блока есть лава или лавный котёл, пропускаем его
-            if (adjacentToLava) {
-                return true;
+                if (avoidGravel.getValue() && dir.equals(Direction.UP)) {
+                    neighborPos = pos.offset(dir);
+                    neighborState = client.world.getBlockState(neighborPos);
+                    if (neighborState.isOf(Blocks.GRAVEL)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -196,35 +233,5 @@ public class Nuker extends Parent {
         currentTarget = null;
         currentHit = null;
         delayTimer = breakDelay.getValue();
-    }
-
-    private boolean canReach(BlockPos pos) {
-        ClientPlayerEntity player = client.player;
-        Vec3d eyePos = player.getCameraPosVec(1.0f);
-
-        double effectiveRange = breakRange.getValue();
-
-        double centerX = pos.getX() + 0.5;
-        double centerY = pos.getY() + 0.5;
-        double centerZ = pos.getZ() + 0.5;
-        double distSq = player.getPos().squaredDistanceTo(centerX, centerY, centerZ);
-        if (distSq > effectiveRange * effectiveRange) {
-            return false;
-        }
-
-        Vec3d targetCenter = new Vec3d(centerX, centerY, centerZ);
-        BlockHitResult ray = client.world.raycast(new RaycastContext(
-            eyePos,
-            targetCenter,
-            RaycastContext.ShapeType.OUTLINE,
-            RaycastContext.FluidHandling.NONE,
-            player
-        ));
-
-        return (
-            ray.getType() == HitResult.Type.BLOCK &&
-            ray.getBlockPos().equals(pos) &&
-            client.world.getBlockState(pos).getBlock().getHardness() != -1
-        );
     }
 }
