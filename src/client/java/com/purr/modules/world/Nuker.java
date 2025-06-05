@@ -3,10 +3,12 @@ package com.purr.modules.world;
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -24,6 +26,11 @@ public class Nuker extends Parent {
             "avoid_lava",
             config.get("avoid_lava", true)
     );
+    private Setting<Boolean> randomDelay = new Setting<>(
+            "randomization delay",
+            "random_delay",
+            config.get("random_delay", false)
+    );
     private Setting<Float> breakRange = new Setting<>(
             "break range",
             "break_range",
@@ -34,7 +41,7 @@ public class Nuker extends Parent {
     private ListSetting<String> blockMode = new ListSetting<>(
             "blocks mode",
             "block_mode",
-            config.get("block_mode", "whitelist"),
+            config.get("block_mode", "blacklist"),
             Arrays.asList("whitelist", "blacklist")
     );
     private Setting<Integer> breakDelay = new Setting<>(
@@ -54,16 +61,9 @@ public class Nuker extends Parent {
 
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable) {
-                long window = client.getWindow().getHandle();
-                boolean isPlayerMining = (
-                    net.fabricmc.api.EnvType.CLIENT == null ?
-                        false :
-                        org.lwjgl.glfw.GLFW.glfwGetMouseButton(window, org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1) == org.lwjgl.glfw.GLFW.GLFW_PRESS
-                );
+                boolean isPlayerMining = client.options.attackKey.isPressed();
                 if (!isPlayerMining) {
                     process();
-                } else {
-                    resetNuker();
                 }
             }
         });
@@ -76,25 +76,25 @@ public class Nuker extends Parent {
         // продолжаем ломать
         if (currentTarget != null && currentHit != null) {
             BlockState state = client.world.getBlockState(currentTarget);
-            if (state.isAir()) {
-                resetNuker();
-                return;
-            }
-
-            if (!canReach(currentTarget)) {
+            if (state.isAir() || !canReach(currentTarget)) {
+                client.options.attackKey.setPressed(false);
                 resetNuker();
                 return;
             }
 
             look(currentTarget);
-            client.interactionManager.attackBlock(currentTarget, currentHit.getSide()); // на всякий случай
             client.options.attackKey.setPressed(true);
             player.swingHand(Hand.MAIN_HAND);
             return;
         }
 
         if (delayTimer > 0) {
-            delayTimer--;
+            int n = 1;
+            if (randomDelay.getValue()) {
+                Random rnd = new Random();
+                n = rnd.nextInt(-5, 0);
+            }
+            delayTimer -= n;
             return;
         }
 
@@ -152,7 +152,6 @@ public class Nuker extends Parent {
         }
 
         if (bestPos != null && bestHit != null) {
-            look(bestPos);
             currentTarget = bestPos;
             currentHit = bestHit;
         }
@@ -194,7 +193,6 @@ public class Nuker extends Parent {
     }
 
     private void resetNuker() {
-        client.options.attackKey.setPressed(false);
         currentTarget = null;
         currentHit = null;
         delayTimer = breakDelay.getValue();
@@ -222,6 +220,11 @@ public class Nuker extends Parent {
             RaycastContext.FluidHandling.NONE,
             player
         ));
-        return (ray.getType() == HitResult.Type.BLOCK && ray.getBlockPos().equals(pos));
+
+        return (
+            ray.getType() == HitResult.Type.BLOCK &&
+            ray.getBlockPos().equals(pos) &&
+            client.world.getBlockState(pos).getBlock().getHardness() != -1
+        );
     }
 }
