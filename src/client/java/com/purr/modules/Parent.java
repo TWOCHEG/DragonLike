@@ -11,6 +11,7 @@ public abstract class Parent {
     private final String name;
     private final String category;
     protected final ConfigManager config;
+    protected ModuleManager moduleManager = null;
     protected final String id;
     protected boolean enable;
     protected int keybindCode;
@@ -109,5 +110,9 @@ public abstract class Parent {
 
     public ConfigManager getConfig() {
         return config;
+    }
+
+    public void setModuleManager(ModuleManager moduleManager) {
+        this.moduleManager = moduleManager;
     }
 }

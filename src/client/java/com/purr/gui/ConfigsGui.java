@@ -1,3 +1,4 @@
+// зона 51
 package com.purr.gui;
 
 import com.purr.config.ConfigManager;
@@ -23,11 +24,11 @@ public class ConfigsGui extends Screen {
 
     private static final String hintsText = "click on title - open path\nR - edit name\nM - create\nBACKSPACE | X | DEL - delete";
 
-    private final Identifier texturePlus = Identifier.of("skylong", "textures/gui/plus.png");
+    private final Identifier texturePlus = Identifier.of("purr", "textures/gui/plus.png");
     private final String texturePlusName = "plus";
-    private final Identifier textureDel = Identifier.of("skylong", "textures/gui/delete.png");
+    private final Identifier textureDel = Identifier.of("purr", "textures/gui/delete.png");
     private final String textureDelName = "Del";
-    private final Identifier textureEdit = Identifier.of("skylong", "textures/gui/edit.png");
+    private final Identifier textureEdit = Identifier.of("purr", "textures/gui/edit.png");
     private final String textureEditName = "Edit";
 
     private final String guiTextId = "openPath";

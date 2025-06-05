@@ -4,7 +4,7 @@ import com.purr.gui.ConfigsGui;
 import com.purr.modules.*;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import com.purr.gui.ClickGuiScreen;
+import com.purr.gui.ClickGui;
 
 public class ConfigMenu extends Parent {
     public boolean show = false;
@@ -20,7 +20,7 @@ public class ConfigMenu extends Parent {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (enable && !show) {
                 boolean retr = false;
-                if (client.currentScreen instanceof ClickGuiScreen screen) {
+                if (client.currentScreen instanceof ClickGui screen) {
                     screen.animReverse = true;
                     retr = true;
                 }

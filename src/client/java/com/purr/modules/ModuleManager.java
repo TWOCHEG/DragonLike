@@ -7,6 +7,10 @@ public class ModuleManager {
 
     public ModuleManager(List<Parent> modules) {
         this.modules = modules;
+
+        for (Parent module : modules) {
+            module.setModuleManager(this);
+        }
     }
 
     public Map<String, List<Parent>> getModules() {

@@ -4,7 +4,6 @@ import net.fabricmc.api.ClientModInitializer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.purr.gui.ClickGui;
 import com.purr.modules.ModuleManager;
 
 import com.purr.modules.ui.Gui;
@@ -21,14 +20,13 @@ public class Purr implements ClientModInitializer {
 		ModuleManager moduleManager = new ModuleManager(
 			new ArrayList(List.of(
 				new Gui(),
+				new Keybinds(),
 				new KillAura(),
 				new ConfigMenu(),
 				new FakePlayer(),
 				new Nuker()
 			))
 		);
-		new ClickGui(moduleManager);
-		new Keybinds(moduleManager);
 	}
 }
 // тут был Егорушка 

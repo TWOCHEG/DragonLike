@@ -1,7 +1,12 @@
 package com.purr.modules.ui;
 
+import com.purr.gui.ClickGui;
 import com.purr.modules.*;
 import com.purr.modules.settings.*;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.util.InputUtil;
 
 import java.util.*;
 
@@ -26,8 +31,29 @@ public class Gui extends Parent {
         new ArrayList<>(images.keySet())
     );
 
+    private static boolean key = false;
+
     public Gui() {
         super("click gui", "click_gui", "ui");
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client != null) {
+                boolean isRightShiftPressed = InputUtil.isKeyPressed(
+                    client.getWindow().getHandle(),
+                    config.get("keybind", 344) // код 344 - правый шифт
+                );
+                Screen currentScreen = client.currentScreen;
+
+                if (isRightShiftPressed && !key) {
+                    if (currentScreen instanceof ClickGui clickGuiScreen) {
+                        clickGuiScreen.animReverse = true;
+                    } else if (currentScreen == null || currentScreen instanceof TitleScreen) {
+                        client.setScreen(new ClickGui(client.currentScreen, moduleManager));
+                    }
+                }
+                key = isRightShiftPressed;
+            }
+        });
     }
 
     public Map<String, String> getImages() {

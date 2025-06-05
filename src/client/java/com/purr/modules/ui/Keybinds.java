@@ -4,19 +4,22 @@ import com.purr.config.ConfigManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import org.lwjgl.glfw.GLFW;
 import com.purr.modules.*;
-import com.purr.gui.ClickGuiScreen;
+import com.purr.gui.ClickGui;
 import com.purr.gui.ConfigsGui;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Keybinds {
+public class Keybinds extends Parent {
     private static Map<Integer, Boolean> callbacks = new HashMap<>();
     private static ConfigManager config = new ConfigManager();
 
-    public Keybinds(ModuleManager moduleManager) {
+    public Keybinds() {
+        super("keybinds", "keybinds", "ui");
+        visible = false;
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.currentScreen instanceof ClickGuiScreen || client.currentScreen instanceof ConfigsGui) return;
+            if (client.currentScreen instanceof ClickGui || client.currentScreen instanceof ConfigsGui) return;
             if (client.getWindow() != null) {
                 Map<String, Object> json = config.readJson();
                 long handle = client.getWindow().getHandle();
