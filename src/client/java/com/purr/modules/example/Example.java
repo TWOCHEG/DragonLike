@@ -8,9 +8,9 @@ import java.util.*;
 
 public class Example extends Parent {
     public TextSetting header = new TextSetting("header");
-    public Setting<Float> attackRange = new Setting<>("int", "int", 3.0f, 1.0f, 6.0f);
-    public Setting<Boolean> autoAttack = new Setting<>("bool", "bool", true);
-    public ListSetting<String> targetMode = new ListSetting<>(
+    public Setting<Float> intSetting = new Setting<>("int", "int", 3.0f, 1.0f, 6.0f);
+    public Setting<Boolean> boolSetting = new Setting<>("bool", "bool", true);
+    public ListSetting<String> list = new ListSetting<>(
         "list",
         "list",
         "1",
