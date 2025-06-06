@@ -66,7 +66,10 @@ public class ConfigsGui extends Screen {
         }
         moduleAreas.clear();
 
-        animHandler(10);
+        int animDiff = Math.max(1, (100 / Math.max(1, MinecraftClient.getInstance().getCurrentFps())));
+        if (animDiff == 1 && MinecraftClient.getInstance().getCurrentFps() < 100) animDiff*=10;
+
+        animHandler(animDiff);
         if (animReverse && animPercent == 0) {
             configMenu.show = false;
             client.setScreen(null);
@@ -105,13 +108,13 @@ public class ConfigsGui extends Screen {
         context.getMatrices().pop();
 
         int imgSize = 16;
-        int animDiff = (imgSize / 4);
+        int animImgDiff = (imgSize / 4);
         float imgX = 5;
         float imgY = ((imgSize + imgX) * animPercent / 100) - imgSize;
         // === КНОПКА PLUS ===
         int plusAnim = clickAnimations.getOrDefault(texturePlusName, 0);
-        int plusSize = animDiff * plusAnim / 100;
-        if (plusSize == animDiff) {
+        int plusSize = animImgDiff * plusAnim / 100;
+        if (plusSize == animImgDiff) {
             clickAnimReverse.put(texturePlusName, true);
         }
         int plusTotalSize = imgSize + plusSize;
@@ -131,8 +134,8 @@ public class ConfigsGui extends Screen {
         moduleAreas.add(new ModuleArea(texturePlusName, imgX, imgY, imgSize, imgSize));
         // === КНОПКА DELETE ===
         int delAnim = clickAnimations.getOrDefault(textureDelName, 0);
-        int delSize = animDiff * delAnim / 100;
-        if (delSize == animDiff) {
+        int delSize = animImgDiff * delAnim / 100;
+        if (delSize == animImgDiff) {
             clickAnimReverse.put(textureDelName, true);
         }
         int delTotalSize = imgSize + delSize;
@@ -154,8 +157,8 @@ public class ConfigsGui extends Screen {
         moduleAreas.add(new ModuleArea(textureDelName, delX, imgY, imgSize, imgSize));
         // === КНОПКА EDIT ===
         int editAnim = clickAnimations.getOrDefault(textureEditName, 0);
-        int editSize = animDiff * editAnim / 100;
-        if (editSize == animDiff) {
+        int editSize = animImgDiff * editAnim / 100;
+        if (editSize == animImgDiff) {
             clickAnimReverse.put(textureEditName, true);
         }
         int editTotalSize = imgSize + editSize;

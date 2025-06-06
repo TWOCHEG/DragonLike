@@ -73,7 +73,8 @@ public class ClickGui extends Screen {
             previous.render(context, mouseX, mouseY, delta);
         }
 
-        int animDiff = 10;
+        int animDiff = Math.max(1, (100 / Math.max(1, MinecraftClient.getInstance().getCurrentFps())));
+        if (animDiff == 1 && MinecraftClient.getInstance().getCurrentFps() < 100) animDiff*=10;
 
         animHandler(client, animDiff, mouseX, mouseY);
         if (animReverse && animPercent == 0) {
@@ -202,8 +203,7 @@ public class ClickGui extends Screen {
                 int hoverPercent = (int) hoverAnimations.getOrDefault(module, 0);
                 double t = hoverPercent / 100.0;
                 // крутая ease-in-out анимация
-                int maxStep = animDiff;
-                int easeDelta = (int) Math.ceil(maxStep * (hovered ? (1 - t) : t));
+                int easeDelta = (int) Math.ceil(animDiff * (hovered ? (1 - t) : t));
                 easeDelta = Math.max(easeDelta, 1);
                 if (hovered) {
                     hoverPercent = Math.min(hoverPercent + easeDelta, 100);
@@ -245,7 +245,7 @@ public class ClickGui extends Screen {
                 } else if (module.getSettings().isEmpty() && setAnimations.containsKey(module)) {
                     setAnimReverse.put(module, true);
                     // эта переменная может быть от 15
-                    int percent = (int) setAnimations.get(module);
+                    float percent = (float) setAnimations.get(module);
 
                     if (percent % 2 == 0) {
                         xDifference -= 5f;
@@ -317,7 +317,7 @@ public class ClickGui extends Screen {
                 return true;
             } else if (obj instanceof Parent module) {
                 if (!setAnimations.containsKey(module)) {
-                    setAnimations.put(module, 0);
+                    setAnimations.put(module, 0.0F);
                     setAnimReverse.put(module, false);
                 } else {
                     setAnimReverse.put(module, true);
@@ -408,8 +408,8 @@ public class ClickGui extends Screen {
     ) {
         // параметры
         int zDepth = 3;
-        int setAnimPercent = (int) setAnimations.get(module);
-        int alphaColor = (255 * (int) animPercent / 100) * setAnimPercent / 100;
+        float setAnimPercent = (float) setAnimations.get(module);
+        int alphaColor = (255 * (int) animPercent / 100) * (int) setAnimPercent / 100;
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
@@ -593,7 +593,7 @@ public class ClickGui extends Screen {
             Iterator<Parent> it = setAnimations.keySet().iterator();
             while (it.hasNext()) {
                 Parent module = it.next();
-                int percent = (int) setAnimations.get(module);
+                float percent = (float) setAnimations.get(module);
                 boolean reverse = (boolean) setAnimReverse.getOrDefault(module, false);
 
                 if (!reverse && percent < 100) {
@@ -605,7 +605,7 @@ public class ClickGui extends Screen {
                 percent = Math.clamp(percent, 0, 100);
                 setAnimations.put(module, percent);
 
-                if (reverse && percent == 0) {
+                if (reverse && percent <= 1) {
                     it.remove();
                     setAnimReverse.remove(module);
                 }

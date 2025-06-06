@@ -2,16 +2,15 @@ package com.purr.modules.world;
 
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.Registries;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -19,42 +18,47 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+
 import java.util.*;
 
 public class Nuker extends Parent {
     private Setting<Boolean> avoidLava = new Setting<>(
-            "avoid lava",
-            "avoid_lava",
-            config.get("avoid_lava", true)
+        "avoid lava",
+        "avoid_lava",
+        config.get("avoid_lava", true)
     );
     private Setting<Boolean> avoidGravel = new Setting<>(
-            "avoid gravel",
-            "avoid_gravel",
-            config.get("avoid_gravel", true)
+        "avoid gravel",
+        "avoid_gravel",
+        config.get("avoid_gravel", true)
     );
     private Setting<Boolean> randomDelay = new Setting<>(
-            "randomization delay",
-            "random_delay",
-            config.get("random_delay", false)
+        "rnd delay",
+        "random_delay",
+        config.get("random_delay", false)
     );
     private Setting<Float> breakRange = new Setting<>(
-            "break range",
-            "break_range",
-            config.get("break_range", 6.0f),
-            1.0f, 6.0f
+        "break range",
+        "break_range",
+        config.get("break_range", 6.0f),
+        1.0f, 6.0f
     );
     private TextSetting header = new TextSetting("\"/nuker blocksList\"");
     private ListSetting<String> blockMode = new ListSetting<>(
-            "blocks mode",
-            "block_mode",
-            config.get("block_mode", "blacklist"),
-            Arrays.asList("whitelist", "blacklist")
+        "blocks mode",
+        "block_mode",
+        config.get("block_mode", "blacklist"),
+        Arrays.asList("whitelist", "blacklist")
     );
     private Setting<Integer> breakDelay = new Setting<>(
-            "break delay",
-            "break_delay",
-            config.get("break_delay", 20F).intValue(),
-            0, 200
+        "break delay",
+        "break_delay",
+        config.get("break_delay", 20F).intValue(),
+        0, 1000
     );
     private BlockSelected targetBlocks = new BlockSelected(this);
 
@@ -63,17 +67,19 @@ public class Nuker extends Parent {
     private int delayTimer = 0;
 
     public Nuker() {
-        super("legit nuker", "legit_nuker", "world");
+        super("nuker", "nuker", "world");
 
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable) {
                 boolean isPlayerMining = (
                     net.fabricmc.api.EnvType.CLIENT == null ?
                         false :
-                        org.lwjgl.glfw.GLFW.glfwGetMouseButton(client.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1) == org.lwjgl.glfw.GLFW.GLFW_PRESS
+                        org.lwjgl.glfw.GLFW.glfwGetMouseButton(client.getWindow().getHandle(), client.options.attackKey.getDefaultKey().getCode()) == org.lwjgl.glfw.GLFW.GLFW_PRESS
                 );
-                boolean isPlayerMoving = client.player.getVelocity().equals(Vec3d.ZERO);
-                if (!isPlayerMining && !isPlayerMoving) {
+                Vec3d speed = client.player.getVelocity();
+                boolean move = (speed.x > 0.0f || speed.z > 0.0f);
+
+                if (!isPlayerMining && !move) {
                     process();
                 }
             }
@@ -86,16 +92,17 @@ public class Nuker extends Parent {
 
         // продолжаем ломать
         if (currentTarget != null && currentHit != null) {
-            BlockState state = client.world.getBlockState(currentTarget);
-            if (state.isAir() || !canReach(currentTarget)) {
-                client.options.attackKey.setPressed(false);
+            if (!canReach(currentTarget)) {
                 resetNuker();
                 return;
             }
 
             look(currentTarget);
-            client.options.attackKey.setPressed(true);
-            player.swingHand(Hand.MAIN_HAND);
+            boolean finished = client.interactionManager.updateBlockBreakingProgress(currentTarget, currentHit.getSide());
+            player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
+            if (finished) {
+                client.interactionManager.breakBlock(currentTarget);
+            }
             return;
         }
 
@@ -103,14 +110,13 @@ public class Nuker extends Parent {
             int n = 1;
             if (randomDelay.getValue()) {
                 Random rnd = new Random();
-                n = rnd.nextInt(0, 5);
-
+                n = rnd.nextInt(0, 10);
             }
             delayTimer -= n;
             return;
         }
 
-        float range = breakRange.getValue();
+        float range = breakRange.getValue() + 0.1f;
         String mode = blockMode.getValue();
         List<String> configured = targetBlocks.getValue();
         Vec3d eyePos = player.getCameraPosVec(1.0f);
@@ -166,6 +172,10 @@ public class Nuker extends Parent {
         if (bestPos != null && bestHit != null) {
             currentTarget = bestPos;
             currentHit = bestHit;
+
+            look(currentTarget);
+            client.interactionManager.attackBlock(currentTarget, currentHit.getSide());
+            player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
         }
     }
 
@@ -185,17 +195,17 @@ public class Nuker extends Parent {
 
         Vec3d targetCenter = new Vec3d(centerX, centerY, centerZ);
         BlockHitResult ray = client.world.raycast(new RaycastContext(
-                eyePos,
-                targetCenter,
-                RaycastContext.ShapeType.OUTLINE,
-                RaycastContext.FluidHandling.NONE,
-                player
+            eyePos,
+            targetCenter,
+            RaycastContext.ShapeType.OUTLINE,
+            RaycastContext.FluidHandling.NONE,
+            player
         ));
 
         return (
-                ray.getType() == HitResult.Type.BLOCK &&
-                        ray.getBlockPos().equals(pos) &&
-                        client.world.getBlockState(pos).getBlock().getHardness() != -1
+            ray.getType() == HitResult.Type.BLOCK &&
+            ray.getBlockPos().equals(pos) &&
+            client.world.getBlockState(pos).getBlock().getHardness() != -1
         );
     }
 
@@ -220,23 +230,39 @@ public class Nuker extends Parent {
     }
 
     private void look(BlockPos pos) {
+        if (client.player == null || client.getNetworkHandler() == null) return;
+
         Vec3d targetCenter = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-        Vec3d diff = targetCenter.subtract(client.player.getCameraPosVec(1.0f));
+        Vec3d eyesPos = client.player.getCameraPosVec(1.0f);
+        Vec3d diff = targetCenter.subtract(eyesPos);
+
         double dx = diff.x;
         double dy = diff.y;
         double dz = diff.z;
         double distHoriz = Math.sqrt(dx * dx + dz * dz);
 
-        float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
-        float pitch = (float) (-Math.toDegrees(Math.atan2(dy, distHoriz)));
+        float yaw = (float)(Math.toDegrees(Math.atan2(dz, dx)) - 90.0f);
+        float pitch = (float)(-Math.toDegrees(Math.atan2(dy, distHoriz)));
+        pitch = Math.clamp(pitch, -90.0f, 90.0f);
 
-        client.player.setYaw(yaw);
-        client.player.setPitch(pitch);
+        boolean onGround = client.player.isOnGround();
+        boolean horizontalCollision = client.player.horizontalCollision;
+        client.getNetworkHandler().sendPacket(
+            new PlayerMoveC2SPacket.LookAndOnGround(
+                yaw,
+                pitch,
+                onGround,
+                horizontalCollision
+            )
+        );
     }
 
     private void resetNuker() {
         currentTarget = null;
         currentHit = null;
         delayTimer = breakDelay.getValue();
+        if (randomDelay.getValue()) {
+            delayTimer = breakDelay.getValue() * 2;
+        }
     }
 }

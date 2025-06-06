@@ -6,9 +6,10 @@
 	"authors": [
 		"TWOCHEG"
 	],
+	"icon": "assets/purr/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"client": [
+		"main": [
 			"com.purr.Purr"
 		]
 	},
