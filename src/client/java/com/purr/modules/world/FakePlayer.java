@@ -20,10 +20,10 @@ public class FakePlayer extends Parent {
     private final float health = 20.0f;
     private long lastMoveTime = 0;
 
-    private final Setting<Boolean> copyInv = new Setting<>("copy inv", "copy_inv", config.get("copy_inv", false));
-    private final Setting<Boolean> look = new Setting<>("look", "look", config.get("look", true));
-    private final Setting<Boolean> move = new Setting<>("move", "move", config.get("move", false));
-    public Setting<Float> moveSpeed = new Setting<>("move speed", "move_speed", config.get("move_speed", 3.0f), 0.1f, 6.0f);
+    private final Setting<Boolean> copyInv = new Setting<>("copy inv", false);
+    private final Setting<Boolean> look = new Setting<>("look", true);
+    private final Setting<Boolean> move = new Setting<>("move", true);
+    public Setting<Float> moveSpeed = new Setting<>("move speed", 3.0f, 0.1f, 6.0f);
 
     public FakePlayer() {
         super("fake player", "fake_player", "world");

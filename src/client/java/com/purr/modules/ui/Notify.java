@@ -2,22 +2,16 @@ package com.purr.modules.ui;
 
 import com.purr.modules.Parent;
 import com.purr.modules.settings.Setting;
-import com.purr.utils.RGB;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import com.purr.utils.getAnimDiff;
+import com.purr.utils.GetAnimDiff;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.client.font.TextRenderer;
 
 import java.util.*;
 
 public class Notify extends Parent {
     private Setting<Integer> liveTimeSet = new Setting<>(
         "live time",
-        "live_time",
-        config.get("live_time", 50.0F).intValue(),
+        50,
         10, 100
     );
 
@@ -38,7 +32,6 @@ public class Notify extends Parent {
     public Notify() {
         super("notify", "notify", "ui");
         enable = config.get("enable", true);
-
         for (NotifyType notifyType : NotifyType.values()) {
             history.put(notifyType, new LinkedHashMap<>());
             reverseAnim.put(notifyType, new LinkedHashMap<>());
@@ -48,64 +41,56 @@ public class Notify extends Parent {
         ClientTickEvents.START_CLIENT_TICK.register(context -> {
             liveTimeHandler();
             animHandler();
-
-            for (NotifyType notifyType : NotifyType.values()) {
-
-                int limit = limits.getOrDefault(notifyType, 1);
-                Map<String, Float> notifyHistory = (Map<String, Float>) history.get(notifyType);
-                int size = notifyHistory.keySet().size();
-
-                Map<String, Integer> mapTimes = (Map<String, Integer>) liveTime.get(notifyType);
-
-                String firstKey = "";
-                for (String key : notifyHistory.keySet()) {
-                    firstKey = key;
-                    break;
-                }
-
-                if (size > limit || mapTimes.getOrDefault(firstKey, 0) < 1) {
-                    Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.getOrDefault(notifyType, new LinkedHashMap<>());
-                    reverseHistory.remove(firstKey);
-
-                    reverseAnim.put(notifyType, reverseHistory);
-                }
-            }
+            sizeHandler();
+//            System.out.println(history);
         });
 
         HudRenderCallback.EVENT.register((matrices, tickDelta) -> {
-            renderImportant(matrices);
 
         });
     }
 
-    private void renderImportant(DrawContext context) {
-        TextRenderer textRenderer = client.textRenderer;
-        Map<String, Float> notifyHistory = (Map<String, Float>) history.get(NotifyType.Important);
-        float y = 10;
-        for (String text : notifyHistory.keySet()) {
-            float animPercent = notifyHistory.get(text);
-            Text renderText = Text.literal(text);
+//    private void renderImportant(DrawContext context) {
+//        TextRenderer textRenderer = client.textRenderer;
+//        Map<String, Float> notifyHistory = (Map<String, Float>) history.get(NotifyType.Important);
+//        float y = 10;
+//        for (String text : notifyHistory.keySet()) {
+//            float animPercent = notifyHistory.get(text);
+//            Text renderText = Text.literal(text);
+//
+//            float screenWidth = context.getScaledWindowWidth();
+//            float screenHeight = context.getScaledWindowHeight();
+//
+//            context.getMatrices().push();
+//            context.getMatrices().translate((screenWidth / 2) - ((float) textRenderer.getWidth(renderText) / 2), y * animPercent / 100, 1);
+//            context.drawTextWithShadow(
+//                textRenderer,
+//                renderText,
+//                0,
+//                0,
+//                RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
+//            );
+//            context.getMatrices().pop();
+//
+//            y += textRenderer.fontHeight;
+//        }
+//    }
 
-            float screenWidth = context.getScaledWindowWidth();
-            float screenHeight = context.getScaledWindowHeight();
+    private void sizeHandler() {
+        for (NotifyType notifyType : NotifyType.values()) {
+            int limit = limits.getOrDefault(notifyType, 1);
+            if (((Map<?, ?>) history.get(notifyType)).size() > limit) {
+                String key = ((Map<String, ?>) history.get(notifyType)).keySet().iterator().next();
 
-            context.getMatrices().push();
-            context.getMatrices().translate((screenWidth / 2) - ((float) textRenderer.getWidth(renderText) / 2), y * animPercent / 100, 1);
-            context.drawTextWithShadow(
-                textRenderer,
-                renderText,
-                0,
-                0,
-                RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
-            );
-            context.getMatrices().pop();
-
-            y += textRenderer.fontHeight;
+                Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.getOrDefault(notifyType, new LinkedHashMap<>());
+                reverseHistory.remove(key);
+                reverseAnim.put(notifyType, reverseHistory);
+            }
         }
     }
 
     private void animHandler() {
-        float deltaTime = getAnimDiff.get();
+        float deltaTime = GetAnimDiff.get();
         float clampedDelta = 10;
 
         for (NotifyType notifyType : NotifyType.values()) {
@@ -132,7 +117,7 @@ public class Notify extends Parent {
     }
 
     private void liveTimeHandler() {
-        System.out.println(liveTime);
+//        System.out.println(liveTime);
         for (NotifyType notifyType : NotifyType.values()) {
             Map<String, Integer> mapTimes = (Map<String, Integer>) liveTime.get(notifyType);
             if (mapTimes == null) continue;
@@ -145,6 +130,9 @@ public class Notify extends Parent {
 
                 if (value < 1) {
                     iterator.remove();
+                    Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.getOrDefault(notifyType, new LinkedHashMap<>());
+                    reverseHistory.remove(entry.getKey());
+                    reverseAnim.put(notifyType, reverseHistory);
                 }
             }
         }

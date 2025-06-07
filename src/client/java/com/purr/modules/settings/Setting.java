@@ -3,38 +3,37 @@ package com.purr.modules.settings;
 import com.purr.modules.Parent;
 
 public class Setting<T> {
-    private final String key;
     private final String name;
     private T value;
     public T min, max;
     private Parent module;
 
-    public Setting(String name, String key, T defaultValue) {
-        this.key = key;
+    private T defaultValue;
+
+    public Setting(String name, T defaultValue) {
+        System.out.println(name);
         this.name = name;
-        this.value = defaultValue;
+        this.defaultValue = defaultValue;
     }
 
-    // Конструктор для чисел с границами
-    public Setting(String name, String key, T defaultValue, T min, T max) {
-        this(name, key, defaultValue);
+    public Setting(String name, T defaultValue, T min, T max) {
+        this(name, defaultValue);
         this.min = min;
         this.max = max;
     }
 
-    // Геттеры/сеттеры
-    public String getKey() { return key; }
     public String getName() { return name; }
     public T getValue() {
         return value;
     }
     public void setValue(T value) {
         this.value = value;
-        module.setValue(key, value);
+        module.setValue(name, value);
     }
 
     public void setModule(Parent module) {
         this.module = module;
+        this.value = (T) module.getValue(name, defaultValue);
     }
 }
 

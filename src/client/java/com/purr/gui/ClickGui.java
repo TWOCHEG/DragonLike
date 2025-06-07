@@ -5,7 +5,7 @@ import com.purr.modules.ModuleManager;
 import com.purr.modules.ui.Gui;
 import com.purr.modules.settings.*;
 import com.purr.utils.RGB;
-import com.purr.utils.getAnimDiff;
+import com.purr.utils.GetAnimDiff;
 import com.purr.modules.Parent;
 
 import net.minecraft.client.gui.DrawContext;
@@ -55,11 +55,14 @@ public class ClickGui extends Screen {
 
     public List<ModuleArea> moduleAreas = new ArrayList<>();
 
+    private Gui guiModule = null;
+
     public ClickGui(Screen previous, ModuleManager moduleManager) {
         super(Text.literal("Purr Gui"));
         this.previous = previous;
         this.modules = moduleManager.getModules();
         this.moduleManager = moduleManager;
+        this.guiModule = (Gui) moduleManager.getModuleByClass(Gui.class);
     }
 
     @Override
@@ -74,7 +77,7 @@ public class ClickGui extends Screen {
             previous.render(context, mouseX, mouseY, delta);
         }
 
-        animHandler(client, getAnimDiff.get(), mouseX, mouseY);
+        animHandler(client, GetAnimDiff.get(), mouseX, mouseY);
         if (animReverse && animPercent == 0) {
             client.setScreen(null);
             return;
@@ -83,9 +86,13 @@ public class ClickGui extends Screen {
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
 
-        Gui GuiModule = (Gui) moduleManager.getModuleByClass(Gui.class);
-        if (GuiModule != null && GuiModule.image.getValue() != "none") {
-            String path = GuiModule.getImages().get(GuiModule.image.getValue());
+
+        if (
+            guiModule != null &&
+            guiModule.image.getValue() != null &&
+            !guiModule.image.getValue().equals("none")
+        ) {
+            String path = guiModule.getImages().get(guiModule.image.getValue());
             Identifier texture = Identifier.of("purr", path);
             try {
                 Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
@@ -201,7 +208,7 @@ public class ClickGui extends Screen {
                 int hoverPercent = (int) hoverAnimations.getOrDefault(module, 0);
                 double t = hoverPercent / 100.0;
                 // крутая ease-in-out анимация
-                int easeDelta = (int) Math.ceil(getAnimDiff.get() * (hovered ? (1 - t) : t));
+                int easeDelta = (int) Math.ceil(GetAnimDiff.get() * (hovered ? (1 - t) : t));
                 easeDelta = Math.max(easeDelta, 1);
                 if (hovered) {
                     hoverPercent = Math.min(hoverPercent + easeDelta, 100);
@@ -417,7 +424,7 @@ public class ClickGui extends Screen {
         for (Setting set : sets) {
             if (
                 set.getClass() == Setting.class ||
-                set.getClass() == TextSetting.class ||
+                set.getClass() == Header.class ||
                 set.getClass() == ListSetting.class
             ) {
                 int color = RGB.getColor(255, 255, 255, alphaColor);
@@ -517,7 +524,7 @@ public class ClickGui extends Screen {
             if (left) {
                 Object obj = getModuleUnderMouse(mouseX, mouseY);
                 if (obj != null && obj instanceof Setting set) {
-                    if (set.getValue() instanceof Float) {
+                    if (set.getValue() instanceof Float) {;
                         float value = (float) set.getValue() - 0.1f;
                         value = Math.min(Math.max(value, (float) set.min), (float) set.max);
                         value = Math.round(value * 10f) / 10f;

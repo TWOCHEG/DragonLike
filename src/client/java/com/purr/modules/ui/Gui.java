@@ -23,15 +23,11 @@ public class Gui extends Parent {
         "smalik", "textures/gui/smalik.png"
     );
 
-    public Setting<Boolean> mouseMove = new Setting<>("move", "mouse_move", config.get("mouse_move", true));
+    public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public ListSetting<String> image = new ListSetting<>(
         "image",
-        "image",
-        config.get("image", "none"),
-        new ArrayList<>(images.keySet())
+        new LinkedList<>(images.keySet())
     );
-
-    public int ind = 0;
 
     private static boolean key = false;
 

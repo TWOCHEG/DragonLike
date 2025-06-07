@@ -5,8 +5,8 @@ import java.util.*;
 public class ListSetting<E> extends Setting<E> {
     private final List<E> options;
     private boolean expanded;
-    public ListSetting(String name, String key, E defaultValue, List<E> options) {
-        super(name, key, defaultValue);
+    public ListSetting(String name, List<E> options) {
+        super(name, options.getFirst());
         this.options = options;
     }
     public boolean isExpanded() { return expanded; }

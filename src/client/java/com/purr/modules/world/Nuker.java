@@ -2,7 +2,6 @@ package com.purr.modules.world;
 
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
-import com.purr.utils.getAnimDiff;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.BlockState;
@@ -24,36 +23,29 @@ import java.util.*;
 public class Nuker extends Parent {
     private Setting<Boolean> avoidLava = new Setting<>(
         "avoid lava",
-        "avoid_lava",
-        config.get("avoid_lava", true)
+        true
     );
     private Setting<Boolean> movePause = new Setting<>(
         "move pause",
-        "move_pause",
-        config.get("move_pause", false)
+        false
     );
     private Setting<Boolean> avoidGravel = new Setting<>(
         "avoid gravel",
-        "avoid_gravel",
-        config.get("avoid_gravel", true)
+        true
     );
     private Setting<Float> breakRange = new Setting<>(
         "break range",
-        "break_range",
-        config.get("break_range", 6.0f),
+        6.0f,
         1.0f, 6.0f
     );
-    private TextSetting header = new TextSetting("\"/nuker blocksList\"");
+    private Header header = new Header("\"/nuker blocksList\"");
     private ListSetting<String> blockMode = new ListSetting<>(
         "blocks mode",
-        "block_mode",
-        config.get("block_mode", "blacklist"),
         Arrays.asList("whitelist", "blacklist")
     );
     private Setting<Integer> breakDelay = new Setting<>(
         "break delay",
-        "break_delay",
-        config.get("break_delay", 20F).intValue(),
+        20,
         0, 1000
     );
     private BlockSelected targetBlocks = new BlockSelected(this);

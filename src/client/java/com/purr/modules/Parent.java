@@ -76,13 +76,22 @@ public abstract class Parent {
 
     public void setValue(String key, Object value) {
         onUpdate();
-
         config.set(key, value);
     }
 
+    public Object getValue(String name, Object defaultValue) {
+        Object value = config.get(name, defaultValue);
+        try {
+            if (value != null && defaultValue instanceof Integer) {
+                value = ((Float) value).intValue();
+            } else if (value instanceof Double) {
+                value = ((Double) value).floatValue();
+            }
+        } catch (Exception ignore) {}
+        return value;
+    }
     public Object getValue(String name) {
-        String key = name.replace(' ', '_');
-        return config.get(key);
+        return getValue(name, null);
     }
 
     public List<Setting<?>> getSettings() {
