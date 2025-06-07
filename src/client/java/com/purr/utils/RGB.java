@@ -1,6 +1,6 @@
 package com.purr.utils;
 
-public class GetColor {
+public class RGB {
     public static int getColor(int r, int g, int b, int a) {
         a = Math.clamp(a, 5, 255);
         r = Math.clamp(r, 0, 255);

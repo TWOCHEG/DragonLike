@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW;
 import net.minecraft.util.Identifier;
 
 import com.purr.modules.ui.ConfigMenu;
-import com.purr.utils.GetColor;
+import com.purr.utils.RGB;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -86,8 +86,8 @@ public class ConfigsGui extends Screen {
         context.getMatrices().translate(0, 0, 1);
         context.getMatrices().scale(1, 1, 1);
         context.fillGradient(0, 0, width, height,
-            GetColor.getColor(0, 0, 0, alphaTop),
-            GetColor.getColor(0, 0, 0, alphaBottom)
+            RGB.getColor(0, 0, 0, alphaTop),
+            RGB.getColor(0, 0, 0, alphaBottom)
         );
         context.getMatrices().pop();
 
@@ -95,7 +95,7 @@ public class ConfigsGui extends Screen {
         String[] lines = hintsText.split("\n");
         float hintsScale = 0.7f;
         int alpha = 150 * (int) animPercent / 100;
-        int colorHints = GetColor.getColor(255, 255, 255, alpha);
+        int colorHints = RGB.getColor(255, 255, 255, alpha);
         int xHints = 5;
         float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
         context.getMatrices().push();
@@ -194,7 +194,7 @@ public class ConfigsGui extends Screen {
             textRenderer,
             display,
             0, 0,
-            GetColor.getColor(255, 255, 255, (int) (255 * animPercent / 100))
+            RGB.getColor(255, 255, 255, (int) (255 * animPercent / 100))
         );
         context.getMatrices().pop();
         moduleAreas.add(new ModuleArea(guiTextId, titleX, titleY, textWidth, textRenderer.fontHeight));
@@ -248,7 +248,7 @@ public class ConfigsGui extends Screen {
                 textRenderer,
                     text,
                 0, 0,
-                GetColor.getColor(255, 255, 255, (int) (255 * animPercent / 100))
+                RGB.getColor(255, 255, 255, (int) (255 * animPercent / 100))
             );
             context.getMatrices().pop();
             moduleAreas.add(new ModuleArea(path, x, y, w, textRenderer.fontHeight));
@@ -264,8 +264,8 @@ public class ConfigsGui extends Screen {
             context.getMatrices().translate(0, 0, 3);
             context.getMatrices().scale(1, 1, 3);
             context.fillGradient(0, 0, width, height,
-                GetColor.getColor(0, 0, 0, 200 * (int) animInput / 100),
-                GetColor.getColor(0, 0, 0, 220 * (int) animInput / 100)
+                RGB.getColor(0, 0, 0, 200 * (int) animInput / 100),
+                RGB.getColor(0, 0, 0, 220 * (int) animInput / 100)
             );
             context.getMatrices().pop();
 
@@ -281,7 +281,7 @@ public class ConfigsGui extends Screen {
                 textRenderer,
                 oldName,
                 0, 0,
-                GetColor.getColor(255, 255, 255, (int) (140 * animInput / 100))
+                RGB.getColor(255, 255, 255, (int) (140 * animInput / 100))
             );
             context.getMatrices().pop();
 
@@ -298,7 +298,7 @@ public class ConfigsGui extends Screen {
                 textRenderer,
                 inputText,
                 0, 0,
-                GetColor.getColor(255, 255, 255, (int) (255 * animInput / 100))
+                RGB.getColor(255, 255, 255, (int) (255 * animInput / 100))
             );
             context.getMatrices().pop();
         } else {

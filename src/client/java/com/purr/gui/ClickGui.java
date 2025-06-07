@@ -4,7 +4,7 @@ import com.purr.config.ConfigManager;
 import com.purr.modules.ModuleManager;
 import com.purr.modules.ui.Gui;
 import com.purr.modules.settings.*;
-import com.purr.utils.GetColor;
+import com.purr.utils.RGB;
 import com.purr.modules.Parent;
 
 import net.minecraft.client.gui.DrawContext;
@@ -133,8 +133,8 @@ public class ClickGui extends Screen {
         context.getMatrices().translate(0, 0, 1);
         context.getMatrices().scale(1, 1, 1);
         context.fillGradient(0, 0, width, height,
-            GetColor.getColor(0, 0, 0, alphaTop),
-            GetColor.getColor(0, 0, 0, alphaBottom)
+            RGB.getColor(0, 0, 0, alphaTop),
+            RGB.getColor(0, 0, 0, alphaBottom)
         );
         context.getMatrices().pop();
 
@@ -142,7 +142,7 @@ public class ClickGui extends Screen {
         String[] lines = hintsText.split("\n");
         float hintsScale = 0.7f;
         int alpha = 150 * (int) animPercent / 100;
-        int colorHints = GetColor.getColor(255, 255, 255, alpha);
+        int colorHints = RGB.getColor(255, 255, 255, alpha);
         int xHints = 5;
         float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
         context.getMatrices().push();
@@ -180,7 +180,7 @@ public class ClickGui extends Screen {
                 Text.literal(category).formatted(Formatting.BOLD),
                 0,
                 0,
-                GetColor.getColor(255, 255, 255, 255 * (int) animPercent / 100)
+                RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
             );
             context.getMatrices().pop();
 
@@ -235,7 +235,7 @@ public class ClickGui extends Screen {
 
                 // Цвет текста
                 int baseAlpha = 255 * (int) animPercent / 100;
-                int color = GetColor.getColor(255, 255, 255, baseAlpha);
+                int color = RGB.getColor(255, 255, 255, baseAlpha);
 
                 List<Setting<?>> sets = module.getSettings();
                 float winHeight = 0;
@@ -422,7 +422,7 @@ public class ClickGui extends Screen {
                 set.getClass() == TextSetting.class ||
                 set.getClass() == ListSetting.class
             ) {
-                int color = GetColor.getColor(255, 255, 255, alphaColor);
+                int color = RGB.getColor(255, 255, 255, alphaColor);
                 String name;
 
                 if (set.getClass() == ListSetting.class) {
@@ -433,15 +433,15 @@ public class ClickGui extends Screen {
                     if (set.getValue().getClass() == Boolean.class) {
                         name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
                         if ((boolean) set.getValue()) {
-                            color = GetColor.getColor(230, 255, 230, alphaColor);
+                            color = RGB.getColor(230, 255, 230, alphaColor);
                         } else {
-                            color = GetColor.getColor(255, 230, 230, alphaColor);
+                            color = RGB.getColor(255, 230, 230, alphaColor);
                         }
                     }
 
                 } else {
                     name = set.getName();
-                    color = GetColor.getColor(200, 200, 200, alphaColor);
+                    color = RGB.getColor(200, 200, 200, alphaColor);
                 }
 
                 float textScale = 0.8f;
