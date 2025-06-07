@@ -32,6 +32,9 @@ public class ModuleManager {
 
     public Parent getModuleById(String id) {
         for (Parent module : modules) {
+            System.out.println("---------------------------");
+            System.out.println(id);
+            System.out.println(module.getId());
             if (module.getId().equals(id)) {
                 return module;
             }
@@ -41,7 +44,7 @@ public class ModuleManager {
 
     public Parent getModuleByClass(Class c) {
         for (Parent module : modules) {
-            if (module.getClass() == c) {
+            if (module.getClass().equals(c)) {
                 return module;
             }
         }

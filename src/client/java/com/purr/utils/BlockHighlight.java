@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
 public class BlockHighlight {
-    public static void renderHighlight(WorldRenderContext context, BlockPos pos) {
+    public static void renderHighlight(WorldRenderContext context, BlockPos pos, float r, float g, float b, float a) {
         MatrixStack matrices = context.matrixStack();
         if (matrices == null) return;
         VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderLayer.LINES);
@@ -21,12 +21,7 @@ public class BlockHighlight {
         matrices.push();
         matrices.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        float red = 0.0f;
-        float green = 0.0f;
-        float blue = 0.0f;
-        float alpha = 1.0f;
-
-        drawOutlinedBox(matrices, vertexConsumer, box, red, green, blue, alpha);
+        drawOutlinedBox(matrices, vertexConsumer, box, r, g, b, a);
 
         matrices.pop();
     }
@@ -64,11 +59,11 @@ public class BlockHighlight {
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
         vertexConsumer.vertex(matrix, x1, y1, z1)
-            .color(r, g, b, a)
+            .color(r, g, b, Math.max(a, 0.2f))
             .normal(0, 1, 0);
 
         vertexConsumer.vertex(matrix, x2, y2, z2)
-            .color(r, g, b, a)
+            .color(r, g, b, Math.max(a, 0.2f))
             .normal(0, 1, 0);
     }
 }

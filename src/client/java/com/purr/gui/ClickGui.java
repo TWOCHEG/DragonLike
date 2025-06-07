@@ -5,6 +5,7 @@ import com.purr.modules.ModuleManager;
 import com.purr.modules.ui.Gui;
 import com.purr.modules.settings.*;
 import com.purr.utils.RGB;
+import com.purr.utils.getAnimDiff;
 import com.purr.modules.Parent;
 
 import net.minecraft.client.gui.DrawContext;
@@ -73,10 +74,7 @@ public class ClickGui extends Screen {
             previous.render(context, mouseX, mouseY, delta);
         }
 
-        int animDiff = Math.max(1, (100 / Math.max(1, MinecraftClient.getInstance().getCurrentFps())));
-        if (animDiff == 1 && MinecraftClient.getInstance().getCurrentFps() < 100) animDiff*=10;
-
-        animHandler(client, animDiff, mouseX, mouseY);
+        animHandler(client, getAnimDiff.get(), mouseX, mouseY);
         if (animReverse && animPercent == 0) {
             client.setScreen(null);
             return;
@@ -203,7 +201,7 @@ public class ClickGui extends Screen {
                 int hoverPercent = (int) hoverAnimations.getOrDefault(module, 0);
                 double t = hoverPercent / 100.0;
                 // крутая ease-in-out анимация
-                int easeDelta = (int) Math.ceil(animDiff * (hovered ? (1 - t) : t));
+                int easeDelta = (int) Math.ceil(getAnimDiff.get() * (hovered ? (1 - t) : t));
                 easeDelta = Math.max(easeDelta, 1);
                 if (hovered) {
                     hoverPercent = Math.min(hoverPercent + easeDelta, 100);

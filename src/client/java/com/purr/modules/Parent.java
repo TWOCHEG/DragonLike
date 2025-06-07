@@ -2,6 +2,7 @@ package com.purr.modules;
 
 import com.purr.config.ConfigManager;
 import com.purr.modules.settings.Setting;
+import com.purr.modules.ui.Notify;
 import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.Field;
@@ -54,6 +55,11 @@ public abstract class Parent {
             onEnable();
         } else {
             onDisable();
+        }
+        Notify notify = (Notify) moduleManager.getModuleByClass(Notify.class);
+        if (notify != null) {
+            String text = value ? "enable" : "disable";
+            notify.add(name + " | " + text, Notify.NotifyType.Important);
         }
         config.set("enable", value);
         enable = value;

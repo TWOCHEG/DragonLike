@@ -31,6 +31,8 @@ public class Gui extends Parent {
         new ArrayList<>(images.keySet())
     );
 
+    public int ind = 0;
+
     private static boolean key = false;
 
     public Gui() {

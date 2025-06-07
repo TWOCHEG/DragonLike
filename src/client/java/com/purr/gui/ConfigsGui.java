@@ -2,6 +2,7 @@
 package com.purr.gui;
 
 import com.purr.config.ConfigManager;
+import com.purr.utils.getAnimDiff;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -66,10 +67,7 @@ public class ConfigsGui extends Screen {
         }
         moduleAreas.clear();
 
-        int animDiff = Math.max(1, (100 / Math.max(1, MinecraftClient.getInstance().getCurrentFps())));
-        if (animDiff == 1 && MinecraftClient.getInstance().getCurrentFps() < 100) animDiff*=10;
-
-        animHandler(animDiff);
+        animHandler(getAnimDiff.get());
         if (animReverse && animPercent == 0) {
             configMenu.show = false;
             client.setScreen(null);

@@ -2,6 +2,7 @@ package com.purr.modules.world;
 
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
+import com.purr.utils.getAnimDiff;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.BlockState;
@@ -64,6 +65,9 @@ public class Nuker extends Parent {
     private long miningTime = 0;
     private int miningStage = 0;
 
+    private float animPercent = 0;
+    private boolean animReverse = false;
+
     public Nuker() {
         super("nuker", "nuker", "world");
 
@@ -94,9 +98,20 @@ public class Nuker extends Parent {
             }
         });
 
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> {
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
+            if (!animReverse) {
+                animPercent += 2;
+            } else if (animReverse) {
+                animPercent -= 2;
+            }
+            animPercent = Math.clamp(animPercent, 0, 100);
+            if (animPercent == 100.0f) {
+                animReverse = true;
+            } else if (animPercent == 0.0f) {
+                animReverse = false;
+            }
             if (miningTarget != null && miningHit != null && enable && client.player != null && client.world != null) {
-                BlockHighlight.renderHighlight(context, miningTarget);
+                BlockHighlight.renderHighlight(context, miningTarget, 1.0f, 1.0f, 1.0f, 1.0f / 100 * animPercent);
             }
         });
     }

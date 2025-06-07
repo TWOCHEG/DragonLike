@@ -1,5 +1,6 @@
 package com.purr;
 
+import com.purr.modules.ui.Notify;
 import net.fabricmc.api.ModInitializer;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ public class Purr implements ModInitializer {
 				new KillAura(),
 				new ConfigMenu(),
 				new FakePlayer(),
-				new Nuker()
+				new Nuker(),
+				new Notify()
 			))
 		);
 	}
