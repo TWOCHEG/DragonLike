@@ -1,7 +1,6 @@
 // местая зона отчуждения, просьба не заходить без подготовки (хотя бы моральной)
 package com.purr.gui;
 
-import com.purr.config.ConfigManager;
 import com.purr.modules.ModuleManager;
 import com.purr.modules.ui.Gui;
 import com.purr.modules.settings.*;
@@ -25,9 +24,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 
 public class ClickGui extends Screen {
-    private ConfigManager config = new ConfigManager("click_gui");
-    private ModuleManager moduleManager;
-
     private final Map<String, List<Parent>> modules;
 
     public static final String hintsText = "← ↑ ↓ → - move gui\nleft shift - percent binds\nmouse middle - bind module";
@@ -59,14 +55,13 @@ public class ClickGui extends Screen {
 
     public List<Object> moduleAreas = new ArrayList<>();
 
-    private Gui guiModule = null;
+    private Gui guiModule;
 
-    public ClickGui(Screen previous, ModuleManager moduleManager) {
+    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule) {
         super(Text.literal("Purr Gui"));
         this.previous = previous;
         this.modules = moduleManager.getModules();
-        this.moduleManager = moduleManager;
-        this.guiModule = (Gui) moduleManager.getModuleByClass(Gui.class);
+        this.guiModule = guiModule;
     }
 
     @Override
@@ -315,8 +310,6 @@ public class ClickGui extends Screen {
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj instanceof ListSetting set) {
-                set.setExpanded(!set.isExpanded());
-
                 if (!exsAnim.containsKey(set)) {
                     exsAnim.put(set, 0.0F);
                     exsAnimReverse.put(set, false);
@@ -386,7 +379,7 @@ public class ClickGui extends Screen {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
-        if (client != null && client.player != null && animPercent >= 100 && !animReverse && config.get("mouse_move", true)) {
+        if (client != null && client.player != null && animPercent >= 100 && !animReverse && guiModule.mouseMove.getValue()) {
             double deltaX = mouseX - lastMouseX;
             double deltaY = mouseY - lastMouseY;
 
@@ -437,15 +430,14 @@ public class ClickGui extends Screen {
             if (set instanceof ListSetting lst) {
                 if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
                     float exsPercent = exsAnim.getOrDefault(lst, 0.0F);
-                    int optOffset = 0;
                     float textScale = 0.8f;
                     float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
-                    float drawX = xColStart;
+                    float drawX = xColStart + spacing;
 
                     float headerY = ySetOffset + drawOffsetY;
                     Text hearderText = Text.literal(set.getName() + ": " + getAnimText((String) lst.getValue(), "", (int) exsPercent));
                     context.getMatrices().push();
-                    context.getMatrices().translate(drawX, headerY, zDepth);
+                    context.getMatrices().translate(drawX - spacing, headerY, zDepth);
                     context.getMatrices().scale(textScale, textScale, zDepth);
                     int colorE = (int) (255 - (55 * exsPercent / 100));
                     context.drawTextWithShadow(
@@ -455,20 +447,20 @@ public class ClickGui extends Screen {
                     context.getMatrices().pop();
                     moduleAreas.add(new ModuleArea(
                         lst,
-                        drawX,
+                        drawX - spacing,
                         headerY,
                         textRenderer.getWidth(hearderText),
                         textRenderer.fontHeight
                     ));
-                    optOffset += textRenderer.fontHeight;
+                    float headerHeight = textRenderer.fontHeight * textScale;
 
                     List<String> options = lst.getOptions();
-
+                    float optYOffset = headerHeight;
                     for (String element : options) {
-                        float drawY = ySetOffset + drawOffsetY + (optOffset * exsPercent / 100);
+                        float drawY = ySetOffset + drawOffsetY + (optYOffset * exsPercent / 100);
                         float width = textRenderer.getWidth(element) * textScale;
                         float height = textRenderer.fontHeight * textScale;
-                        Text display = lst.getValue().equals(element) ? Text.literal(element).formatted(Formatting.UNDERLINE) : Text.literal(element);
+                        Text display = lst.getValue().equals(element) ? Text.literal(element).formatted(Formatting.BOLD) : Text.literal(element);
 
                         context.getMatrices().push();
                         context.getMatrices().translate(drawX, drawY, zDepth);
@@ -488,10 +480,9 @@ public class ClickGui extends Screen {
                             height
                         ));
 
-                        optOffset += textRenderer.fontHeight;
+                        optYOffset += textRenderer.fontHeight * textScale;
                     }
-
-                    ySetOffset += ((textRenderer.fontHeight + optOffset * exsPercent / 100) * textScale) + spacing;
+                    ySetOffset += headerHeight + ((optYOffset - headerHeight) * exsPercent / 100) + spacing;
                     continue;
                 } else {
                     name = set.getName() + ": " + set.getValue();

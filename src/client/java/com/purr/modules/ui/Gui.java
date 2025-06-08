@@ -11,22 +11,22 @@ import net.minecraft.client.util.InputUtil;
 import java.util.*;
 
 public class Gui extends Parent {
-    public final Map<String, String> images = Map.of(
-        "none", "none",
-        "furry", "textures/gui/furry.png",
-        "billy", "textures/gui/billy.png",
-        "nya", "textures/gui/nya.png",
-        "sonic", "textures/gui/sonic.png",
-        "shayrma", "textures/gui/shayrma.png",
-        "furry2", "textures/gui/furry2.png",
-        "skala", "textures/gui/skala.png",
-        "smalik", "textures/gui/smalik.png"
-    );
-
+    public static final Map<String, String> images = new LinkedHashMap<>();
+    static {
+        images.put("none", "none");
+        images.put("furry", "textures/gui/furry.png");
+        images.put("billy", "textures/gui/billy.png");
+        images.put("nya", "textures/gui/nya.png");
+        images.put("sonic", "textures/gui/sonic.png");
+        images.put("shayrma", "textures/gui/shayrma.png");
+        images.put("furry2", "textures/gui/furry2.png");
+        images.put("skala", "textures/gui/skala.png");
+        images.put("smalik", "textures/gui/smalik.png");
+    }
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public ListSetting<String> image = new ListSetting<>(
-        "image",
-        new LinkedList<>(images.keySet())
+            "image",
+            new LinkedList<>(images.keySet())
     );
 
     private static boolean key = false;
@@ -46,7 +46,7 @@ public class Gui extends Parent {
                     if (currentScreen instanceof ClickGui clickGuiScreen) {
                         clickGuiScreen.animReverse = true;
                     } else if (currentScreen == null || currentScreen instanceof TitleScreen) {
-                        client.setScreen(new ClickGui(client.currentScreen, moduleManager));
+                        client.setScreen(new ClickGui(client.currentScreen, moduleManager, this));
                     }
                 }
                 key = isRightShiftPressed;

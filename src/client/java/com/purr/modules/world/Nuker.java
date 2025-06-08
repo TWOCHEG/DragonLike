@@ -40,8 +40,8 @@ public class Nuker extends Parent {
     );
     private Header header = new Header("\"/nuker blocksList\"");
     private ListSetting<String> blockMode = new ListSetting<>(
-        "blocks mode",
-        Arrays.asList("whitelist", "blacklist")
+        "find blocks mode",
+        Arrays.asList("blacklist", "whitelist")
     );
     private Setting<Integer> breakDelay = new Setting<>(
         "break delay",

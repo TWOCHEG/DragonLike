@@ -7,6 +7,7 @@ public class Setting<T> {
     private T value;
     public T min, max;
     private Parent module;
+    private Group group = null;
 
     private T defaultValue;
 
@@ -33,6 +34,15 @@ public class Setting<T> {
     public void setModule(Parent module) {
         this.module = module;
         this.value = (T) module.getValue(name, defaultValue);
+    }
+
+    public Setting addToGroup(Group group) {
+        this.group = group;
+        return this;
+    }
+
+    public Group getGroup() {
+        return group;
     }
 }
 
