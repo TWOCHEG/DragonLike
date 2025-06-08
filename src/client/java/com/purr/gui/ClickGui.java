@@ -287,8 +287,11 @@ public class ClickGui extends Screen {
         // еее навалим говно кода, погнали
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj instanceof ListElement lst) {
+            if (obj instanceof ListArea lst) {
                 lst.set();
+                return true;
+            } else if (obj instanceof Group group) {
+                group.setOpen(!group.isOpen());
                 return true;
             } else if (obj instanceof ListSetting set) {
                 int i = set.getOptions().indexOf(set.getValue());
@@ -316,6 +319,9 @@ public class ClickGui extends Screen {
                 } else {
                     exsAnimReverse.put(set, true);
                 }
+                return true;
+            } else if (obj instanceof Group group) {
+                group.setOpen(!group.isOpen());
                 return true;
             } else if (obj instanceof Setting set) {
                 if (set.getValue() instanceof Boolean) {
@@ -423,17 +429,47 @@ public class ClickGui extends Screen {
 
         float ySetOffset = paddingBelowText + rectY;
 
+        Group currentGroup = null;
+        Group lastDrawGroup = null;
+
         for (Setting set : sets) {
+            float textScale = 0.8f;
             int color = RGB.getColor(255, 255, 255, alphaColor);
             String name;
+            currentGroup = set.getGroup();
+
+            if (currentGroup != null && lastDrawGroup != currentGroup) {
+                Text hearderText = Text.literal(currentGroup.getName() + (currentGroup.isOpen() ? " -" : " +"));
+                context.getMatrices().push();
+                context.getMatrices().translate(xColStart, ySetOffset + (10 * (setAnimPercent - 100) / 100f), zDepth);
+                context.getMatrices().scale(textScale, textScale, zDepth);
+                int colorE = (int) (200 * setAnimPercent / 100);
+                context.drawTextWithShadow(
+                    textRenderer, hearderText, 0, 0,
+                    RGB.getColor(colorE, colorE, colorE, alphaColor)
+                );
+                context.getMatrices().pop();
+
+                moduleAreas.add(new ModuleArea(
+                    currentGroup,
+                    xColStart,
+                    ySetOffset,
+                    textRenderer.getWidth(hearderText),
+                    textRenderer.fontHeight
+                ));
+
+                ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
+                lastDrawGroup = currentGroup;
+            }
+            if (currentGroup != null && !currentGroup.isOpen()) {
+                continue;
+            }
 
             if (set instanceof ListSetting lst) {
                 if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
-                    float exsPercent = exsAnim.getOrDefault(lst, 0.0F);
-                    float textScale = 0.8f;
+                    float exsPercent = setAnimPercent * exsAnim.getOrDefault(lst, 0.0f) / 100;
                     float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
                     float drawX = xColStart + spacing;
-
                     float headerY = ySetOffset + drawOffsetY;
                     Text hearderText = Text.literal(set.getName() + ": " + getAnimText((String) lst.getValue(), "", (int) exsPercent));
                     context.getMatrices().push();
@@ -455,7 +491,7 @@ public class ClickGui extends Screen {
                     float headerHeight = textRenderer.fontHeight * textScale;
 
                     List<String> options = lst.getOptions();
-                    float optYOffset = headerHeight;
+                    float optYOffset = headerHeight + spacing;
                     for (String element : options) {
                         float drawY = ySetOffset + drawOffsetY + (optYOffset * exsPercent / 100);
                         float width = textRenderer.getWidth(element) * textScale;
@@ -465,13 +501,13 @@ public class ClickGui extends Screen {
                         context.getMatrices().push();
                         context.getMatrices().translate(drawX, drawY, zDepth);
                         context.getMatrices().scale(textScale, textScale, zDepth);
-                        int colorE2 = (int) (255 * exsPercent / 100);
+                        int colorE2 = (int) (alphaColor * animPercent / 100);
                         context.drawTextWithShadow(
                             textRenderer, display, 0, 0, RGB.getColor(255, 255, 255, colorE2)
                         );
                         context.getMatrices().pop();
 
-                        moduleAreas.add(new ListElement(
+                        moduleAreas.add(new ListArea(
                             lst,
                             element,
                             drawX,
@@ -480,9 +516,9 @@ public class ClickGui extends Screen {
                             height
                         ));
 
-                        optYOffset += textRenderer.fontHeight * textScale;
+                        optYOffset += (textRenderer.fontHeight * textScale) + spacing;
                     }
-                    ySetOffset += headerHeight + ((optYOffset - headerHeight) * exsPercent / 100) + spacing;
+                    ySetOffset += headerHeight + (((optYOffset) - headerHeight) * exsPercent / 100) + spacing;
                     continue;
                 } else {
                     name = set.getName() + ": " + set.getValue();
@@ -502,7 +538,6 @@ public class ClickGui extends Screen {
                 color = RGB.getColor(200, 200, 200, alphaColor);
             }
 
-            float textScale = 0.8f;
             float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
             float drawX = xColStart;
             float drawY = ySetOffset + drawOffsetY;
@@ -557,19 +592,19 @@ public class ClickGui extends Screen {
     private Object getModuleUnderMouse(int mouseX, int mouseY) {
         // хуйня
         for (Object mobule : moduleAreas) {
-            if (mobule instanceof ModuleArea area) {
-                if (mouseX >= area.x
-                        && mouseX <= area.x + area.width
-                        && mouseY >= area.y
-                        && mouseY <= area.y + area.height) {
-                    return area.module;
-                }
-            } else if (mobule instanceof ListElement area) {
+             if (mobule instanceof ListArea area) {
                 if (mouseX >= area.x
                         && mouseX <= area.x + area.width
                         && mouseY >= area.y
                         && mouseY <= area.y + area.height) {
                     return area;
+                }
+            } else if (mobule instanceof ModuleArea area) {
+                if (mouseX >= area.x
+                        && mouseX <= area.x + area.width
+                        && mouseY >= area.y
+                        && mouseY <= area.y + area.height) {
+                    return area.module;
                 }
             }
         }
@@ -702,34 +737,27 @@ public class ClickGui extends Screen {
         }
     }
 
-    private static class ListElement {
-        private final ListSetting clazz;
+    private static class ListArea extends ModuleArea {
         private final String value;
-        private final float x;
-        private final float y;
-        private final float width;
-        private final float height;
 
-        public ListElement(ListSetting clazz, String value, float x, float y, float width, float height) {
-            this.clazz = clazz;
+        public ListArea(ListSetting listClass, String value, float x, float y, float width, float height) {
+            super(listClass, x, y, width, height);
             this.value = value;
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
         }
 
         public void set() {
-            clazz.setValue(value);
+            if (module instanceof ListSetting lst) {
+                lst.setValue(value);
+            }
         }
     }
 
     private static class ModuleArea {
-        private final Object module;
-        private final float x;
-        private final float y;
-        private final float width;
-        private final float height;
+        public final Object module;
+        public final float x;
+        public final float y;
+        public final float width;
+        public final float height;
 
         public ModuleArea(Object module, float x, float y, float width, float height) {
             this.module = module;
