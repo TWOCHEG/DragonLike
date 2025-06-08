@@ -73,8 +73,8 @@ public class Nuker extends Parent {
                 );
                 boolean move = false;
                 if (movePause.getValue()) {
-                Vec3d speed = client.player.getVelocity();
-                move = (speed.x > 0.0f || speed.z > 0.0f);
+                    Vec3d speed = client.player.getVelocity();
+                    move = (speed.x > 0.0f || speed.z > 0.0f);
                 }
 
                 if (!isPlayerMining && !move) {
@@ -93,9 +93,9 @@ public class Nuker extends Parent {
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             if (!animReverse) {
-                animPercent += GetAnimDiff.get();
+                animPercent += GetAnimDiff.get() / 10;
             } else if (animReverse) {
-                animPercent -= GetAnimDiff.get();
+                animPercent -= GetAnimDiff.get() / 10;
             }
             animPercent = Math.clamp(animPercent, 0, 100);
             if (animPercent == 100.0f) {

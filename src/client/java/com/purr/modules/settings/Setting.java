@@ -14,6 +14,7 @@ public class Setting<T> {
     public Setting(String name, T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
+        this.value = defaultValue;
     }
 
     public Setting(String name, T defaultValue, T min, T max) {
