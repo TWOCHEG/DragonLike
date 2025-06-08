@@ -11,7 +11,6 @@ public class Setting<T> {
     private T defaultValue;
 
     public Setting(String name, T defaultValue) {
-        System.out.println(name);
         this.name = name;
         this.defaultValue = defaultValue;
     }

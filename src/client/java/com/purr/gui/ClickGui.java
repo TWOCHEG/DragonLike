@@ -1,3 +1,4 @@
+// местая зона отчуждения, просьба не заходить без подготовки (хотя бы моральной)
 package com.purr.gui;
 
 import com.purr.config.ConfigManager;
@@ -53,7 +54,10 @@ public class ClickGui extends Screen {
     public Map<Parent, Object> setAnimations = new HashMap<>();
     public Map<Parent, Object> setAnimReverse = new HashMap<>();
 
-    public List<ModuleArea> moduleAreas = new ArrayList<>();
+    public Map<ListSetting, Float> exsAnim = new HashMap<>();
+    public Map<ListSetting, Boolean> exsAnimReverse = new HashMap<>();
+
+    public List<Object> moduleAreas = new ArrayList<>();
 
     private Gui guiModule = null;
 
@@ -288,7 +292,10 @@ public class ClickGui extends Screen {
         // еее навалим говно кода, погнали
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj instanceof ListSetting set) {
+            if (obj instanceof ListElement lst) {
+                lst.set();
+                return true;
+            } else if (obj instanceof ListSetting set) {
                 int i = set.getOptions().indexOf(set.getValue());
                 i += 1;
                 if (i > set.getOptions().size() - 1) {
@@ -308,12 +315,14 @@ public class ClickGui extends Screen {
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj instanceof ListSetting set) {
-                int i = set.getOptions().indexOf(set.getValue());
-                i -= 1;
-                if (i < 0) {
-                    i = set.getOptions().size() - 1;
+                set.setExpanded(!set.isExpanded());
+
+                if (!exsAnim.containsKey(set)) {
+                    exsAnim.put(set, 0.0F);
+                    exsAnimReverse.put(set, false);
+                } else {
+                    exsAnimReverse.put(set, true);
                 }
-                set.setValue(set.getOptions().get(i));
                 return true;
             } else if (obj instanceof Setting set) {
                 if (set.getValue() instanceof Boolean) {
@@ -422,57 +431,109 @@ public class ClickGui extends Screen {
         float ySetOffset = paddingBelowText + rectY;
 
         for (Setting set : sets) {
-            if (
-                set.getClass() == Setting.class ||
-                set.getClass() == Header.class ||
-                set.getClass() == ListSetting.class
-            ) {
-                int color = RGB.getColor(255, 255, 255, alphaColor);
-                String name;
+            int color = RGB.getColor(255, 255, 255, alphaColor);
+            String name;
 
-                if (set.getClass() == ListSetting.class) {
-                    name = set.getName() + ": " + set.getValue();
-                } else if (set.getValue() != null) {
-                    name = set.getName() + ": " + set.getValue();
+            if (set instanceof ListSetting lst) {
+                if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
+                    float exsPercent = exsAnim.getOrDefault(lst, 0.0F);
+                    int optOffset = 0;
+                    float textScale = 0.8f;
+                    float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
+                    float drawX = xColStart;
 
-                    if (set.getValue().getClass() == Boolean.class) {
-                        name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
-                        if ((boolean) set.getValue()) {
-                            color = RGB.getColor(230, 255, 230, alphaColor);
-                        } else {
-                            color = RGB.getColor(255, 230, 230, alphaColor);
-                        }
+                    float headerY = ySetOffset + drawOffsetY;
+                    Text hearderText = Text.literal(set.getName() + ": " + getAnimText((String) lst.getValue(), "", (int) exsPercent));
+                    context.getMatrices().push();
+                    context.getMatrices().translate(drawX, headerY, zDepth);
+                    context.getMatrices().scale(textScale, textScale, zDepth);
+                    int colorE = (int) (255 - (55 * exsPercent / 100));
+                    context.drawTextWithShadow(
+                        textRenderer, hearderText, 0, 0,
+                        RGB.getColor(colorE, colorE, colorE, alphaColor)
+                    );
+                    context.getMatrices().pop();
+                    moduleAreas.add(new ModuleArea(
+                        lst,
+                        drawX,
+                        headerY,
+                        textRenderer.getWidth(hearderText),
+                        textRenderer.fontHeight
+                    ));
+                    optOffset += textRenderer.fontHeight;
+
+                    List<String> options = lst.getOptions();
+
+                    for (String element : options) {
+                        float drawY = ySetOffset + drawOffsetY + (optOffset * exsPercent / 100);
+                        float width = textRenderer.getWidth(element) * textScale;
+                        float height = textRenderer.fontHeight * textScale;
+                        Text display = lst.getValue().equals(element) ? Text.literal(element).formatted(Formatting.UNDERLINE) : Text.literal(element);
+
+                        context.getMatrices().push();
+                        context.getMatrices().translate(drawX, drawY, zDepth);
+                        context.getMatrices().scale(textScale, textScale, zDepth);
+                        int colorE2 = (int) (255 * exsPercent / 100);
+                        context.drawTextWithShadow(
+                            textRenderer, display, 0, 0, RGB.getColor(255, 255, 255, colorE2)
+                        );
+                        context.getMatrices().pop();
+
+                        moduleAreas.add(new ListElement(
+                            lst,
+                            element,
+                            drawX,
+                            drawY,
+                            width,
+                            height
+                        ));
+
+                        optOffset += textRenderer.fontHeight;
                     }
 
+                    ySetOffset += ((textRenderer.fontHeight + optOffset * exsPercent / 100) * textScale) + spacing;
+                    continue;
                 } else {
-                    name = set.getName();
-                    color = RGB.getColor(200, 200, 200, alphaColor);
+                    name = set.getName() + ": " + set.getValue();
                 }
-
-                float textScale = 0.8f;
-                float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
-                float drawX = xColStart;
-                float drawY = ySetOffset + drawOffsetY;
-                float width = textRenderer.getWidth(name) * textScale;
-                float height = textRenderer.fontHeight * textScale;
-                Text display = Text.literal(name);
-
-                context.getMatrices().push();
-                context.getMatrices().translate(drawX, drawY, zDepth);
-                context.getMatrices().scale(textScale, textScale, zDepth);
-                context.drawTextWithShadow(textRenderer, display, 0, 0, color);
-                context.getMatrices().pop();
-
-                moduleAreas.add(new ModuleArea(
-                    set,
-                    drawX,
-                    drawY,
-                    width,
-                    height
-                ));
-
-                ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
+            } else if (set.getValue() != null) {
+                name = set.getName() + ": " + set.getValue();
+                if (set.getValue() instanceof Boolean) {
+                    name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
+                    if ((boolean) set.getValue()) {
+                        color = RGB.getColor(230, 255, 230, alphaColor);
+                    } else {
+                        color = RGB.getColor(255, 230, 230, alphaColor);
+                    }
+                }
+            } else {
+                name = set.getName();
+                color = RGB.getColor(200, 200, 200, alphaColor);
             }
+
+            float textScale = 0.8f;
+            float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
+            float drawX = xColStart;
+            float drawY = ySetOffset + drawOffsetY;
+            float width = textRenderer.getWidth(name) * textScale;
+            float height = textRenderer.fontHeight * textScale;
+            Text display = Text.literal(name);
+
+            context.getMatrices().push();
+            context.getMatrices().translate(drawX, drawY, zDepth);
+            context.getMatrices().scale(textScale, textScale, zDepth);
+            context.drawTextWithShadow(textRenderer, display, 0, 0, color);
+            context.getMatrices().pop();
+
+            moduleAreas.add(new ModuleArea(
+                set,
+                drawX,
+                drawY,
+                width,
+                height
+            ));
+
+            ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
         }
 
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;
@@ -503,13 +564,22 @@ public class ClickGui extends Screen {
     }
 
     private Object getModuleUnderMouse(int mouseX, int mouseY) {
-        for (int i = moduleAreas.size() - 1; i >= 0; i--) {
-            ModuleArea area = moduleAreas.get(i);
-            if (mouseX >= area.x
-                    && mouseX <= area.x + area.width
-                    && mouseY >= area.y
-                    && mouseY <= area.y + area.height) {
-                return area.module;
+        // хуйня
+        for (Object mobule : moduleAreas) {
+            if (mobule instanceof ModuleArea area) {
+                if (mouseX >= area.x
+                        && mouseX <= area.x + area.width
+                        && mouseY >= area.y
+                        && mouseY <= area.y + area.height) {
+                    return area.module;
+                }
+            } else if (mobule instanceof ListElement area) {
+                if (mouseX >= area.x
+                        && mouseX <= area.x + area.width
+                        && mouseY >= area.y
+                        && mouseY <= area.y + area.height) {
+                    return area;
+                }
             }
         }
         return null;
@@ -615,6 +685,51 @@ public class ClickGui extends Screen {
                     setAnimReverse.remove(module);
                 }
             }
+        }
+        // анимация открытия списка
+        if (!exsAnim.isEmpty()) {
+            Iterator<ListSetting> it = exsAnim.keySet().iterator();
+            while (it.hasNext()) {
+                ListSetting module = it.next();
+                float percent = exsAnim.get(module);
+                boolean reverse = exsAnimReverse.getOrDefault(module, false);
+
+                if (!reverse && percent < 100) {
+                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
+                } else if (reverse && percent > 0) {
+                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
+                }
+
+                percent = Math.clamp(percent, 0, 100);
+                exsAnim.put(module, percent);
+
+                if (reverse && percent <= 1) {
+                    it.remove();
+                    exsAnimReverse.remove(module);
+                }
+            }
+        }
+    }
+
+    private static class ListElement {
+        private final ListSetting clazz;
+        private final String value;
+        private final float x;
+        private final float y;
+        private final float width;
+        private final float height;
+
+        public ListElement(ListSetting clazz, String value, float x, float y, float width, float height) {
+            this.clazz = clazz;
+            this.value = value;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+
+        public void set() {
+            clazz.setValue(value);
         }
     }
 
