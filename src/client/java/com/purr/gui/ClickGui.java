@@ -76,15 +76,58 @@ public class ClickGui extends Screen {
             previous.render(context, mouseX, mouseY, delta);
         }
 
-        animHandler(client, GetAnimDiff.get(), mouseX, mouseY);
         if (animReverse && animPercent == 0) {
             client.setScreen(null);
             return;
         }
 
+        animHandler();
+
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
 
+        if (animPercent == 100) {
+            boolean left = GLFW.glfwGetMouseButton(
+                    client.getInstance().getWindow().getHandle(),
+                    GLFW.GLFW_MOUSE_BUTTON_LEFT
+            ) == GLFW.GLFW_PRESS;
+            if (left) {
+                Object obj = getModuleUnderMouse(mouseX, mouseY);
+                if (obj != null && obj instanceof Setting set) {
+                    if (set.getValue() instanceof Float) {;
+                        float value = (float) set.getValue() - 0.1f;
+                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
+                        value = Math.round(value * 10f) / 10f;
+                        set.setValue(value);
+                    } else if (set.getValue() instanceof Integer) {
+                        int value = (int) set.getValue() - 1;
+                        set.setValue(
+                                Math.clamp(value, (int) set.min, (int) set.max)
+                        );
+                    }
+                }
+            }
+            boolean right = GLFW.glfwGetMouseButton(
+                    client.getInstance().getWindow().getHandle(),
+                    GLFW.GLFW_MOUSE_BUTTON_RIGHT
+            ) == GLFW.GLFW_PRESS;
+            if (right) {
+                Object obj = getModuleUnderMouse(mouseX, mouseY);
+                if (obj != null && obj instanceof Setting set) {
+                    if (set.getValue() instanceof Float) {
+                        float value = (float) set.getValue() + 0.1f;
+                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
+                        value = Math.round(value * 10f) / 10f;
+                        set.setValue(value);
+                    } else if (set.getValue() instanceof Integer) {
+                        int value = (int) set.getValue() + 1;
+                        set.setValue(
+                                Math.clamp(value, (int) set.min, (int) set.max)
+                        );
+                    }
+                }
+            }
+        }
 
         if (
             guiModule != null &&
@@ -410,6 +453,91 @@ public class ClickGui extends Screen {
         super.mouseMoved(mouseX, mouseY);
     }
 
+    public void animHandler() {
+        int animDiff = GetAnimDiff.get();
+
+        // Анимация открытия/закрытия
+        if (!animReverse && animPercent < 100) {
+            animPercent += Math.max(0.1f, (animDiff * (100 - animPercent)) / 100);
+        } else if (animReverse && animPercent > 0) {
+            animPercent -= Math.max(0.1f, (animDiff * animPercent) / 100);
+        }
+        animPercent = Math.clamp(animPercent, 0, 100);
+
+        // анимация биндов
+        long window = client.getWindow().getHandle();
+        if (!animReverse && animPercent >= 100) {
+            boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
+            if (shiftDown && showKeybind < 100) {
+                showKeybind += Math.max(0.1f, (animDiff * (100 - showKeybind)) / 100);
+            } else if (!shiftDown && showKeybind > 0) {
+                showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
+            }
+        }
+        else if (animReverse && showKeybind > 0) {
+            showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
+        }
+        showKeybind = Math.clamp(showKeybind, 0, 100);
+
+        // анимация бинда
+        if (!bindAnimReverse && bindAnimPercent < 100) {
+            bindAnimPercent += Math.max(0.1f, (animDiff * (100 - bindAnimPercent)) / 100);
+        } else if (bindAnimReverse && bindAnimPercent > 0) {
+            bindAnimPercent -= Math.max(0.1f, (animDiff * bindAnimPercent) / 100);
+        }
+        bindAnimPercent = Math.clamp(bindAnimPercent, 0, 100);
+        if (bindAnimReverse && bindAnimPercent < 1) {
+            bindingModule = null;
+        }
+
+        // анимация "правого клика" (setAnimations)
+        if (!setAnimations.isEmpty()) {
+            Iterator<Parent> it = setAnimations.keySet().iterator();
+            while (it.hasNext()) {
+                Parent module = it.next();
+                float percent = (float) setAnimations.get(module);
+                boolean reverse = (boolean) setAnimReverse.getOrDefault(module, false);
+
+                if (!reverse && percent < 100) {
+                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
+                } else if (reverse && percent > 0) {
+                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
+                }
+
+                percent = Math.clamp(percent, 0, 100);
+                setAnimations.put(module, percent);
+
+                if (reverse && percent <= 1) {
+                    it.remove();
+                    setAnimReverse.remove(module);
+                }
+            }
+        }
+        // анимация открытия списка
+        if (!exsAnim.isEmpty()) {
+            Iterator<ListSetting> it = exsAnim.keySet().iterator();
+            while (it.hasNext()) {
+                ListSetting module = it.next();
+                float percent = exsAnim.get(module);
+                boolean reverse = exsAnimReverse.getOrDefault(module, false);
+
+                if (!reverse && percent < 100) {
+                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
+                } else if (reverse && percent > 0) {
+                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
+                }
+
+                percent = Math.clamp(percent, 0, 100);
+                exsAnim.put(module, percent);
+
+                if (reverse && percent <= 1) {
+                    it.remove();
+                    exsAnimReverse.remove(module);
+                }
+            }
+        }
+    }
+
     public float drawSettings(
         Parent module,
         List<Setting<?>> sets,
@@ -501,7 +629,7 @@ public class ClickGui extends Screen {
                         context.getMatrices().push();
                         context.getMatrices().translate(drawX, drawY, zDepth);
                         context.getMatrices().scale(textScale, textScale, zDepth);
-                        int colorE2 = (int) (alphaColor * animPercent / 100);
+                        int colorE2 = (int) ((alphaColor * animPercent / 100) * exsPercent / 100);
                         context.drawTextWithShadow(
                             textRenderer, display, 0, 0, RGB.getColor(255, 255, 255, colorE2)
                         );
@@ -609,132 +737,6 @@ public class ClickGui extends Screen {
             }
         }
         return null;
-    }
-
-    public void animHandler(MinecraftClient client, int animDiff, int mouseX, int mouseY) {
-        if (animPercent == 100) {
-            boolean left = GLFW.glfwGetMouseButton(
-                client.getInstance().getWindow().getHandle(),
-                GLFW.GLFW_MOUSE_BUTTON_LEFT
-            ) == GLFW.GLFW_PRESS;
-            if (left) {
-                Object obj = getModuleUnderMouse(mouseX, mouseY);
-                if (obj != null && obj instanceof Setting set) {
-                    if (set.getValue() instanceof Float) {;
-                        float value = (float) set.getValue() - 0.1f;
-                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
-                        value = Math.round(value * 10f) / 10f;
-                        set.setValue(value);
-                    } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() - 1;
-                        set.setValue(
-                            Math.clamp(value, (int) set.min, (int) set.max)
-                        );
-                    }
-                }
-            }
-            boolean right = GLFW.glfwGetMouseButton(
-                    client.getInstance().getWindow().getHandle(),
-                    GLFW.GLFW_MOUSE_BUTTON_RIGHT
-            ) == GLFW.GLFW_PRESS;
-            if (right) {
-                Object obj = getModuleUnderMouse(mouseX, mouseY);
-                if (obj != null && obj instanceof Setting set) {
-                    if (set.getValue() instanceof Float) {
-                        float value = (float) set.getValue() + 0.1f;
-                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
-                        value = Math.round(value * 10f) / 10f;
-                        set.setValue(value);
-                    } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() + 1;
-                        set.setValue(
-                            Math.clamp(value, (int) set.min, (int) set.max)
-                        );
-                    }
-                }
-            }
-        }
-
-        // Анимация открытия/закрытия
-        if (!animReverse && animPercent < 100) {
-            animPercent += Math.max(0.1f, (animDiff * (100 - animPercent)) / 100);
-        } else if (animReverse && animPercent > 0) {
-            animPercent -= Math.max(0.1f, (animDiff * animPercent) / 100);
-        }
-        animPercent = Math.clamp(animPercent, 0, 100);
-
-        // анимация биндов
-        long window = client.getWindow().getHandle();
-        if (!animReverse && animPercent >= 100) {
-            boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
-            if (shiftDown && showKeybind < 100) {
-                showKeybind += Math.max(0.1f, (animDiff * (100 - showKeybind)) / 100);
-            } else if (!shiftDown && showKeybind > 0) {
-                showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
-            }
-        }
-        else if (animReverse && showKeybind > 0) {
-            showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
-        }
-        showKeybind = Math.clamp(showKeybind, 0, 100);
-
-        // анимация бинда
-        if (!bindAnimReverse && bindAnimPercent < 100) {
-            bindAnimPercent += Math.max(0.1f, (animDiff * (100 - bindAnimPercent)) / 100);
-        } else if (bindAnimReverse && bindAnimPercent > 0) {
-            bindAnimPercent -= Math.max(0.1f, (animDiff * bindAnimPercent) / 100);
-        }
-        bindAnimPercent = Math.clamp(bindAnimPercent, 0, 100);
-        if (bindAnimReverse && bindAnimPercent < 1) {
-            bindingModule = null;
-        }
-
-        // анимация "правого клика" (setAnimations)
-        if (!setAnimations.isEmpty()) {
-            Iterator<Parent> it = setAnimations.keySet().iterator();
-            while (it.hasNext()) {
-                Parent module = it.next();
-                float percent = (float) setAnimations.get(module);
-                boolean reverse = (boolean) setAnimReverse.getOrDefault(module, false);
-
-                if (!reverse && percent < 100) {
-                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
-                } else if (reverse && percent > 0) {
-                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
-                }
-
-                percent = Math.clamp(percent, 0, 100);
-                setAnimations.put(module, percent);
-
-                if (reverse && percent <= 1) {
-                    it.remove();
-                    setAnimReverse.remove(module);
-                }
-            }
-        }
-        // анимация открытия списка
-        if (!exsAnim.isEmpty()) {
-            Iterator<ListSetting> it = exsAnim.keySet().iterator();
-            while (it.hasNext()) {
-                ListSetting module = it.next();
-                float percent = exsAnim.get(module);
-                boolean reverse = exsAnimReverse.getOrDefault(module, false);
-
-                if (!reverse && percent < 100) {
-                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
-                } else if (reverse && percent > 0) {
-                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
-                }
-
-                percent = Math.clamp(percent, 0, 100);
-                exsAnim.put(module, percent);
-
-                if (reverse && percent <= 1) {
-                    it.remove();
-                    exsAnimReverse.remove(module);
-                }
-            }
-        }
     }
 
     private static class ListArea extends ModuleArea {

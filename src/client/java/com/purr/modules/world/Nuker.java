@@ -2,6 +2,7 @@ package com.purr.modules.world;
 
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
+import com.purr.utils.GetAnimDiff;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.BlockState;
@@ -92,9 +93,9 @@ public class Nuker extends Parent {
 
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             if (!animReverse) {
-                animPercent += 2;
+                animPercent += GetAnimDiff.get();
             } else if (animReverse) {
-                animPercent -= 2;
+                animPercent -= GetAnimDiff.get();
             }
             animPercent = Math.clamp(animPercent, 0, 100);
             if (animPercent == 100.0f) {
