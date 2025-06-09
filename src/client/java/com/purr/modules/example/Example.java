@@ -20,7 +20,6 @@ public class Example extends Parent {
     public Setting<Boolean> visible = new Setting<>("visible", false);
     public Header header3 = (Header) new Header("ты видишь меня").visibleIf(visible, true);
 
-
     public Example() {
         super("example", "example", "example");
     }

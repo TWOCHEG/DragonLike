@@ -2,24 +2,23 @@ package com.purr.modules.settings;
 
 import com.purr.modules.Parent;
 
-import java.util.HashMap;
+import java.util.*;
 
 public class Setting<T> {
     private final String name;
-    private T value;
+    private T value = null;
     public T min, max;
     private Parent module;
     private Group group = null;
 
     private Setting visibleClass = null;
-    private Object[] visibleValues = null;
+    private List<Object> visibleValues = null;
 
     private T defaultValue;
 
     public Setting(String name, T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
-        this.value = defaultValue;
     }
 
     public Setting(String name, T defaultValue, T min, T max) {
@@ -30,11 +29,13 @@ public class Setting<T> {
 
     public String getName() { return name; }
     public T getValue() {
-        return value;
+        return value != null ? value : defaultValue;
     }
     public void setValue(T value) {
-        this.value = value;
-        module.setValue(name, value);
+        if (value != null) {
+            this.value = value;
+            module.setValue(name, value);
+        }
     }
 
     public void setModule(Parent module) {
@@ -47,10 +48,16 @@ public class Setting<T> {
         return this;
     }
 
-    public Setting visibleIf(Setting setClass, Object[] values) {
+    public Setting visibleIf(Setting setClass, Object... values) {
         this.visibleClass = setClass;
-        this.visibleValues = values;
+        this.visibleValues = Arrays.asList(values);
         return this;
+    }
+    public List<Object> getVisibleValues() {
+        return visibleValues;
+    }
+    public Setting getVisibleClass() {
+        return visibleClass;
     }
 
     public Group getGroup() {

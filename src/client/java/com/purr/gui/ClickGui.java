@@ -593,6 +593,13 @@ public class ClickGui extends Screen {
                 continue;
             }
 
+            if (
+                set.getVisibleValues() != null &&
+                !set.getVisibleValues().contains(set.getVisibleClass().getValue())
+            ) {
+                continue;
+            }
+
             if (set instanceof ListSetting lst) {
                 if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
                     float exsPercent = setAnimPercent * exsAnim.getOrDefault(lst, 0.0f) / 100;

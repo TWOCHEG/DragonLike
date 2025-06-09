@@ -1,5 +1,6 @@
 package com.purr;
 
+import com.purr.modules.example.Example;
 import com.purr.modules.ui.Notify;
 import net.fabricmc.api.ModInitializer;
 import java.util.ArrayList;
