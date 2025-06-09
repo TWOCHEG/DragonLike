@@ -2,12 +2,17 @@ package com.purr.modules.settings;
 
 import com.purr.modules.Parent;
 
+import java.util.HashMap;
+
 public class Setting<T> {
     private final String name;
     private T value;
     public T min, max;
     private Parent module;
     private Group group = null;
+
+    private Setting visibleClass = null;
+    private Object[] visibleValues = null;
 
     private T defaultValue;
 
@@ -37,8 +42,14 @@ public class Setting<T> {
         this.value = (T) module.getValue(name, defaultValue);
     }
 
-    public Setting addToGroup(Group group) {
+    public Setting<T> addToGroup(Group group) {
         this.group = group;
+        return this;
+    }
+
+    public Setting visibleIf(Setting setClass, Object[] values) {
+        this.visibleClass = setClass;
+        this.visibleValues = values;
         return this;
     }
 

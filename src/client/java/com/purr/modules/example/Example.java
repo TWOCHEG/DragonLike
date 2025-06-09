@@ -14,8 +14,14 @@ public class Example extends Parent {
         "list",
         Arrays.asList("1", "2", "3") // первый элемент используется как стандартный
     );
+    public Group group = new Group("group/category");
+    public Header header2 = (Header) new Header("настойки типо").addToGroup(group);
+
+    public Setting<Boolean> visible = new Setting<>("visible", false);
+    public Header header3 = (Header) new Header("ты видишь меня").visibleIf(visible, true);
+
 
     public Example() {
-        super("example", "example", "category");
+        super("example", "example", "example");
     }
 }
