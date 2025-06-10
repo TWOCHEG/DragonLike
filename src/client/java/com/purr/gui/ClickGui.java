@@ -47,11 +47,14 @@ public class ClickGui extends Screen {
 
     public Map<Parent, Object> hoverAnimations = new HashMap<>();
 
-    public Map<Parent, Object> setAnimations = new HashMap<>();
-    public Map<Parent, Object> setAnimReverse = new HashMap<>();
+    public Map<Object, Float> setAnim = new HashMap<>();
+    public Map<Object, Boolean> setAnimReverse = new HashMap<>();
 
-    public Map<ListSetting, Float> exsAnim = new HashMap<>();
-    public Map<ListSetting, Boolean> exsAnimReverse = new HashMap<>();
+    public Map<Object, Float> exsAnim = new HashMap<>();
+    public Map<Object, Boolean> exsAnimReverse = new HashMap<>();
+
+    public Map<Object, Float> setVisAnim = new HashMap<>();
+    public Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
 
     public List<Object> moduleAreas = new ArrayList<>();
 
@@ -243,7 +246,7 @@ public class ClickGui extends Screen {
                         && mouseY >= yOffset
                         && mouseY <= yOffset + baseTextHeight
                     ) || (
-                        setAnimations.get(module) != null
+                        setAnim.get(module) != null
                     )
                 );
 
@@ -287,12 +290,12 @@ public class ClickGui extends Screen {
                 List<Setting<?>> sets = module.getSettings();
                 float winHeight = 0;
                 float xDifference = 0;
-                if (setAnimations.containsKey(module) && !module.getSettings().isEmpty()) {
+                if (setAnim.containsKey(module) && !module.getSettings().isEmpty()) {
                     winHeight = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
-                } else if (module.getSettings().isEmpty() && setAnimations.containsKey(module)) {
+                } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
                     setAnimReverse.put(module, true);
                     // эта переменная может быть от 15
-                    float percent = (float) setAnimations.get(module);
+                    float percent = (float) setAnim.get(module);
 
                     if (percent % 2 == 0) {
                         xDifference -= 5f;
@@ -355,7 +358,8 @@ public class ClickGui extends Screen {
             }
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-            if (obj instanceof ListSetting set) {
+            if (obj instanceof ListSetting || obj instanceof ListArea) {
+                Setting set = (Setting) (obj instanceof ListArea ? ((ListArea) obj).module : obj);
                 if (!exsAnim.containsKey(set)) {
                     exsAnim.put(set, 0.0F);
                     exsAnimReverse.put(set, false);
@@ -372,8 +376,8 @@ public class ClickGui extends Screen {
                 }
                 return true;
             } else if (obj instanceof Parent module) {
-                if (!setAnimations.containsKey(module)) {
-                    setAnimations.put(module, 0.0F);
+                if (!setAnim.containsKey(module)) {
+                    setAnim.put(module, 0.0F);
                     setAnimReverse.put(module, false);
                 } else {
                     setAnimReverse.put(module, true);
@@ -490,52 +494,36 @@ public class ClickGui extends Screen {
             bindingModule = null;
         }
 
-        // анимация "правого клика" (setAnimations)
-        if (!setAnimations.isEmpty()) {
-            Iterator<Parent> it = setAnimations.keySet().iterator();
+        handleMapAnim(setAnim, setAnimReverse);
+        handleMapAnim(exsAnim, exsAnimReverse);
+        handleMapAnim(setVisAnim, setVisAnimReverse, false);
+    }
+    private void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, Boolean delete) {
+        if (!animMap.isEmpty()) {
+            Iterator<Object> it = animMap.keySet().iterator();
             while (it.hasNext()) {
-                Parent module = it.next();
-                float percent = (float) setAnimations.get(module);
-                boolean reverse = (boolean) setAnimReverse.getOrDefault(module, false);
+                Object obj = it.next();
+                float percent = animMap.get(obj);
+                boolean reverse = reverceMap.getOrDefault(obj, false);
 
                 if (!reverse && percent < 100) {
-                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
+                    percent += Math.max(0.1f, (GetAnimDiff.get() * (100 - percent)) / 100);
                 } else if (reverse && percent > 0) {
-                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
+                    percent -= Math.max(0.1f, (GetAnimDiff.get() * percent) / 100);
                 }
 
                 percent = Math.clamp(percent, 0, 100);
-                setAnimations.put(module, percent);
+                animMap.put(obj, percent);
 
-                if (reverse && percent <= 1) {
+                if ((reverse && percent <= 1) && delete) {
                     it.remove();
-                    setAnimReverse.remove(module);
+                    reverceMap.remove(obj);
                 }
             }
         }
-        // анимация открытия списка
-        if (!exsAnim.isEmpty()) {
-            Iterator<ListSetting> it = exsAnim.keySet().iterator();
-            while (it.hasNext()) {
-                ListSetting module = it.next();
-                float percent = exsAnim.get(module);
-                boolean reverse = exsAnimReverse.getOrDefault(module, false);
-
-                if (!reverse && percent < 100) {
-                    percent += Math.max(0.1f, (animDiff * (100 - percent)) / 100);
-                } else if (reverse && percent > 0) {
-                    percent -= Math.max(0.1f, (animDiff * percent) / 100);
-                }
-
-                percent = Math.clamp(percent, 0, 100);
-                exsAnim.put(module, percent);
-
-                if (reverse && percent <= 1) {
-                    it.remove();
-                    exsAnimReverse.remove(module);
-                }
-            }
-        }
+    }
+    private void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap) {
+        handleMapAnim(animMap, reverceMap, true);
     }
 
     public float drawSettings(
@@ -549,8 +537,7 @@ public class ClickGui extends Screen {
     ) {
         // параметры
         int zDepth = 3;
-        float setAnimPercent = (float) setAnimations.get(module);
-        int alphaColor = (255 * (int) animPercent / 100) * (int) setAnimPercent / 100;
+        float setAnimPercent = setAnim.get(module);
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
@@ -561,6 +548,7 @@ public class ClickGui extends Screen {
         Group lastDrawGroup = null;
 
         for (Setting set : sets) {
+            int alphaColor = (int) ((255 * animPercent / 100) * setAnimPercent / 100);
             float textScale = 0.8f;
             int color = RGB.getColor(255, 255, 255, alphaColor);
             String name;
@@ -589,16 +577,45 @@ public class ClickGui extends Screen {
                 ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
                 lastDrawGroup = currentGroup;
             }
-            if (currentGroup != null && !currentGroup.isOpen()) {
-                continue;
+            if (!setVisAnim.containsKey(set)) {
+                if (currentGroup != null && !currentGroup.isOpen()) {
+                    setVisAnim.put(set, 0.0f);
+                    setVisAnimReverse.put(set, true);
+                } else {
+                    boolean meetsCondition = set.getVisibleValues() == null ||
+                            (set.getVisibleValues().contains(set.getVisibleClass().getValue()));
+                    boolean isGroupOpenOrNoGroup = (currentGroup == null || currentGroup.isOpen());
+                    boolean initialReverse = !(meetsCondition && isGroupOpenOrNoGroup);
+
+                    setVisAnim.put(set, initialReverse ? 0.0f : 100.0f);
+                    setVisAnimReverse.put(set, initialReverse);
+                }
+            }
+            if (currentGroup != null) {
+                if (!currentGroup.isOpen() && !setVisAnimReverse.getOrDefault(set, false)) {
+                    setVisAnimReverse.put(set, true);
+                } else if (currentGroup.isOpen() && setVisAnimReverse.getOrDefault(set, true)) {
+                    setVisAnim.put(set, setVisAnim.getOrDefault(set, 0.0f));
+                    setVisAnimReverse.put(set, false);
+                }
+            }
+            boolean isGroupOpenOrNoGroup = (currentGroup == null || (currentGroup != null && currentGroup.isOpen()));
+            if (isGroupOpenOrNoGroup) {
+                boolean meetsCondition = set.getVisibleValues() == null ||
+                        (set.getVisibleValues().contains(set.getVisibleClass().getValue()));
+
+                if (!meetsCondition && !setVisAnimReverse.getOrDefault(set, false)) {
+                    setVisAnimReverse.put(set, true);
+                } else if (meetsCondition && setVisAnimReverse.getOrDefault(set, true)) {
+                    setVisAnim.put(set, setVisAnim.getOrDefault(set, 0.0f));
+                    setVisAnimReverse.put(set, false);
+                }
             }
 
-            if (
-                set.getVisibleValues() != null &&
-                !set.getVisibleValues().contains(set.getVisibleClass().getValue())
-            ) {
-                continue;
-            }
+            float visAnimPercent = setVisAnim.getOrDefault(set, 100.0f);
+            if (visAnimPercent == 0.0f) continue;
+
+            alphaColor = (int) (alphaColor * visAnimPercent / 100);
 
             if (set instanceof ListSetting lst) {
                 if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
@@ -653,13 +670,15 @@ public class ClickGui extends Screen {
 
                         optYOffset += (textRenderer.fontHeight * textScale) + spacing;
                     }
-                    ySetOffset += headerHeight + (((optYOffset) - headerHeight) * exsPercent / 100) + spacing;
+                    ySetOffset += (headerHeight + (((optYOffset) - headerHeight) * exsPercent / 100) + spacing) * visAnimPercent / 100;
                     continue;
                 } else {
                     name = set.getName() + ": " + set.getValue();
+                    color = RGB.getColor(255, 255, 255, alphaColor);
                 }
             } else if (set.getValue() != null) {
                 name = set.getName() + ": " + set.getValue();
+                color = RGB.getColor(255, 255, 255, alphaColor);
                 if (set.getValue() instanceof Boolean) {
                     name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
                     if ((boolean) set.getValue()) {
@@ -694,7 +713,7 @@ public class ClickGui extends Screen {
                 height
             ));
 
-            ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
+            ySetOffset += ((textRenderer.fontHeight * textScale) + spacing) * visAnimPercent / 100;
         }
 
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;
