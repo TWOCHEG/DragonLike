@@ -25,11 +25,13 @@ public class Gui extends Parent {
     }
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public ListSetting<String> image = new ListSetting<>(
-            "image",
-            new LinkedList<>(images.keySet())
+        "image",
+        new LinkedList<>(images.keySet())
     );
 
     private static boolean key = false;
+
+    public LinkedList<Map<?, ?>> animSave = new LinkedList<>();
 
     public Gui() {
         super("click gui", "click_gui", "ui");
@@ -44,9 +46,9 @@ public class Gui extends Parent {
 
                 if (isRightShiftPressed && !key) {
                     if (currentScreen instanceof ClickGui clickGuiScreen) {
-                        clickGuiScreen.animReverse = true;
+                        clickGuiScreen.closeGui();
                     } else if (currentScreen == null || currentScreen instanceof TitleScreen) {
-                        client.setScreen(new ClickGui(client.currentScreen, moduleManager, this));
+                        client.setScreen(new ClickGui(client.currentScreen, moduleManager, this, animSave));
                     }
                 }
                 key = isRightShiftPressed;

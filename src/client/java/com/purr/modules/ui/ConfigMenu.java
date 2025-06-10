@@ -21,7 +21,7 @@ public class ConfigMenu extends Parent {
             if (enable && !show) {
                 boolean retr = false;
                 if (client.currentScreen instanceof ClickGui screen) {
-                    screen.animReverse = true;
+                    screen.closeGui();
                     retr = true;
                 }
                 if (!retr) {

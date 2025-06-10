@@ -39,14 +39,6 @@ public class Notify extends Parent {
         }
 
         ClientTickEvents.START_CLIENT_TICK.register(context -> {
-            liveTimeHandler();
-            animHandler();
-            sizeHandler();
-//            System.out.println(history);
-        });
-
-        HudRenderCallback.EVENT.register((matrices, tickDelta) -> {
-
         });
     }
 
@@ -76,87 +68,6 @@ public class Notify extends Parent {
 //        }
 //    }
 
-    private void sizeHandler() {
-        for (NotifyType notifyType : NotifyType.values()) {
-            int limit = limits.getOrDefault(notifyType, 1);
-            if (((Map<?, ?>) history.get(notifyType)).size() > limit) {
-                String key = ((Map<String, ?>) history.get(notifyType)).keySet().iterator().next();
-
-                Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.getOrDefault(notifyType, new LinkedHashMap<>());
-                reverseHistory.remove(key);
-                reverseAnim.put(notifyType, reverseHistory);
-            }
-        }
-    }
-
-    private void animHandler() {
-        float deltaTime = GetAnimDiff.get();
-        float clampedDelta = 10;
-
-        for (NotifyType notifyType : NotifyType.values()) {
-            Map<String, Float> notifyHistory = (Map<String, Float>) history.get(notifyType);
-            Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.get(notifyType);
-
-            for (String key : notifyHistory.keySet()) {
-                boolean animReverse = reverseHistory.getOrDefault(key, true);
-                float animPercent = notifyHistory.get(key);
-
-                if (!animReverse && animPercent < 100) {
-                    float increment = (clampedDelta * (100 - animPercent)) / 100;
-                    animPercent += Math.max(0.1f, increment);
-                } else if (animReverse && animPercent > 0) {
-                    float decrement = (clampedDelta * animPercent) / 100;
-                    animPercent -= Math.max(0.1f, decrement);
-                }
-
-                animPercent = Math.clamp(animPercent, 0.0f, 100.0f);
-                notifyHistory.put(key, animPercent);
-            }
-            history.put(notifyType, notifyHistory);
-        }
-    }
-
-    private void liveTimeHandler() {
-//        System.out.println(liveTime);
-        for (NotifyType notifyType : NotifyType.values()) {
-            Map<String, Integer> mapTimes = (Map<String, Integer>) liveTime.get(notifyType);
-            if (mapTimes == null) continue;
-
-            Iterator<Map.Entry<String, Integer>> iterator = mapTimes.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Integer> entry = iterator.next();
-                int value = entry.getValue() - 1;
-                entry.setValue(value);
-
-                if (value < 1) {
-                    iterator.remove();
-                    Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.getOrDefault(notifyType, new LinkedHashMap<>());
-                    reverseHistory.remove(entry.getKey());
-                    reverseAnim.put(notifyType, reverseHistory);
-                }
-            }
-        }
-    }
-
     public void add(String text, NotifyType notifyType) {
-        if (!enable) return;
-
-        Map<String, Float> notifyHistory = (Map<String, Float>) history.getOrDefault(notifyType, new LinkedHashMap<>());
-        String lastKey = "";
-        for (String key : notifyHistory.keySet()) {
-            lastKey = key;
-        }
-        if (lastKey.equals(text)) return;
-
-        notifyHistory.put(text, 0.0f);
-        history.put(notifyType, notifyHistory);
-
-        Map<String, Boolean> reverseHistory = (Map<String, Boolean>) reverseAnim.getOrDefault(notifyType, new LinkedHashMap<>());
-        reverseHistory.put(text, false);
-        reverseAnim.put(notifyType, reverseHistory);
-
-        Map<String, Integer> liveHistory = (Map<String, Integer>) liveTime.getOrDefault(notifyType, new LinkedHashMap<>());
-        liveHistory.put(text, liveTimeSet.getValue());
-        liveTime.put(notifyType, liveHistory);
     }
 }

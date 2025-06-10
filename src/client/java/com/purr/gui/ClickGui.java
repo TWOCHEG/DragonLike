@@ -21,50 +21,72 @@ import net.minecraft.resource.Resource;
 
 import org.lwjgl.glfw.GLFW;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class ClickGui extends Screen {
     private final Map<String, List<Parent>> modules;
+    private Gui guiModule;
 
-    public static final String hintsText = "← ↑ ↓ → - move gui\nleft shift - percent binds\nmouse middle - bind module";
+    private static final String hintsText = "← ↑ ↓ → - move gui\nleft shift - percent binds\nmouse middle - bind module";
 
-    public Parent bindingModule = null;
-    public float bindAnimPercent = 0;
-    public boolean bindAnimReverse = true;
+    private List<Object> moduleAreas = new ArrayList<>();
 
-    public float animPercent = 0;
-    public boolean animReverse = false;
+    private Parent bindingModule = null;
+    private float bindAnimPercent = 0;
+    private boolean bindAnimReverse = true;
 
-    public int showKeybind = 0;
+    private float animPercent = 0;
+    private boolean animReverse = false;
 
-    public double lastMouseX = 0;
-    public double lastMouseY = 0;
+    private int showKeybind = 0;
 
-    public float xMove = 0;
-    public float yMove = 0;
+    private double lastMouseX = 0;
+    private double lastMouseY = 0;
+
+    private float xMove = 0;
+    private float yMove = 0;
 
     private final Screen previous;
 
-    public Map<Parent, Object> hoverAnimations = new HashMap<>();
+    private Map<Parent, Object> hoverAnimations = new HashMap<>();
 
-    public Map<Object, Float> setAnim = new HashMap<>();
-    public Map<Object, Boolean> setAnimReverse = new HashMap<>();
+    private Map<Object, Float> setAnim = new HashMap<>();
+    private Map<Object, Boolean> setAnimReverse = new HashMap<>();
 
-    public Map<Object, Float> exsAnim = new HashMap<>();
-    public Map<Object, Boolean> exsAnimReverse = new HashMap<>();
+    private Map<Object, Float> exsAnim = new HashMap<>();
+    private Map<Object, Boolean> exsAnimReverse = new HashMap<>();
 
-    public Map<Object, Float> setVisAnim = new HashMap<>();
-    public Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
+    private Map<Object, Float> setVisAnim = new HashMap<>();
+    private Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
 
-    public List<Object> moduleAreas = new ArrayList<>();
-
-    private Gui guiModule;
-
-    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule) {
+    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule, LinkedList<Map<?, ?>> animSave) {
         super(Text.literal("Purr Gui"));
         this.previous = previous;
         this.modules = moduleManager.getModules();
         this.guiModule = guiModule;
+
+        if (animSave != null && animSave.size() == 6) {
+            setAnim = (Map<Object, Float>) animSave.get(0);
+            setAnimReverse = (Map<Object, Boolean>) (animSave.get(1));
+            exsAnim = (Map<Object, Float>) (animSave.get(2));
+            exsAnimReverse = (Map<Object, Boolean>) (animSave.get(3));
+            setVisAnim = (Map<Object, Float>) (animSave.get(4));
+            setVisAnimReverse = (Map<Object, Boolean>) (animSave.get(5));
+        }
+    }
+
+    public void closeGui() {
+        animReverse = true;
+        LinkedList<Map<?, ?>> saveList = new LinkedList<>();
+
+        saveList.add(setAnim);
+        saveList.add(setAnimReverse);
+        saveList.add(exsAnim);
+        saveList.add(exsAnimReverse);
+        saveList.add(setVisAnim);
+        saveList.add(setVisAnimReverse);
+        guiModule.animSave = saveList;
     }
 
     @Override
@@ -401,6 +423,7 @@ public class ClickGui extends Screen {
             int value = (keyCode == GLFW.GLFW_KEY_ESCAPE) ? -1 : keyCode;
             bindingModule.setKeybind(value);
             bindAnimReverse = true;
+            bindingModule = null;
             return true;
         }
         if (
@@ -424,7 +447,7 @@ public class ClickGui extends Screen {
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            animReverse = true;
+            closeGui();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -457,7 +480,7 @@ public class ClickGui extends Screen {
         super.mouseMoved(mouseX, mouseY);
     }
 
-    public void animHandler() {
+    private void animHandler() {
         int animDiff = GetAnimDiff.get();
 
         // Анимация открытия/закрытия
@@ -490,9 +513,6 @@ public class ClickGui extends Screen {
             bindAnimPercent -= Math.max(0.1f, (animDiff * bindAnimPercent) / 100);
         }
         bindAnimPercent = Math.clamp(bindAnimPercent, 0, 100);
-        if (bindAnimReverse && bindAnimPercent < 1) {
-            bindingModule = null;
-        }
 
         handleMapAnim(setAnim, setAnimReverse);
         handleMapAnim(exsAnim, exsAnimReverse);
@@ -721,7 +741,7 @@ public class ClickGui extends Screen {
         return ySetOffset;
     }
 
-    public static String keyName(int keyKode) {
+    private static String keyName(int keyKode) {
         InputUtil.Key key = InputUtil.fromKeyCode(keyKode, GLFW.glfwGetKeyScancode(keyKode));
         String keyName = key.getTranslationKey()
                 .substring(key.getTranslationKey().lastIndexOf('.') + 1)
