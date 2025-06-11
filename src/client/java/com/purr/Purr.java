@@ -23,7 +23,6 @@ public class Purr implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		IEventBus bus = new EventBus();
 		bus.registerLambdaFactory(
 			"com.purr",
 			(lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup())

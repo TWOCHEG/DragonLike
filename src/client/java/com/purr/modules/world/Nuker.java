@@ -103,7 +103,7 @@ public class Nuker extends Parent {
     }
 
     @EventHandler
-    public void onTick(TickEvent e) {
+    private void onTick(TickEvent e) {
         if (client.player == null || client.world == null) return;
 
         if (miningTarget != null && miningHit != null) {
