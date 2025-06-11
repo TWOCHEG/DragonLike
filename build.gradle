@@ -11,9 +11,30 @@ base {
 }
 
 repositories {
-	maven { url = "https://maven.fabricmc.net/" }
 	mavenCentral()
 	gradlePluginPortal()
+	maven { url = "https://maven.fabricmc.net/" }
+	maven {
+		name = "jitpack.io"
+		url = "https://jitpack.io"
+	}
+	maven {
+		name = 'swt-repo'
+		url = "https://maven-eclipse.github.io/maven"
+	}
+	maven {
+		name = "meteor-maven"
+		url = "https://maven.meteordev.org/releases"
+	}
+	maven {
+		name = "meteor-maven-snapshots"
+		url = "https://maven.meteordev.org/snapshots"
+	}
+}
+
+configurations {
+	libImpl
+	modImpl
 }
 
 loom {
@@ -33,6 +54,8 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	modImplementation "meteordevelopment:orbit:0.2.3"
 }
 
 processResources {

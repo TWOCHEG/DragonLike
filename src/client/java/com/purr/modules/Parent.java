@@ -1,5 +1,6 @@
 package com.purr.modules;
 
+import com.purr.Purr;
 import com.purr.config.ConfigManager;
 import com.purr.modules.settings.Setting;
 import com.purr.modules.ui.Notify;
@@ -13,6 +14,7 @@ public abstract class Parent {
     private final String category;
     protected final ConfigManager config;
     protected ModuleManager moduleManager = null;
+    protected Purr mainClass = null;
     protected final String id;
     protected boolean enable;
     protected int keybindCode;
@@ -23,8 +25,16 @@ public abstract class Parent {
         this.name = name;
         this.config = new ConfigManager(id);
         this.id = id;
-        this.enable = config.get("enable", false);
-        this.keybindCode = config.get("keybind", -1.0f).intValue();
+        this.enable = (boolean) getValue("enable", false);
+        this.keybindCode = (int) getValue("keybind", -1);
+        this.category = category;
+    }
+    public Parent(String name, String category) {
+        this.name = name;
+        this.config = new ConfigManager(name);
+        this.id = name;
+        this.enable = (boolean) getValue("enable", false);
+        this.keybindCode = (int) getValue("keybind", -1);
         this.category = category;
     }
 
@@ -129,5 +139,9 @@ public abstract class Parent {
 
     public void setModuleManager(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
+    }
+
+    public void setMainClass(Purr mainClass) {
+        this.mainClass = mainClass;
     }
 }

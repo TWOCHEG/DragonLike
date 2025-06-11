@@ -1,16 +1,23 @@
 package com.purr.modules;
 
+import com.purr.Purr;
+import com.purr.events.Listener;
 import java.util.*;
+
 
 public class ModuleManager {
     private final List<Parent> modules;
 
-    public ModuleManager(List<Parent> modules) {
+    public ModuleManager(Purr mainClass, List<Parent> modules) {
         this.modules = modules;
 
         for (Parent module : modules) {
             module.setModuleManager(this);
+            module.setMainClass(mainClass);
+            mainClass.bus.subscribe(module);
         }
+
+        new Listener(mainClass.bus);
     }
 
     public Map<String, List<Parent>> getModules() {
@@ -32,9 +39,6 @@ public class ModuleManager {
 
     public Parent getModuleById(String id) {
         for (Parent module : modules) {
-            System.out.println("---------------------------");
-            System.out.println(id);
-            System.out.println(module.getId());
             if (module.getId().equals(id)) {
                 return module;
             }

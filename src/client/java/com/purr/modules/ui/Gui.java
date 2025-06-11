@@ -28,6 +28,10 @@ public class Gui extends Parent {
         "image",
         new LinkedList<>(images.keySet())
     );
+    public Setting<Float> imgSize = new Setting<>(
+        "image size",
+        0.5f, 0.1f, 2.0f
+    ).visibleIfBlacklist(image, "none");
 
     private static boolean key = false;
 
@@ -40,7 +44,7 @@ public class Gui extends Parent {
             if (client != null) {
                 boolean isRightShiftPressed = InputUtil.isKeyPressed(
                     client.getWindow().getHandle(),
-                    config.get("keybind", 344) // код 344 - правый шифт
+                    getKeybind() != -1 ? getKeybind() : 344
                 );
                 Screen currentScreen = client.currentScreen;
 

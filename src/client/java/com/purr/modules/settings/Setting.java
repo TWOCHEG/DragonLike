@@ -13,6 +13,7 @@ public class Setting<T> {
 
     private Setting visibleClass = null;
     private List<Object> visibleValues = null;
+    private boolean visibleBlacklist = false;
 
     private T defaultValue;
 
@@ -53,11 +54,19 @@ public class Setting<T> {
         this.visibleValues = Arrays.asList(values);
         return this;
     }
-    public List<Object> getVisibleValues() {
-        return visibleValues;
+    public Setting visibleIfBlacklist(Setting setClass, Object... values) {
+        this.visibleClass = setClass;
+        this.visibleValues = Arrays.asList(values);
+        this.visibleBlacklist = true;
+        return this;
     }
-    public Setting getVisibleClass() {
-        return visibleClass;
+    public boolean getVisible() {
+        if (visibleValues != null) {
+            if (!visibleBlacklist) {
+                return visibleValues.contains(visibleClass.getValue());
+            } else return !visibleValues.contains(visibleClass.getValue());
+        }
+        return true;
     }
 
     public Group getGroup() {

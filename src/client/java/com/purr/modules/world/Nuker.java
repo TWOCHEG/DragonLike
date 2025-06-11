@@ -1,5 +1,7 @@
 package com.purr.modules.world;
 
+import meteordevelopment.orbit.*;
+import com.purr.events.classes.*;
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
 import com.purr.utils.GetAnimDiff;
@@ -74,7 +76,7 @@ public class Nuker extends Parent {
                 boolean move = false;
                 if (movePause.getValue()) {
                     Vec3d speed = client.player.getVelocity();
-                    move = (speed.x > 0.0f || speed.z > 0.0f);
+                    move = (speed.x > 0.0f || speed.z > 0.0f || speed.y > 0.0f);
                 }
 
                 if (!isPlayerMining && !move) {
@@ -82,15 +84,6 @@ public class Nuker extends Parent {
                 }
             }
         });
-
-        ClientTickEvents.START_CLIENT_TICK.register(context -> {
-            if (client.player == null || client.world == null) return;
-
-            if (miningTarget != null && miningHit != null) {
-                handleMiningProcess();
-            }
-        });
-
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             if (!animReverse) {
                 animPercent += GetAnimDiff.get() / 10;
@@ -109,58 +102,63 @@ public class Nuker extends Parent {
         });
     }
 
-    private void handleMiningProcess() {
-        ClientPlayerEntity player = client.player;
-        BlockState state = client.world.getBlockState(miningTarget);
-        if (state.isAir() || !canReach(miningTarget)) {
-            abortMining();
-            return;
-        }
+    @EventHandler
+    public void onTick(TickEvent e) {
+        if (client.player == null || client.world == null) return;
 
-        if (miningStage == 0) {
-            float hardness = state.getBlock().getHardness();
-            if (hardness < 0) {
+        if (miningTarget != null && miningHit != null) {
+            ClientPlayerEntity player = client.player;
+            BlockState state = client.world.getBlockState(miningTarget);
+            if (state.isAir() || !canReach(miningTarget)) {
                 abortMining();
                 return;
             }
 
-            float speed = player.getBlockBreakingSpeed(state);
-            if (speed <= 0) {
-                abortMining();
+            if (miningStage == 0) {
+                float hardness = state.getBlock().getHardness();
+                if (hardness < 0) {
+                    abortMining();
+                    return;
+                }
+
+                float speed = player.getBlockBreakingSpeed(state);
+                if (speed <= 0) {
+                    abortMining();
+                    return;
+                }
+
+                miningTime = (long) (hardness / speed * 20);
+                miningStartTime = System.currentTimeMillis();
+                miningStage = 1;
+
+                // Начало разрушения
+                look(miningTarget);
+                client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
+                        PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, miningTarget, miningHit.getSide()
+                ));
                 return;
             }
 
-            miningTime = (long) (hardness / speed * 20);
-            miningStartTime = System.currentTimeMillis();
-            miningStage = 1;
-
-            // Начало разрушения
-            look(miningTarget);
-            client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
-                PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, miningTarget, miningHit.getSide()
-            ));
-            return;
-        }
-
-        // Обновление прогресса
-        if (miningStage == 1) {
-            long elapsed = System.currentTimeMillis() - miningStartTime;
-            if (elapsed > miningTime) {
-                miningStage = 2;
-            } else {
-                float progress = (float) elapsed / miningTime;
-                client.interactionManager.updateBlockBreakingProgress(miningTarget, miningHit.getSide());
-                return;
+            // Обновление прогресса
+            if (miningStage == 1) {
+                long elapsed = System.currentTimeMillis() - miningStartTime;
+                if (elapsed > miningTime) {
+                    miningStage = 2;
+                } else {
+                    float progress = (float) elapsed / miningTime;
+                    client.interactionManager.updateBlockBreakingProgress(miningTarget, miningHit.getSide());
+                    return;
+                }
             }
-        }
 
-        // Завершение разрушения
-        if (miningStage == 2) {
-            client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
-                PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, miningTarget, miningHit.getSide()
-            ));
-            player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-            resetMining();
+            // Завершение разрушения
+            if (miningStage == 2) {
+                client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
+                        PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, miningTarget, miningHit.getSide()
+                ));
+                player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+                resetMining();
+            }
         }
     }
 

@@ -3,6 +3,8 @@ package com.purr.modules.combat;
 import com.purr.modules.Parent;
 import com.purr.modules.settings.*;
 
+import java.util.*;
+
 public class KillAura extends Parent {
     public Setting<Float> range = new Setting<>("range", 6.0f, 1.0f, 6.0f);
 
@@ -14,3 +16,4 @@ public class KillAura extends Parent {
         super("kill aura", "kill_aura", "combat");
     }
 }
+

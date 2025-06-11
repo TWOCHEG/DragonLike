@@ -1,4 +1,4 @@
-package com.purr.events.impl;
+package com.purr.events;
 
 public class Event {
     private boolean cancelled = false;

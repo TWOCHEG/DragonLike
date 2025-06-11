@@ -171,7 +171,7 @@ public class ClickGui extends Screen {
                 nativeImage.close();
 
                 float screenMin = Math.min(screenWidth, screenHeight);
-                float fixedSize = screenMin * 0.5f;
+                float fixedSize = screenMin * guiModule.imgSize.getValue();
 
                 float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
 
@@ -570,7 +570,7 @@ public class ClickGui extends Screen {
         for (Setting set : sets) {
             int alphaColor = (int) ((255 * animPercent / 100) * setAnimPercent / 100);
             float textScale = 0.8f;
-            int color = RGB.getColor(255, 255, 255, alphaColor);
+            int color;
             String name;
             currentGroup = set.getGroup();
 
@@ -602,8 +602,7 @@ public class ClickGui extends Screen {
                     setVisAnim.put(set, 0.0f);
                     setVisAnimReverse.put(set, true);
                 } else {
-                    boolean meetsCondition = set.getVisibleValues() == null ||
-                            (set.getVisibleValues().contains(set.getVisibleClass().getValue()));
+                    boolean meetsCondition = set.getVisible();
                     boolean isGroupOpenOrNoGroup = (currentGroup == null || currentGroup.isOpen());
                     boolean initialReverse = !(meetsCondition && isGroupOpenOrNoGroup);
 
@@ -621,8 +620,7 @@ public class ClickGui extends Screen {
             }
             boolean isGroupOpenOrNoGroup = (currentGroup == null || (currentGroup != null && currentGroup.isOpen()));
             if (isGroupOpenOrNoGroup) {
-                boolean meetsCondition = set.getVisibleValues() == null ||
-                        (set.getVisibleValues().contains(set.getVisibleClass().getValue()));
+                boolean meetsCondition = set.getVisible();
 
                 if (!meetsCondition && !setVisAnimReverse.getOrDefault(set, false)) {
                     setVisAnimReverse.put(set, true);
