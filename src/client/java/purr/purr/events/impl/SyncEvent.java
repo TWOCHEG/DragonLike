@@ -1,0 +1,30 @@
+package purr.purr.events.impl;
+
+import purr.purr.events.Event;
+
+public class SyncEvent extends Event {
+    public SyncEvent(float yaw, float pitch) {
+        this.yaw = yaw;
+        this.pitch = pitch;
+    }
+
+    float yaw;
+    float pitch;
+    Runnable postAction;
+
+    public float getYaw() {
+        return yaw;
+    }
+
+    public float getPitch() {
+        return pitch;
+    }
+
+    public void addPostAction(Runnable r) {
+        postAction = r;
+    }
+
+    public Runnable getPostAction() {
+        return postAction;
+    }
+}

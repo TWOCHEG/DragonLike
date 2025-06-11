@@ -43,7 +43,6 @@ loom {
 	mods {
 		purr {
 			sourceSet sourceSets.main
-			sourceSet sourceSets.client
 		}
 	}
 

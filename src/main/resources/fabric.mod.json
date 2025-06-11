@@ -10,7 +10,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.purr.Purr"
+			"purr.purr.Purr"
 		]
 	},
 	"access_widener": "purr.accesswidener",
