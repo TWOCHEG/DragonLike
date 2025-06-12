@@ -15,7 +15,7 @@ public class BlockHighlight {
         if (matrices == null) return;
         VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderLayer.LINES);
 
-        Box box = new Box(pos).expand(0.001); // Небольшое расширение для видимости
+        Box box = new Box(pos).expand(0.001);
         Vec3d cameraPos = context.camera().getPos();
 
         matrices.push();

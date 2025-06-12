@@ -571,7 +571,7 @@ public class ClickGui extends Screen {
 
         for (Setting set : sets) {
             int alphaColor = (int) ((255 * animPercent / 100) * setAnimPercent / 100);
-            float textScale = 0.8f;
+            float textScale = 0.7f;
             int color;
             String name;
             currentGroup = set.getGroup();
@@ -581,7 +581,7 @@ public class ClickGui extends Screen {
                 context.getMatrices().push();
                 context.getMatrices().translate(xColStart, ySetOffset + (10 * (setAnimPercent - 100) / 100f), zDepth);
                 context.getMatrices().scale(textScale, textScale, zDepth);
-                int colorE = (int) (200 * setAnimPercent / 100);
+                int colorE = (int) (175 * setAnimPercent / 100);
                 context.drawTextWithShadow(
                     textRenderer, hearderText, 0, 0,
                     RGB.getColor(colorE, colorE, colorE, alphaColor)
@@ -702,14 +702,14 @@ public class ClickGui extends Screen {
                 if (set.getValue() instanceof Boolean) {
                     name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
                     if ((boolean) set.getValue()) {
-                        color = RGB.getColor(230, 255, 230, alphaColor);
+                        color = RGB.getColor(210, 255, 230, alphaColor);
                     } else {
-                        color = RGB.getColor(255, 230, 230, alphaColor);
+                        color = RGB.getColor(255, 210, 230, alphaColor);
                     }
                 }
             } else {
                 name = set.getName();
-                color = RGB.getColor(200, 200, 200, alphaColor);
+                color = RGB.getColor(175, 175, 175, alphaColor);
             }
 
             float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;

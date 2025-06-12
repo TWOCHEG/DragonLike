@@ -3,6 +3,10 @@ package purr.purr.modules.world;
 import com.mojang.authlib.GameProfile;
 import purr.purr.modules.Parent;
 
+import meteordevelopment.orbit.EventHandler;
+import meteordevelopment.orbit.EventPriority;
+import purr.purr.events.impl.*;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,24 +31,22 @@ public class FakePlayer extends Parent {
 
     public FakePlayer() {
         super("fake player", "fake_player", "world");
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (!getEnable()) return;
+    }
 
-            if (fakePlayerEntity == null) {
-                spawn();
-            } else {
-                if (look.getValue()) {
-                    updateLook();
-                }
-                if (move.getValue()) {
-                    long currentTime = System.currentTimeMillis();
-                    if (currentTime - lastMoveTime >= (long)(moveSpeed.getValue() * 1000f)) {
-                        randomMove();
-                        lastMoveTime = currentTime;
-                    }
-                }
+    @EventHandler(priority = EventPriority.LOWEST)
+    private void onMove(EventMove e) {
+        if (!enable) return;
+
+        if (look.getValue()) {
+            updateLook();
+        }
+        if (move.getValue()) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastMoveTime >= (long)(moveSpeed.getValue() * 1000f)) {
+                randomMove();
+                lastMoveTime = currentTime;
             }
-        });
+        }
     }
 
     private void spawn() {
@@ -161,5 +163,9 @@ public class FakePlayer extends Parent {
     @Override
     public void onDisable() {
         despawn();
+    }
+    @Override
+    public void onEnable() {
+        spawn();
     }
 }
