@@ -65,10 +65,12 @@ public abstract class Parent {
         } else {
             onDisable();
         }
-        Notify notify = (Notify) moduleManager.getModuleByClass(Notify.class);
-        if (notify != null) {
-            String text = value ? "enable" : "disable";
-            notify.add(name + " | " + text, Notify.NotifyType.Important);
+        if (moduleManager != null) {
+            Notify notify = (Notify) moduleManager.getModuleByClass(Notify.class);
+            if (notify != null) {
+                String text = value ? "enable" : "disable";
+                notify.add(name + " | " + text, Notify.NotifyType.Important);
+            }
         }
         config.set("enable", value);
         enable = value;

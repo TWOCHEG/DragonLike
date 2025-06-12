@@ -14,13 +14,14 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
+
+import purr.purr.utils.AnimHandler;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -41,7 +42,7 @@ public class ClickGui extends Screen {
     private float animPercent = 0;
     private boolean animReverse = false;
 
-    private int showKeybind = 0;
+    private float showKeybind = 0;
 
     private double lastMouseX = 0;
     private double lastMouseY = 0;
@@ -236,7 +237,7 @@ public class ClickGui extends Screen {
         int spacing = 10;
         int spacingColumns = 10;
         int numCols = modules.size();
-        int columnWidth = Math.min(90, (width - spacingColumns * (numCols - 1)) / numCols);
+        int columnWidth = Math.min(70, (width - spacingColumns * (numCols - 1)) / numCols);
         int totalColsWidth = numCols * columnWidth + (numCols - 1) * spacingColumns;
         float xColStart = (((width + xMove) - totalColsWidth) / 2);
 
@@ -300,7 +301,7 @@ public class ClickGui extends Screen {
                 if (showKeybind > 1) {
                     if (keyBind != -1) {
                         String key = keyName(keyBind);
-                        name = getAnimText(moduleName, key, showKeybind);
+                        name = getAnimText(moduleName, key, (int) showKeybind);
                     }
                 } else if (bindAnimPercent > 1 && bindingModule == module) {
                     name = getAnimText(moduleName, "...", (int) bindAnimPercent);
@@ -496,69 +497,17 @@ public class ClickGui extends Screen {
     }
 
     private void animHandler() {
-        int animDiff = GetAnimDiff.get();
+        animPercent = AnimHandler.handleAnimValue(animReverse, animPercent);
 
-        // Анимация открытия/закрытия
-        if (!animReverse && animPercent < 100) {
-            animPercent += Math.max(0.1f, (animDiff * (100 - animPercent)) / 100);
-        } else if (animReverse && animPercent > 0) {
-            animPercent -= Math.max(0.1f, (animDiff * animPercent) / 100);
-        }
-        animPercent = Math.clamp(animPercent, 0, 100);
-
-        // анимация биндов
         long window = client.getWindow().getHandle();
-        if (!animReverse && animPercent >= 100) {
-            boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
-            if (shiftDown && showKeybind < 100) {
-                showKeybind += Math.max(0.1f, (animDiff * (100 - showKeybind)) / 100);
-            } else if (!shiftDown && showKeybind > 0) {
-                showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
-            }
-        }
-        else if (animReverse && showKeybind > 0) {
-            showKeybind -= Math.max(0.1f, (animDiff * showKeybind) / 100);
-        }
-        showKeybind = Math.clamp(showKeybind, 0, 100);
+        boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
+        showKeybind = AnimHandler.handleAnimValue(shiftDown, showKeybind);
 
-        // анимация бинда
-        if (!bindAnimReverse && bindAnimPercent < 100) {
-            bindAnimPercent += Math.max(0.1f, (animDiff * (100 - bindAnimPercent)) / 100);
-        } else if (bindAnimReverse && bindAnimPercent > 0) {
-            bindAnimPercent -= Math.max(0.1f, (animDiff * bindAnimPercent) / 100);
-        }
-        bindAnimPercent = Math.clamp(bindAnimPercent, 0, 100);
+        bindAnimPercent = AnimHandler.handleAnimValue(bindAnimReverse, bindAnimPercent);
 
-        handleMapAnim(setAnim, setAnimReverse);
-        handleMapAnim(exsAnim, exsAnimReverse);
-        handleMapAnim(setVisAnim, setVisAnimReverse, false);
-    }
-    private void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, Boolean delete) {
-        if (!animMap.isEmpty()) {
-            Iterator<Object> it = animMap.keySet().iterator();
-            while (it.hasNext()) {
-                Object obj = it.next();
-                float percent = animMap.get(obj);
-                boolean reverse = reverceMap.getOrDefault(obj, false);
-
-                if (!reverse && percent < 100) {
-                    percent += Math.max(0.1f, (GetAnimDiff.get() * (100 - percent)) / 100);
-                } else if (reverse && percent > 0) {
-                    percent -= Math.max(0.1f, (GetAnimDiff.get() * percent) / 100);
-                }
-
-                percent = Math.clamp(percent, 0, 100);
-                animMap.put(obj, percent);
-
-                if ((reverse && percent <= 1) && delete) {
-                    it.remove();
-                    reverceMap.remove(obj);
-                }
-            }
-        }
-    }
-    private void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap) {
-        handleMapAnim(animMap, reverceMap, true);
+        AnimHandler.handleMapAnim(setAnim, setAnimReverse);
+        AnimHandler.handleMapAnim(exsAnim, exsAnimReverse);
+        AnimHandler.handleMapAnim(setVisAnim, setVisAnimReverse, false);
     }
 
     public List<Float> drawSettings(

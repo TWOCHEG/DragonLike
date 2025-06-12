@@ -34,11 +34,11 @@ public class Gui extends Parent {
         "image size",
         0.5f, 0.1f, 2.0f
     ).visibleIf(m -> !image.getValue().equals("none"));
-    public Setting<Boolean> setBg = new Setting<>("settings bg", true);
-    public Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
-    public Group animations = new Group("animations");
-    public Setting<Boolean> calc = new Setting<>("FPS delta", true).addToGroup(animations);
-    public Setting<Integer> animSpeed = new Setting<>("speed", 10, 1, 100).addToGroup(animations);
+    public final Setting<Boolean> setBg = new Setting<>("settings bg", true);
+    public final Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
+    private final Group animations = new Group("animations");
+    private final Setting<Integer> animSpeed = new Setting<>("speed", 10, 1, 100).addToGroup(animations);
+
     private static boolean key = false;
 
     public LinkedList<Map<?, ?>> animSave = new LinkedList<>();

@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 
 import purr.purr.modules.ui.ConfigMenu;
 import purr.purr.utils.RGB;
+import purr.purr.utils.AnimHandler;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -34,8 +35,8 @@ public class ConfigsGui extends Screen {
 
     private final String guiTextId = "openPath";
 
-    private final Map<String, Integer> clickAnimations = new HashMap<>();
-    private final Map<String, Boolean> clickAnimReverse = new HashMap<>();
+    private final Map<Object, Float> clickAnimations = new HashMap<>();
+    private final Map<Object, Boolean> clickAnimReverse = new HashMap<>();
 
     private final ArrayList<Integer> keyDeleteList = new ArrayList<>(List.of(GLFW.GLFW_KEY_X, GLFW.GLFW_KEY_DELETE, GLFW.GLFW_KEY_BACKSPACE));
 
@@ -110,12 +111,12 @@ public class ConfigsGui extends Screen {
         float imgX = 5;
         float imgY = ((imgSize + imgX) * animPercent / 100) - imgSize;
         // === КНОПКА PLUS ===
-        int plusAnim = clickAnimations.getOrDefault(texturePlusName, 0);
-        int plusSize = animImgDiff * plusAnim / 100;
+        float plusAnim = clickAnimations.getOrDefault(texturePlusName, 0f);
+        float plusSize = animImgDiff * plusAnim / 100;
         if (plusSize == animImgDiff) {
             clickAnimReverse.put(texturePlusName, true);
         }
-        int plusTotalSize = imgSize + plusSize;
+        float plusTotalSize = imgSize + plusSize;
         float plusOffset = plusSize / 2.0f;
 
         context.getMatrices().push();
@@ -125,18 +126,18 @@ public class ConfigsGui extends Screen {
             texturePlus,
             0, 0,
             0, 0,
-            plusTotalSize, plusTotalSize,
-            plusTotalSize, plusTotalSize
+            (int) plusTotalSize, (int) plusTotalSize,
+            (int) plusTotalSize, (int) plusTotalSize
         );
         context.getMatrices().pop();
         moduleAreas.add(new ModuleArea(texturePlusName, imgX, imgY, imgSize, imgSize));
         // === КНОПКА DELETE ===
-        int delAnim = clickAnimations.getOrDefault(textureDelName, 0);
-        int delSize = animImgDiff * delAnim / 100;
+        float delAnim = clickAnimations.getOrDefault(textureDelName, 0f);
+        float delSize = animImgDiff * delAnim / 100;
         if (delSize == animImgDiff) {
             clickAnimReverse.put(textureDelName, true);
         }
-        int delTotalSize = imgSize + delSize;
+        float delTotalSize = imgSize + delSize;
         float delOffset = delSize / 2.0f;
 
         float delX = imgX + imgSize + imgX;
@@ -148,18 +149,18 @@ public class ConfigsGui extends Screen {
             textureDel,
             0, 0,
             0, 0,
-            delTotalSize, delTotalSize,
-            delTotalSize, delTotalSize
+            (int) delTotalSize, (int) delTotalSize,
+            (int) delTotalSize, (int) delTotalSize
         );
         context.getMatrices().pop();
         moduleAreas.add(new ModuleArea(textureDelName, delX, imgY, imgSize, imgSize));
         // === КНОПКА EDIT ===
-        int editAnim = clickAnimations.getOrDefault(textureEditName, 0);
-        int editSize = animImgDiff * editAnim / 100;
+        float editAnim = clickAnimations.getOrDefault(textureEditName, 0f);
+        float editSize = animImgDiff * editAnim / 100;
         if (editSize == animImgDiff) {
             clickAnimReverse.put(textureEditName, true);
         }
-        int editTotalSize = imgSize + editSize;
+        float editTotalSize = imgSize + editSize;
         float editOffset = editSize / 2.0f;
 
         float editX = 2 * (imgX + imgSize) + imgX;
@@ -171,8 +172,8 @@ public class ConfigsGui extends Screen {
             textureEdit,
             0, 0,
             0, 0,
-            editTotalSize, editTotalSize,
-            editTotalSize, editTotalSize
+            (int) editTotalSize, (int) editTotalSize,
+            (int) editTotalSize, (int) editTotalSize
         );
         context.getMatrices().pop();
         moduleAreas.add(new ModuleArea(textureEditName, editX, imgY, imgSize, imgSize));
@@ -310,10 +311,10 @@ public class ConfigsGui extends Screen {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj instanceof String str) {
                 if (str.equals(texturePlusName)) {
-                    clickAnimations.put(texturePlusName, 1);
+                    clickAnimations.put(texturePlusName, 1f);
                     onCreate();
                 } else if (str.equals(textureDelName)) {
-                    clickAnimations.put(textureDelName, 1);
+                    clickAnimations.put(textureDelName, 1f);
                     Path path = config.getActiveConfig();
                     Object objUnder = getModuleUnderMouse((int) mouseX, (int) mouseY);
                     if (objUnder instanceof Path p) {
@@ -455,48 +456,13 @@ public class ConfigsGui extends Screen {
     }
 
     public void animHandler(int animDiff) {
-        // анимация открытия/закрытия
-        if (!animReverse && animPercent < 100) {
-            animPercent += Math.max(0.1f, (animDiff * (100 - animPercent)) / 100);
-        } else if (animReverse && animPercent > 0) {
-            animPercent -= Math.max(0.1f, (animDiff * animPercent) / 100);
-        }
-        animPercent = Math.clamp(animPercent, 0, 100);
-
-        // анимация ввода
-        if (!animInputReverse && animInput < 100) {
-            animInput += Math.max(0.1f, (animDiff * (100 - animInput)) / 100);
-        } else if (animInputReverse && animInput > 0) {
-            animInput -= Math.max(0.1f, (animDiff * animInput) / 100);
-        }
-        animInput = Math.clamp(animInput, 0, 100);
+        animPercent = AnimHandler.handleAnimValue(animReverse, animPercent);
+        animInput = AnimHandler.handleAnimValue(animInputReverse, animInput);
         if (animInput < 1) {
             inputText = "";
         }
 
-        // анимация клика
-        if (!clickAnimations.isEmpty()) {
-            Iterator<String> it = clickAnimations.keySet().iterator();
-            while (it.hasNext()) {
-                String name = it.next();
-                int percent = clickAnimations.get(name);
-                boolean reverse = clickAnimReverse.getOrDefault(name, false);
-
-                if (!reverse && percent < 100) {
-                    percent += Math.max(1, ((animDiff * 3) * (100 - percent)) / 100);
-                } else if (reverse && percent > 0) {
-                    percent -= Math.max(1, ((animDiff * 3) * percent) / 100);
-                }
-
-                percent = Math.clamp(percent, 0, 100);
-                clickAnimations.put(name, percent);
-
-                if (reverse && percent == 0) {
-                    it.remove();
-                    clickAnimReverse.remove(name);
-                }
-            }
-        }
+        AnimHandler.handleMapAnim(clickAnimations, clickAnimReverse);
     }
 
     private void onDelete(Path path) {

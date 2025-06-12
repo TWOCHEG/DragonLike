@@ -61,8 +61,6 @@ public class KillAura extends Parent {
 
     /*   ADVANCED   */
     public final Group advanced = new Group("advanced");
-    public final Header test = (Header) new Header("эта хуйня тест адаптивного расширения окна").addToGroup(advanced);
-    public final Header test2 = (Header) new Header("если я забыл ее убрать мне похуй").addToGroup(advanced);
     public final Setting<Float> aimRange = new Setting<>("aim range", 3.1f, 0f, 6.0f).addToGroup(advanced);
     public final Setting<Boolean> randomHitDelay = new Setting<>("random hit delay", false).addToGroup(advanced);
     public final Setting<Boolean> pauseInInventory = new Setting<>("pause in inventory", false).addToGroup(advanced);
