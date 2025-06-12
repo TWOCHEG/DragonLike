@@ -44,7 +44,7 @@ public class Setting<T> {
         this.value = (T) module.getValue(name, defaultValue);
     }
 
-    public Setting<T> addToGroup(Group group) {
+    public Setting addToGroup(Group group) {
         this.group = group;
         return this;
     }

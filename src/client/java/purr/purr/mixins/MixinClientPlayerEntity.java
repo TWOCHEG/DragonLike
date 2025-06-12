@@ -3,7 +3,6 @@ package purr.purr.mixins;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.ClientPlayerTickable;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.MovementType;
@@ -24,7 +23,7 @@ import purr.purr.events.impl.*;
 
 import java.util.List;
 
-@Mixin(value = ClientPlayerEntity.class, priority = 800)
+@Mixin(value = net.minecraft.client.network.ClientPlayerEntity.class, priority = 800)
 public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity {
     @Unique
     boolean pre_sprint_state = false;
@@ -47,13 +46,11 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     @Inject(method = "tick", at = @At("HEAD"))
     public void tickHook(CallbackInfo info) {
         // if(Module.fullNullCheck()) return;
-        if (Purr.eventBus != null) {
-            Purr.eventBus.post(new PlayerUpdateEvent());
-        }
+        Purr.eventBus.post(new EventPlayerUpdate());
     }
 
     @Redirect(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"), require = 0)
-    private boolean tickMovementHook(ClientPlayerEntity player) {
+    private boolean tickMovementHook(net.minecraft.client.network.ClientPlayerEntity player) {
 //        if (ModuleManager.noSlow.isEnabled() && ModuleManager.noSlow.canNoSlow())
 //            return false;
         return player.isUsingItem();
@@ -75,7 +72,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     @Inject(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"), cancellable = true)
     public void onMoveHook(MovementType movementType, Vec3d movement, CallbackInfo ci) {
         // if(Module.fullNullCheck()) return;
-        MoveEvent event = new MoveEvent(movement.x, movement.y, movement.z);
+        EventMove event = new EventMove(movement.x, movement.y, movement.z);
         Purr.eventBus.post(event);
         if (event.isCancelled()) {
             super.move(movementType, new Vec3d(event.getX(), event.getY(), event.getZ()));
@@ -86,12 +83,12 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     @Inject(method = "sendMovementPackets", at = @At("HEAD"), cancellable = true)
     private void sendMovementPacketsHook(CallbackInfo info) {
         // if (fullNullCheck()) return;
-        SyncEvent event = new SyncEvent(getYaw(), getPitch());
+        EventSync event = new EventSync(getYaw(), getPitch());
         Purr.eventBus.post(event);
         postAction = event.getPostAction();
-        SprintEvent e = new SprintEvent(isSprinting());
+        EventSprint e = new EventSprint(isSprinting());
         Purr.eventBus.post(e);
-        Purr.eventBus.post(new AfterRotateEvent());
+        Purr.eventBus.post(new EventAfterRotate());
         MinecraftClient mc = MinecraftClient.getInstance();
         if (e.getSprintState() != mc.player.isSprinting()) {
             if (e.getSprintState())
@@ -111,7 +108,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         // if (fullNullCheck()) return;
         MinecraftClient mc = MinecraftClient.getInstance();
         mc.options.sprintKey.setPressed(pre_sprint_state);
-        PostSyncEvent event = new PostSyncEvent();
+        EventPostSync event = new EventPostSync();
         Purr.eventBus.post(event);
         if(postAction != null) {
             postAction.run();
@@ -127,7 +124,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         if (updateLock) {
             return;
         }
-        PostPlayerUpdateEvent playerUpdateEvent = new PostPlayerUpdateEvent();
+        EventPostPlayerUpdate playerUpdateEvent = new EventPostPlayerUpdate();
         Purr.eventBus.post(playerUpdateEvent);
         if (playerUpdateEvent.isCancelled()) {
             info.cancel();

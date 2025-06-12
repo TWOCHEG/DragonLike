@@ -9,13 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import purr.purr.modules.ModuleManager;
-import purr.purr.modules.ui.Gui;
-import purr.purr.modules.combat.KillAura;
-import purr.purr.modules.ui.ConfigMenu;
-import purr.purr.modules.ui.Keybinds;
-import purr.purr.modules.world.FakePlayer;
-import purr.purr.modules.world.Nuker;
-import purr.purr.modules.ui.Notify;
+import purr.purr.modules.ui.*;
+import purr.purr.modules.combat.*;
+import purr.purr.modules.world.*;
 
 public class Purr implements ModInitializer {
 	public static IEventBus eventBus = new EventBus();
@@ -24,7 +20,7 @@ public class Purr implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		eventBus.registerLambdaFactory(
-			"com.purr",
+			"purr.purr",
 			(lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup())
 		);
 

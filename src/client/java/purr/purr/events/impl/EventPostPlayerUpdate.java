@@ -2,7 +2,7 @@ package purr.purr.events.impl;
 
 import purr.purr.events.Event;
 
-public class PostPlayerUpdateEvent extends Event {
+public class EventPostPlayerUpdate extends Event {
     private int iterations;
 
     public int getIterations() {

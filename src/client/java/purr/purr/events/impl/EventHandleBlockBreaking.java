@@ -2,5 +2,5 @@ package purr.purr.events.impl;
 
 import purr.purr.events.Event;
 
-public class TickEvent extends Event{
+public class EventHandleBlockBreaking extends Event {
 }

@@ -2,10 +2,10 @@ package purr.purr.events.impl;
 
 import purr.purr.events.Event;
 
-public class SprintEvent extends Event {
+public class EventSprint extends Event {
     private boolean sprintState;
 
-    public SprintEvent(boolean sprintState) {
+    public EventSprint(boolean sprintState) {
         this.sprintState = sprintState;
     }
 

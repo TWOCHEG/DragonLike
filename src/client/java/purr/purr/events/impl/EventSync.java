@@ -2,8 +2,8 @@ package purr.purr.events.impl;
 
 import purr.purr.events.Event;
 
-public class SyncEvent extends Event {
-    public SyncEvent(float yaw, float pitch) {
+public class EventSync extends Event {
+    public EventSync(float yaw, float pitch) {
         this.yaw = yaw;
         this.pitch = pitch;
     }

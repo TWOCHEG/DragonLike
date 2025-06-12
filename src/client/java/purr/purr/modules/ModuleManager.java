@@ -1,7 +1,7 @@
 package purr.purr.modules;
 
 import purr.purr.Purr;
-import purr.purr.events.Listener;
+
 import java.util.*;
 
 
@@ -11,24 +11,23 @@ public class ModuleManager {
     public ModuleManager(List<Parent> modules) {
         this.modules = modules;
 
-        for (Parent module : modules) {
-            module.setModuleManager(this);
-            Purr.eventBus.subscribe(module);
-        }
-
-        new Listener(Purr.eventBus);
+        modules.forEach(m -> {
+            m.setModuleManager(this);
+            Purr.eventBus.subscribe(m);
+        });
     }
 
     public Map<String, List<Parent>> getModules() {
         Map<String, List<Parent>> grouped = new TreeMap<>();
 
-        for (Parent module : modules) {
-            String category = module.getCategory();
-            grouped
-            .computeIfAbsent(category, k -> new ArrayList<>())
-            .add(module);
-        }
-
+        modules.forEach(m -> {
+            String category = m.getCategory();
+            if (category != null) {
+                grouped
+                .computeIfAbsent(category, k -> new ArrayList<>())
+                .add(m);
+            }
+        });
         for (List<Parent> list : grouped.values()) {
             list.sort(Comparator.comparing(Parent::getName));
         }
