@@ -16,7 +16,7 @@ public class KillAura extends Parent {
     public final Setting<Float> attackRange = new Setting<>("range", 3.0f, 1f, 6.0f);
     public final Setting<Float> wallRange = new Setting<>("walls range", 0f, 0f, 6.0f);
     public final Setting<Boolean> elytra = new Setting<>("elytra override",true);
-    public final Setting<Float> elytraAttackRange = new Setting<>("elytra walls range", 1.5f, 1f, 6.0f).visibleIf(m -> elytra.getValue());
+    public final Setting<Float> elytraAttackRange = new Setting<>("elytra range", 1.5f, 1f, 6.0f).visibleIf(m -> elytra.getValue());
     public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 0f, 0f, 6.0f).visibleIf(m -> elytra.getValue());
     public final ListSetting<String> wallsBypass = new ListSetting<>(
         "walls bypass",
