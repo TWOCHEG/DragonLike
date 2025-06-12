@@ -13,12 +13,12 @@ import java.util.*;
 import java.util.Timer;
 
 public class KillAura extends Parent {
-    public final Setting<Float> attackRange = new Setting<>("range", 3.1f, 1f, 6.0f);
-    public final Setting<Float> wallRange = new Setting<>("walls range", 3.1f, 0f, 6.0f);
+    public final Setting<Float> attackRange = new Setting<>("range", 3.0f, 1f, 6.0f);
+    public final Setting<Float> wallRange = new Setting<>("walls range", 3.0f, 0f, 6.0f);
     public final Setting<Boolean> elytra = new Setting<>("elytra override",false);
-    public final Setting<Float> elytraAttackRange = new Setting<>("elytra range", 3.1f, 1f, 6.0f).visibleIf(elytra, true);
-    public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 3.1f, 0f, 6.0f).visibleIf(elytra, true);
-    public final ListSetting<String> wallsBypass = new ListSetting<String>(
+    public final Setting<Float> elytraAttackRange = new Setting<>("elytra range", 1.5f, 1f, 6.0f).visibleIf(m -> elytra.getValue());
+    public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 1.5f, 0f, 6.0f).visibleIf(m -> elytra.getValue());
+    public final ListSetting<String> wallsBypass = new ListSetting<>(
         "walls bypass",
         new ArrayList<>(List.of("off", "V1", "V2"))
     );
@@ -27,12 +27,12 @@ public class KillAura extends Parent {
         "rotation mode",
         new ArrayList<>(List.of("track", "interact", "grim", "none"))
     );
-    public final Setting<Integer> interactTicks = new Setting<>("interact ticks", 3, 1, 10).visibleIf(rotationMode, "interact");
+    public final Setting<Integer> interactTicks = new Setting<>("interact ticks", 3, 1, 10).visibleIf(m -> rotationMode.getValue().equals("interact"));
     public final ListSetting<String> switchMode = new ListSetting<>(
         "auto weapon",
         new ArrayList<>(List.of("normal", "none", "silent"))
     );
-    public final Setting<Boolean> onlyWeapon = new Setting<>("only weapon", false).visibleIfBlacklist(switchMode, "silent");
+    public final Setting<Boolean> onlyWeapon = new Setting<>("only weapon", false).visibleIf(m -> !switchMode.getValue().equals("silent"));
     public final Group smartCrit = new Group("smart crit");
     public final Setting<Boolean> onlySpace = new Setting<>("only crit", false).addToGroup(smartCrit);
     public final Setting<Boolean> autoJump = new Setting<>("auto jump", false).addToGroup(smartCrit);
@@ -42,8 +42,8 @@ public class KillAura extends Parent {
     public final Setting<Boolean> clientLook = new Setting<>("client look", false);
     public final Setting<Boolean> pauseBaritone = new Setting<>("pause baritone", false);
     public final Setting<Boolean> oldDelay = new Setting<>("old delay", false);
-    public final Setting<Integer> minCPS = new Setting<>("min CPS", 7, 1, 20).visibleIf(oldDelay, true);
-    public final Setting<Integer> maxCPS = new Setting<>("max CPS", 12, 1, 20).visibleIf(oldDelay, true);
+    public final Setting<Integer> minCPS = new Setting<>("min CPS", 7, 1, 20).visibleIf(m -> oldDelay.getValue());
+    public final Setting<Integer> maxCPS = new Setting<>("max CPS", 12, 1, 20).visibleIf(m -> oldDelay.getValue());
 
 //    public final Setting<ESP> esp = new Setting<>("ESP", ESP.ThunderHack);
 //    public final Setting<SettingGroup> espGroup = new Setting<>("ESPSettings", new SettingGroup(false, 0), v -> esp.is(ESP.ThunderHackV2));
@@ -65,7 +65,7 @@ public class KillAura extends Parent {
     public final Setting<Boolean> randomHitDelay = new Setting<>("random hit delay", false).addToGroup(advanced);
     public final Setting<Boolean> pauseInInventory = new Setting<>("pause in inventory", false).addToGroup(advanced);
     public final Setting<Boolean> dropSprint = new Setting<>("drop sprint", false).addToGroup(advanced);
-    public final Setting<Boolean> returnSprint = new Setting<>("return sprint", true).addToGroup(advanced).visibleIf(dropSprint, true);
+    public final Setting<Boolean> returnSprint = new Setting<>("return sprint", true).addToGroup(advanced).visibleIf(m -> dropSprint.getValue());
     public final ListSetting<String> rayTrace = (ListSetting<String>) new ListSetting<>(
         "ray trace",
         new ArrayList<>(List.of("off", "only target", "all entities"))
@@ -74,19 +74,13 @@ public class KillAura extends Parent {
     public final Setting<Boolean> unpressShield = new Setting<>("unpress shield", true).addToGroup(advanced);
     public final Setting<Boolean> deathDisable = new Setting<>("disable on death", true).addToGroup(advanced);
     public final Setting<Boolean> tpDisable = new Setting<>("TP disable", false).addToGroup(advanced);
-    public final Setting<Boolean> pullDown = new Setting<>("FastFall", false).addToGroup(advanced);
-    public final Setting<Boolean> onlyJumpBoost = new Setting<>("only jump boost", false).addToGroup(advanced).visibleIf(pullDown, true);
-    public final Setting<Float> pullValue = new Setting<>("pull value", 3f, 0f, 20f).addToGroup(advanced).visibleIf(pullDown, true);
+    public final Setting<Boolean> pullDown = new Setting<>("fast fall", false).addToGroup(advanced);
+    public final Setting<Boolean> onlyJumpBoost = new Setting<>("only jump boost", false).addToGroup(advanced).visibleIf(m -> pullDown.getValue());
+    public final Setting<Float> pullValue = new Setting<>("pull value", 3f, 0f, 20f).addToGroup(advanced).visibleIf(m -> pullDown.getValue());
     public final ListSetting<String> attackHand = (ListSetting<String>) new ListSetting<>(
         "attack hand",
         new ArrayList<>(List.of("main hand, off hand, none"))
     ).addToGroup(advanced);
-    public final ListSetting<String> resolver = (ListSetting<String>) new ListSetting<>(
-        "resolver",
-        new ArrayList<>(List.of("off", "advantage", "predictive", "back track"))
-    ).addToGroup(advanced);
-    public final Setting<Integer> backTicks = new Setting<>("back ticks", 4, 1, 20).addToGroup(advanced).visibleIf(resolver, "back track");
-    public final Setting<Boolean> resolverVisualisation = new Setting<>("resolver visualisation", false).addToGroup(advanced).visibleIfBlacklist(resolver, "off");
     public final ListSetting<String> accelerateOnHit = (ListSetting<String>) new ListSetting<>(
         "accelerate on hit",
         new ArrayList<>(List.of("off", "yaw", "pitch", "both"))
@@ -102,7 +96,6 @@ public class KillAura extends Parent {
     public final Setting<Integer> attackTickLimit = new Setting<>("attack tick limit", 11, 0, 20).addToGroup(advanced);
     public final Setting<Float> critFallDistance = new Setting<>("crit fall distance", 0f, 0f, 1f).addToGroup(advanced);
 
-
     /*   TARGETS   */
     public final Group targets = new Group("targets");
     public final Setting<Boolean> Players = new Setting<>("players", true).addToGroup(targets);
@@ -111,7 +104,7 @@ public class KillAura extends Parent {
     public final Setting<Boolean> Villagers = new Setting<>("villagers", true).addToGroup(targets);
     public final Setting<Boolean> Slimes = new Setting<>("slimes", true).addToGroup(targets);
     public final Setting<Boolean> hostiles = new Setting<>("hostiles", true).addToGroup(targets);
-    public final Setting<Boolean> onlyAngry = new Setting<>("only angry hostiles", true).addToGroup(targets).visibleIf(hostiles, true);
+    public final Setting<Boolean> onlyAngry = new Setting<>("only angry hostiles", true).addToGroup(targets).visibleIf(m -> hostiles.getValue());
     public final Setting<Boolean> Projectiles = new Setting<>("projectiles", true).addToGroup(targets);
     public final Setting<Boolean> ignoreInvisible = new Setting<>("ignore invisible entities", false).addToGroup(targets);
     public final Setting<Boolean> ignoreNamed = new Setting<>("ignore named", false).addToGroup(targets);

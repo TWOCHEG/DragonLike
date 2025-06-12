@@ -8,16 +8,25 @@ public class ListSetting<E> extends Setting<E> {
 
     public ListSetting(String name, List<E> options) {
         super(name, options.getFirst());
-        this.options = options;
-    }
-    public ListSetting(String name, Class<? extends Enum> options) {
-        super(name, (E) options.getEnumConstants()[0].toString());
-        this.enumClass = options;
-        LinkedList<String> lst = new LinkedList<>();
-        for (Enum cnts : options.getEnumConstants()) {
-            lst.add(cnts.toString());
+        this.options = new ArrayList<>(options);
+
+        if (!this.options.isEmpty() && this.options.get(0) instanceof Enum) {
+            Enum firstEnum = (Enum) this.options.get(0);
+            this.enumClass = firstEnum.getDeclaringClass();
+            List<String> stringOptions = this.options.stream()
+                    .map(Object::toString)
+                    .toList();
+            this.options.clear();
+            this.options.addAll((List<E>) stringOptions); // Safe cast if E is String
         }
-        this.options = (List<E>) lst;
+    }
+
+    public Enum<?> getEnumValue() {
+        if (enumClass == null) return null;
+        return Arrays.stream(enumClass.getEnumConstants())
+                .filter(e -> e.toString().equals(getValue()))
+                .findFirst()
+                .orElse(null);
     }
 
     public List<E> getOptions() { return options; }

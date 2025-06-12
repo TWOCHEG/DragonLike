@@ -235,9 +235,9 @@ public class ClickGui extends Screen {
         int spacing = 10;
         int spacingColumns = 10;
         int numCols = modules.size();
-        int columnWidth = Math.min(70, (width - spacingColumns * (numCols - 1)) / numCols);
+        int columnWidth = Math.min(90, (width - spacingColumns * (numCols - 1)) / numCols);
         int totalColsWidth = numCols * columnWidth + (numCols - 1) * spacingColumns;
-        float xColStart = ((width + xMove) - totalColsWidth) / 2;
+        float xColStart = (((width + xMove) - totalColsWidth) / 2);
 
         for (Map.Entry<String, List<Parent>> entry : modules.entrySet()) {
             String category = entry.getKey();
@@ -563,9 +563,12 @@ public class ClickGui extends Screen {
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
+        xColStart += spacing;
+        float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
 
         float ySetOffset = paddingBelowText + rectY;
 
+        float maxWidth = 0f;
         Group currentGroup = null;
         Group lastDrawGroup = null;
 
@@ -595,6 +598,8 @@ public class ClickGui extends Screen {
                     textRenderer.getWidth(hearderText),
                     textRenderer.fontHeight
                 ));
+
+                maxWidth = Math.max(maxWidth, textRenderer.getWidth(hearderText));
 
                 ySetOffset += (textRenderer.fontHeight * textScale) + spacing;
                 lastDrawGroup = currentGroup;
@@ -640,7 +645,6 @@ public class ClickGui extends Screen {
             if (set instanceof ListSetting lst) {
                 if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
                     float exsPercent = setAnimPercent * exsAnim.getOrDefault(lst, 0.0f) / 100;
-                    float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
                     float drawX = xColStart + spacing;
                     float headerY = ySetOffset + drawOffsetY;
                     Text hearderText = Text.literal(set.getName() + ": " + getAnimText((String) lst.getValue(), "", (int) exsPercent));
@@ -657,9 +661,10 @@ public class ClickGui extends Screen {
                         lst,
                         drawX - spacing,
                         headerY,
-                        textRenderer.getWidth(hearderText),
+                        textRenderer.getWidth(hearderText) * textScale,
                         textRenderer.fontHeight
                     ));
+                    maxWidth = Math.max(maxWidth, textRenderer.getWidth(hearderText) * textScale);
                     float headerHeight = textRenderer.fontHeight * textScale;
 
                     List<String> options = lst.getOptions();
@@ -688,6 +693,8 @@ public class ClickGui extends Screen {
                             height
                         ));
 
+                        maxWidth = Math.max(maxWidth, width);
+
                         optYOffset += (textRenderer.fontHeight * textScale) + spacing;
                     }
                     ySetOffset += (headerHeight + (((optYOffset) - headerHeight) * exsPercent / 100) + spacing) * visAnimPercent / 100;
@@ -712,12 +719,13 @@ public class ClickGui extends Screen {
                 color = RGB.getColor(175, 175, 175, alphaColor);
             }
 
-            float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
             float drawX = xColStart;
             float drawY = ySetOffset + drawOffsetY;
             float width = textRenderer.getWidth(name) * textScale;
             float height = textRenderer.fontHeight * textScale;
             Text display = Text.literal(name);
+
+            maxWidth = Math.max(maxWidth, width);
 
             context.getMatrices().push();
             context.getMatrices().translate(drawX, drawY, zDepth);
@@ -734,6 +742,20 @@ public class ClickGui extends Screen {
             ));
 
             ySetOffset += ((textRenderer.fontHeight * textScale) + spacing) * visAnimPercent / 100;
+        }
+
+        if (guiModule.setBg.getValue()) {
+            context.getMatrices().push();
+            context.getMatrices().translate(0, 0, zDepth);
+            context.getMatrices().scale(1, 1, zDepth);
+            context.fill(
+                (int) (xColStart + maxWidth + spacing),
+                (int) (ySetOffset + drawOffsetY),
+                (int) (xColStart - spacing),
+                (int) (rectY + drawOffsetY),
+                RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
+            );
+            context.getMatrices().pop();
         }
 
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;

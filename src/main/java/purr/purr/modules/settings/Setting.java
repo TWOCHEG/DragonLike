@@ -4,6 +4,8 @@ import purr.purr.modules.Parent;
 
 import java.util.*;
 
+import java.util.function.Predicate;
+
 public class Setting<T> {
     private final String name;
     private T value = null;
@@ -11,9 +13,7 @@ public class Setting<T> {
     private Parent module;
     private Group group = null;
 
-    private Setting visibleClass = null;
-    private List<Object> visibleValues = null;
-    private boolean visibleBlacklist = false;
+    private Predicate<T> visibility;
 
     private T defaultValue;
 
@@ -44,29 +44,21 @@ public class Setting<T> {
         this.value = (T) module.getValue(name, defaultValue);
     }
 
-    public Setting addToGroup(Group group) {
+    public Setting<T> addToGroup(Group group) {
         this.group = group;
         return this;
     }
 
-    public Setting visibleIf(Setting setClass, Object... values) {
-        this.visibleClass = setClass;
-        this.visibleValues = Arrays.asList(values);
+    public Setting<T> visibleIf(Predicate<T> visibility) {
+        this.visibility = visibility;
         return this;
     }
-    public Setting visibleIfBlacklist(Setting setClass, Object... values) {
-        this.visibleClass = setClass;
-        this.visibleValues = Arrays.asList(values);
-        this.visibleBlacklist = true;
-        return this;
-    }
+
     public boolean getVisible() {
-        if (visibleValues != null) {
-            if (!visibleBlacklist) {
-                return visibleValues.contains(visibleClass.getValue());
-            } else return !visibleValues.contains(visibleClass.getValue());
-        }
-        return true;
+        if (visibility == null)
+            return true;
+
+        return visibility.test(getValue());
     }
 
     public Group getGroup() {

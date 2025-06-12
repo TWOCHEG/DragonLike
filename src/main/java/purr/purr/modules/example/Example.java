@@ -18,7 +18,7 @@ public class Example extends Parent {
     public Header header2 = (Header) new Header("настойки типо").addToGroup(group);
 
     public Setting<Boolean> visible = new Setting<>("visible", false);
-    public Header header3 = (Header) new Header("ты видишь меня").visibleIf(visible, true);
+    public Header header3 = (Header) new Header("ты видишь меня").visibleIf(m -> visible.getValue());
 
     public Example() {
         super("example", "example", "example");

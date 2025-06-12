@@ -27,7 +27,7 @@ public class FakePlayer extends Parent {
     private final Setting<Boolean> copyInv = new Setting<>("copy inv", false);
     private final Setting<Boolean> look = new Setting<>("look", true);
     private final Setting<Boolean> move = new Setting<>("move", true);
-    public Setting<Float> moveSpeed = new Setting<>("move speed", 3.0f, 0.1f, 6.0f).visibleIf(move, true);
+    public Setting<Float> moveSpeed = new Setting<>("move speed", 3.0f, 0.1f, 6.0f).visibleIf(m -> move.getValue());
 
     public FakePlayer() {
         super("fake player", "fake_player", "world");

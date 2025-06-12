@@ -32,7 +32,9 @@ public class Gui extends Parent {
     public Setting<Float> imgSize = new Setting<>(
         "image size",
         0.5f, 0.1f, 2.0f
-    ).visibleIfBlacklist(image, "none");
+    ).visibleIf(m -> !image.getValue().equals("none"));
+    public Setting<Boolean> setBg = new Setting<>("settings bg", true);
+    public Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
 
     private static boolean key = false;
 
