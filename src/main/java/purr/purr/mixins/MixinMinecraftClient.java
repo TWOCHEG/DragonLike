@@ -55,7 +55,6 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "tick", at = @At("HEAD"))
     void preTickHook(CallbackInfo ci) {
-        System.out.println(1);
         Purr.eventBus.post(new EventTick());
     }
 

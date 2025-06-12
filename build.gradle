@@ -38,12 +38,9 @@ configurations {
 }
 
 loom {
-	splitEnvironmentSourceSets()
-
 	mods {
 		purr {
 			sourceSet sourceSets.main
-			sourceSet sourceSets.client
 		}
 	}
 
