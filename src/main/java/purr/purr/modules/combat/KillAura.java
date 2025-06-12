@@ -14,10 +14,10 @@ import java.util.Timer;
 
 public class KillAura extends Parent {
     public final Setting<Float> attackRange = new Setting<>("range", 3.0f, 1f, 6.0f);
-    public final Setting<Float> wallRange = new Setting<>("walls range", 3.0f, 0f, 6.0f);
-    public final Setting<Boolean> elytra = new Setting<>("elytra override",false);
-    public final Setting<Float> elytraAttackRange = new Setting<>("elytra range", 1.5f, 1f, 6.0f).visibleIf(m -> elytra.getValue());
-    public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 1.5f, 0f, 6.0f).visibleIf(m -> elytra.getValue());
+    public final Setting<Float> wallRange = new Setting<>("walls range", 0f, 0f, 6.0f);
+    public final Setting<Boolean> elytra = new Setting<>("elytra override",true);
+    public final Setting<Float> elytraAttackRange = new Setting<>("elytra walls range", 1.5f, 1f, 6.0f).visibleIf(m -> elytra.getValue());
+    public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 0f, 0f, 6.0f).visibleIf(m -> elytra.getValue());
     public final ListSetting<String> wallsBypass = new ListSetting<>(
         "walls bypass",
         new ArrayList<>(List.of("off", "V1", "V2"))
@@ -61,6 +61,8 @@ public class KillAura extends Parent {
 
     /*   ADVANCED   */
     public final Group advanced = new Group("advanced");
+    public final Header test = (Header) new Header("эта хуйня тест адаптивного расширения окна").addToGroup(advanced);
+    public final Header test2 = (Header) new Header("если я забыл ее убрать мне похуй").addToGroup(advanced);
     public final Setting<Float> aimRange = new Setting<>("aim range", 3.1f, 0f, 6.0f).addToGroup(advanced);
     public final Setting<Boolean> randomHitDelay = new Setting<>("random hit delay", false).addToGroup(advanced);
     public final Setting<Boolean> pauseInInventory = new Setting<>("pause in inventory", false).addToGroup(advanced);
@@ -79,13 +81,13 @@ public class KillAura extends Parent {
     public final Setting<Float> pullValue = new Setting<>("pull value", 3f, 0f, 20f).addToGroup(advanced).visibleIf(m -> pullDown.getValue());
     public final ListSetting<String> attackHand = (ListSetting<String>) new ListSetting<>(
         "attack hand",
-        new ArrayList<>(List.of("main hand, off hand, none"))
+        new ArrayList<>(List.of("main hand", "off hand", "none"))
     ).addToGroup(advanced);
     public final ListSetting<String> accelerateOnHit = (ListSetting<String>) new ListSetting<>(
         "accelerate on hit",
         new ArrayList<>(List.of("off", "yaw", "pitch", "both"))
     ).addToGroup(advanced).addToGroup(advanced);
-    public final Header header = new Header("aim assist");
+    public final Header header = (Header) new Header("aim assist").addToGroup(advanced);
     public final Setting<Integer> minYawStep = new Setting<>("min yaw step", 65, 1, 180).addToGroup(advanced);
     public final Setting<Integer> maxYawStep = new Setting<>("max yaw step", 75, 1, 180).addToGroup(advanced);
     public final Setting<Float> aimedPitchStep = new Setting<>("aimed pitch step", 1f, 0f, 90f).addToGroup(advanced);

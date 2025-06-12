@@ -14,6 +14,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
@@ -261,6 +262,8 @@ public class ClickGui extends Screen {
             // Начинаем аккумулировать y для модулей под категорией
             float yOffset = yStart + (baseTextHeight + spacing);
 
+            float maxWidth = 0;
+
             for (Parent module : list) {
                 if (module.getName() == null) continue;
                 boolean hovered = (
@@ -313,9 +316,12 @@ public class ClickGui extends Screen {
 
                 List<Setting<?>> sets = module.getSettings();
                 float winHeight = 0;
+                float winWidth = 0;
                 float xDifference = 0;
                 if (setAnim.containsKey(module) && !module.getSettings().isEmpty()) {
-                    winHeight = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
+                    List<Float> drawSettingsResult = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
+                    winHeight = drawSettingsResult.getFirst();
+                    winWidth = drawSettingsResult.get(1);
                 } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
                     setAnimReverse.put(module, true);
                     // эта переменная может быть от 15
@@ -344,11 +350,18 @@ public class ClickGui extends Screen {
                     scaledHeight
                 ));
 
+                maxWidth = Math.max(maxWidth, textRenderer.getWidth(name) * scale);
+                maxWidth = Math.max(maxWidth, winWidth);
+
                 // Сдвигаем yOffset на высоту отрисованного текста + отступ
                 yOffset += scaledHeight + spacing + winHeight;
             }
 
-            xColStart += columnWidth + spacingColumns;
+            float finalXOffset = columnWidth;
+            if (finalXOffset < maxWidth) {
+                finalXOffset = maxWidth;
+            }
+            xColStart += finalXOffset + spacingColumns;
         }
     }
 
@@ -548,12 +561,12 @@ public class ClickGui extends Screen {
         handleMapAnim(animMap, reverceMap, true);
     }
 
-    public float drawSettings(
+    public List<Float> drawSettings(
         Parent module,
         List<Setting<?>> sets,
         DrawContext context,
         float yOffset,
-        float xColStart,
+        float xStart,
         float scale,
         int baseTextHeight
     ) {
@@ -563,7 +576,7 @@ public class ClickGui extends Screen {
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
-        xColStart += spacing;
+        xStart += spacing;
         float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
 
         float ySetOffset = paddingBelowText + rectY;
@@ -573,14 +586,15 @@ public class ClickGui extends Screen {
         Group lastDrawGroup = null;
 
         for (Setting set : sets) {
-            int alphaColor = (int) ((255 * animPercent / 100) * setAnimPercent / 100);
+            float xColStart = xStart;
+            int alphaColor = (int) (255 * setAnimPercent / 100);
             float textScale = 0.7f;
             int color;
             String name;
             currentGroup = set.getGroup();
 
             if (currentGroup != null && lastDrawGroup != currentGroup) {
-                Text hearderText = Text.literal(currentGroup.getName() + (currentGroup.isOpen() ? " -" : " +"));
+                Text hearderText = Text.literal(currentGroup.getName() + (currentGroup.isOpen() ? " +" : " -"));
                 context.getMatrices().push();
                 context.getMatrices().translate(xColStart, ySetOffset + (10 * (setAnimPercent - 100) / 100f), zDepth);
                 context.getMatrices().scale(textScale, textScale, zDepth);
@@ -636,15 +650,18 @@ public class ClickGui extends Screen {
                     setVisAnimReverse.put(set, false);
                 }
             }
-
-            float visAnimPercent = setVisAnim.getOrDefault(set, 100.0f);
+            float visAnimPercent = setVisAnim.getOrDefault(set, 100.0f) * animPercent / 100;
             if (visAnimPercent == 0.0f) continue;
+
+            if (currentGroup != null) {
+                xColStart += spacing;
+            }
 
             alphaColor = (int) (alphaColor * visAnimPercent / 100);
 
             if (set instanceof ListSetting lst) {
                 if (exsAnim.get(lst) != null && exsAnim.get(lst) != 0.0f) {
-                    float exsPercent = setAnimPercent * exsAnim.getOrDefault(lst, 0.0f) / 100;
+                    float exsPercent = visAnimPercent * exsAnim.getOrDefault(lst, 0.0f) / 100;
                     float drawX = xColStart + spacing;
                     float headerY = ySetOffset + drawOffsetY;
                     Text hearderText = Text.literal(set.getName() + ": " + getAnimText((String) lst.getValue(), "", (int) exsPercent));
@@ -664,7 +681,7 @@ public class ClickGui extends Screen {
                         textRenderer.getWidth(hearderText) * textScale,
                         textRenderer.fontHeight
                     ));
-                    maxWidth = Math.max(maxWidth, textRenderer.getWidth(hearderText) * textScale);
+                    maxWidth = Math.max(maxWidth, (textRenderer.getWidth(hearderText) * textScale) * exsPercent / 100);
                     float headerHeight = textRenderer.fontHeight * textScale;
 
                     List<String> options = lst.getOptions();
@@ -693,7 +710,7 @@ public class ClickGui extends Screen {
                             height
                         ));
 
-                        maxWidth = Math.max(maxWidth, width);
+                        maxWidth = Math.max(maxWidth, width * exsPercent / 100);
 
                         optYOffset += (textRenderer.fontHeight * textScale) + spacing;
                     }
@@ -719,13 +736,25 @@ public class ClickGui extends Screen {
                 color = RGB.getColor(175, 175, 175, alphaColor);
             }
 
+            if (currentGroup != null) {
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, zDepth);
+                context.getMatrices().scale(1, 1, zDepth);
+                context.fill(
+                    (int) (xStart + 1),
+                    (int) (ySetOffset),
+                    (int) (xStart),
+                    (int) (ySetOffset + textRenderer.fontHeight),
+                    RGB.getColor(175, 175, 175, alphaColor)
+                );
+                context.getMatrices().pop();
+            }
+
             float drawX = xColStart;
             float drawY = ySetOffset + drawOffsetY;
-            float width = textRenderer.getWidth(name) * textScale;
+            float width = (textRenderer.getWidth(name) * textScale) + (currentGroup != null ? spacing * 2 : spacing);
             float height = textRenderer.fontHeight * textScale;
             Text display = Text.literal(name);
-
-            maxWidth = Math.max(maxWidth, width);
 
             context.getMatrices().push();
             context.getMatrices().translate(drawX, drawY, zDepth);
@@ -741,6 +770,8 @@ public class ClickGui extends Screen {
                 height
             ));
 
+            maxWidth = Math.max(maxWidth, width * visAnimPercent / 100);
+
             ySetOffset += ((textRenderer.fontHeight * textScale) + spacing) * visAnimPercent / 100;
         }
 
@@ -749,9 +780,9 @@ public class ClickGui extends Screen {
             context.getMatrices().translate(0, 0, zDepth);
             context.getMatrices().scale(1, 1, zDepth);
             context.fill(
-                (int) (xColStart + maxWidth + spacing),
+                (int) (xStart + maxWidth + spacing),
                 (int) (ySetOffset + drawOffsetY),
-                (int) (xColStart - spacing),
+                (int) (xStart - spacing),
                 (int) (rectY + drawOffsetY),
                 RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
             );
@@ -760,7 +791,7 @@ public class ClickGui extends Screen {
 
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;
 
-        return ySetOffset;
+        return new ArrayList<>(List.of(ySetOffset, (maxWidth + spacing) * setAnimPercent / 100));
     }
 
     private static String keyName(int keyKode) {

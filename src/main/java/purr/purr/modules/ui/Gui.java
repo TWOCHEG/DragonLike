@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.util.InputUtil;
 import purr.purr.modules.Parent;
+import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
 import purr.purr.modules.settings.Setting;
 
@@ -35,7 +36,9 @@ public class Gui extends Parent {
     ).visibleIf(m -> !image.getValue().equals("none"));
     public Setting<Boolean> setBg = new Setting<>("settings bg", true);
     public Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
-
+    public Group animations = new Group("animations");
+    public Setting<Boolean> calc = new Setting<>("FPS delta", true).addToGroup(animations);
+    public Setting<Integer> animSpeed = new Setting<>("speed", 10, 1, 100).addToGroup(animations);
     private static boolean key = false;
 
     public LinkedList<Map<?, ?>> animSave = new LinkedList<>();
