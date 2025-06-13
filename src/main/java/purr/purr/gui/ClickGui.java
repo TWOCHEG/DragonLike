@@ -85,6 +85,8 @@ public class ClickGui extends Screen {
     }
 
     public void closeGui() {
+        closeAll();
+
         animReverse = true;
         LinkedList<Map<?, ?>> saveList = new LinkedList<>();
 
@@ -95,6 +97,17 @@ public class ClickGui extends Screen {
         saveList.add(setVisAnim);
         saveList.add(setVisAnimReverse);
         guiModule.animSave = saveList;
+    }
+
+    public void closeAll() {
+        inputSet = null;
+        inputText = null;
+        inputAnim = 0f;
+    }
+    public boolean checkActive() {
+        return (
+            inputSet != null
+        );
     }
 
     @Override
@@ -118,49 +131,6 @@ public class ClickGui extends Screen {
 
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
-
-        if (animPercent == 100) {
-            boolean left = GLFW.glfwGetMouseButton(
-                    client.getInstance().getWindow().getHandle(),
-                    GLFW.GLFW_MOUSE_BUTTON_LEFT
-            ) == GLFW.GLFW_PRESS;
-            if (left) {
-                Object obj = getModuleUnderMouse(mouseX, mouseY);
-                if (obj != null && obj instanceof Setting set) {
-                    if (set.getValue() instanceof Float) {;
-                        float value = (float) set.getValue() - 0.1f;
-                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
-                        value = Math.round(value * 10f) / 10f;
-                        set.setValue(value);
-                    } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() - 1;
-                        set.setValue(
-                                Math.clamp(value, (int) set.min, (int) set.max)
-                        );
-                    }
-                }
-            }
-            boolean right = GLFW.glfwGetMouseButton(
-                    client.getInstance().getWindow().getHandle(),
-                    GLFW.GLFW_MOUSE_BUTTON_RIGHT
-            ) == GLFW.GLFW_PRESS;
-            if (right) {
-                Object obj = getModuleUnderMouse(mouseX, mouseY);
-                if (obj != null && obj instanceof Setting set) {
-                    if (set.getValue() instanceof Float) {
-                        float value = (float) set.getValue() + 0.1f;
-                        value = Math.min(Math.max(value, (float) set.min), (float) set.max);
-                        value = Math.round(value * 10f) / 10f;
-                        set.setValue(value);
-                    } else if (set.getValue() instanceof Integer) {
-                        int value = (int) set.getValue() + 1;
-                        set.setValue(
-                                Math.clamp(value, (int) set.min, (int) set.max)
-                        );
-                    }
-                }
-            }
-        }
 
         if (
             guiModule != null &&
@@ -419,6 +389,9 @@ public class ClickGui extends Screen {
             } else if (obj instanceof Setting set) {
                 if (set.getValue() instanceof Boolean) {
                     set.setValue(! (Boolean) set.getValue());
+                } else if (set.getValue() instanceof Integer || set.getValue() instanceof Float) {
+                    inputSet = set;
+                    inputText = set.getValue().toString();
                 }
                 return true;
             } else if (obj instanceof Parent module) {
@@ -449,7 +422,33 @@ public class ClickGui extends Screen {
     }
 
     @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+        if (obj instanceof Setting set && obj != inputSet && button == 0) {
+            if (set.getValue() instanceof Integer value) {
+                int step = (deltaX > 0) ? 1 : -1;
+                value += step;
+                value = Math.min(Math.max(value, (int) set.min), (int) set.max);
+                set.setValue(value);
+                return true;
+            } else if (set.getValue() instanceof Float floatValue) {
+                float sensitivity = 0.1f;
+                floatValue += (float) (deltaX * sensitivity);
+                floatValue = Math.min(Math.max(floatValue, (float) set.min), (float) set.max);
+                floatValue = Math.round(floatValue * 10f) / 10f;
+                set.setValue(floatValue);
+                return true;
+            }
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (checkActive() && keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            closeAll();
+            return true;
+        }
         if (bindingModule != null) {
             int value = (keyCode == GLFW.GLFW_KEY_ESCAPE) ? -1 : keyCode;
             bindingModule.setKeybind(value);
@@ -458,8 +457,19 @@ public class ClickGui extends Screen {
             return true;
         }
         if (inputSet != null && keyCode == GLFW.GLFW_KEY_ENTER) {
-            inputSet.setValue(inputText);
-            System.out.println(inputText);
+            if (inputSet.getValue() instanceof Integer) {
+                try {
+                    int value = Integer.valueOf(inputText);
+                    inputSet.setValue(value);
+                } catch (NumberFormatException e) {}
+            } else if (inputSet.getValue() instanceof Float) {
+                try {
+                    float value = Float.valueOf(inputText);
+                    inputSet.setValue(value);
+                } catch (NumberFormatException e) {}
+            } else {
+                inputSet.setValue(inputText);
+            }
             inputSet = null;
             inputText = null;
             inputAnim = 0f;
@@ -529,7 +539,6 @@ public class ClickGui extends Screen {
 
         long window = client.getWindow().getHandle();
         boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
-        System.out.println(shiftDown);
         showKeybind = AnimHelper.handleAnimValue(!shiftDown, showKeybind);
 
         if (inputSet != null) {
@@ -539,7 +548,6 @@ public class ClickGui extends Screen {
             } else if (inputAnim == 0f) {
                 inputAnimReverse = false;
             }
-            System.out.println(inputAnim);
         }
 
         AnimHelper.handleMapAnim(bindAnim, bindAnimReverse);
@@ -650,7 +658,7 @@ public class ClickGui extends Screen {
                     (int) (ySetOffset),
                     (int) (xStart),
                     (int) (ySetOffset + textRenderer.fontHeight),
-                    RGB.getColor(175, 175, 175, alphaColor)
+                    RGB.getColor(175, 175, 175, (int) (200 * visAnimPercent / 100))
                 );
                 context.getMatrices().pop();
             }
@@ -672,13 +680,15 @@ public class ClickGui extends Screen {
                         RGB.getColor(colorE, colorE, colorE, alphaColor)
                     );
                     context.getMatrices().pop();
-                    moduleAreas.add(new ModuleArea(
-                        lst,
-                        drawX - spacing,
-                        headerY,
-                        textRenderer.getWidth(hearderText) * textScale,
-                        textRenderer.fontHeight
-                    ));
+                    if (visAnimPercent == 100f) {
+                        moduleAreas.add(new ModuleArea(
+                            lst,
+                            drawX - spacing,
+                            headerY,
+                            textRenderer.getWidth(hearderText) * textScale,
+                            textRenderer.fontHeight
+                        ));
+                    }
                     maxWidth = Math.max(maxWidth, (textRenderer.getWidth(hearderText) * textScale) * exsPercent / 100);
                     float headerHeight = textRenderer.fontHeight * textScale;
 
@@ -699,14 +709,16 @@ public class ClickGui extends Screen {
                         );
                         context.getMatrices().pop();
 
-                        moduleAreas.add(new ListArea(
-                            lst,
-                            element,
-                            drawX,
-                            drawY,
-                            width,
-                            height
-                        ));
+                        if (exsPercent == 100f) {
+                            moduleAreas.add(new ListArea(
+                                lst,
+                                element,
+                                drawX,
+                                drawY,
+                                width,
+                                height
+                            ));
+                        }
 
                         maxWidth = Math.max(maxWidth, width * exsPercent / 100);
 
@@ -753,13 +765,15 @@ public class ClickGui extends Screen {
             context.drawTextWithShadow(textRenderer, display, 0, 0, color);
             context.getMatrices().pop();
 
-            moduleAreas.add(new ModuleArea(
-                set,
-                drawX,
-                drawY,
-                width,
-                height
-            ));
+            if (visAnimPercent == 100f) {
+                moduleAreas.add(new ModuleArea(
+                    set,
+                    drawX,
+                    drawY,
+                    width,
+                    height
+                ));
+            }
 
             maxWidth = Math.max(maxWidth, width * visAnimPercent / 100);
 
