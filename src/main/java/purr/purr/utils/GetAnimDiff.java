@@ -1,13 +1,15 @@
 package purr.purr.utils;
 
 import net.minecraft.client.MinecraftClient;
-import purr.purr.config.ConfigManager;
+import purr.purr.Purr;
+import purr.purr.modules.ui.Gui;
 
 public class GetAnimDiff {
     public static int get() {
-        ConfigManager cfg = new ConfigManager("click_gui");
-        int speed = cfg.get("speed", 10);
-        int animDiff = Math.max(1, (10 / Math.max(1, MinecraftClient.getInstance().getCurrentFps()))) * speed;
+        if (Purr.moduleManager == null) return 10;
+        Gui gui = (Gui) Purr.moduleManager.getModuleByClass(Gui.class);
+        if (gui == null) return 10;
+        int animDiff = Math.max(1, (10 / Math.max(1, MinecraftClient.getInstance().getCurrentFps()))) * gui.animSpeed.getValue();
         return animDiff;
     }
 }

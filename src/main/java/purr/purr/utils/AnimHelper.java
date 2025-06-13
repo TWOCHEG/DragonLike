@@ -5,9 +5,9 @@ import java.util.Map;
 
 public class AnimHelper {
     /**
-     * @EaseInOut - замедление в начале и в конце (по умолчанию)
-     * @EaseIn - замедление в начале
-     * @EaseOut - замедление в конце
+     * @EaseInOut замедление в начале и в конце (по умолчанию)
+     * @EaseIn замедление в начале
+     * @EaseOut замедление в конце
      */
     public enum AnimMode {
         EaseInOut, EaseIn, EaseOut
@@ -15,14 +15,17 @@ public class AnimHelper {
     public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
         percent = Math.max(percent, 0.1f);
 
-        float t = reverse ? (100 - percent) / 100f : percent / 100f;
-        float easeFactor = calculateEaseSpeed(mode, t);
-        easeFactor = Math.max(easeFactor, 0.1f);
+        if (!reverse && percent < 100) {
+            float t = percent / 100f;
+            float easeSpeed = Math.max(calculateEaseSpeed(mode, t), 0.1f);
+            percent += Math.max(0.1f, GetAnimDiff.get() * easeSpeed);
+        } else if (reverse && percent > 0) {
+            float t = (100 - percent) / 100f;
+            float easeSpeed = 1 - Math.max(calculateEaseSpeed(mode, t), 0.1f);
+            percent -= Math.max(0.1f, GetAnimDiff.get() * easeSpeed);
+        }
 
-        float delta = GetAnimDiff.get() * easeFactor * (reverse ? -1 : 1);
-        percent += delta;
-
-        return Math.max(0, Math.min(100, percent));
+        return Math.clamp(percent, 0, 100);
     }
 
     private static float calculateEaseSpeed(AnimMode mode, float t) {
@@ -32,8 +35,8 @@ public class AnimHelper {
             case EaseOut:
                 return 1 - (1 - t) * (1 - t);
             case EaseInOut:
-                if (t < 0.5f) return 4 * t * t * t;
-                else return 1 - 4 * (1 - t) * (1 - t) * (1 - t);
+                float sqr = t * t;
+                return sqr / (2.0f * (sqr - t) + 1.0f); // эаэ сука какую формулу надо
             default: return 1;
         }
     }

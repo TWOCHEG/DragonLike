@@ -363,6 +363,15 @@ public class ClickGui extends Screen {
     }
 
     @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (inputSet != null) {
+            inputText += chr;
+            return true;
+        }
+        return super.charTyped(chr, modifiers);
+    }
+
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         // еее навалим говно кода, погнали
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
@@ -455,6 +464,12 @@ public class ClickGui extends Screen {
             inputText = null;
             inputAnim = 0f;
         }
+        if (inputSet != null && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            if (!inputText.isEmpty()) {
+            inputText = inputText.substring(0, inputText.length() - 1);
+            }
+            return true;
+        }
         if (
             keyCode == GLFW.GLFW_KEY_RIGHT ||
             keyCode == GLFW.GLFW_KEY_LEFT ||
@@ -514,6 +529,7 @@ public class ClickGui extends Screen {
 
         long window = client.getWindow().getHandle();
         boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
+        System.out.println(shiftDown);
         showKeybind = AnimHelper.handleAnimValue(!shiftDown, showKeybind);
 
         if (inputSet != null) {
@@ -626,6 +642,17 @@ public class ClickGui extends Screen {
 
             if (currentGroup != null) {
                 xColStart += spacing;
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, zDepth);
+                context.getMatrices().scale(1, 1, zDepth);
+                context.fill(
+                    (int) (xStart + 1),
+                    (int) (ySetOffset),
+                    (int) (xStart),
+                    (int) (ySetOffset + textRenderer.fontHeight),
+                    RGB.getColor(175, 175, 175, alphaColor)
+                );
+                context.getMatrices().pop();
             }
 
             alphaColor = (int) (alphaColor * visAnimPercent / 100);
@@ -693,6 +720,9 @@ public class ClickGui extends Screen {
                 }
             } else if (set.getValue() != null) {
                 name = set.getName() + ": " + set.getValue();
+                if (set.getValue() instanceof String && ((String) set.getValue()).isEmpty()) {
+                    name = set.getName() + ": ...";
+                }
                 color = RGB.getColor(255, 255, 255, alphaColor);
                 if (set.getValue() instanceof Boolean) {
                     name = set.getName() + ": " + ((boolean) set.getValue() ? "1" : "0");
@@ -709,20 +739,6 @@ public class ClickGui extends Screen {
             } else {
                 name = set.getName();
                 color = RGB.getColor(175, 175, 175, alphaColor);
-            }
-
-            if (currentGroup != null) {
-                context.getMatrices().push();
-                context.getMatrices().translate(0, 0, zDepth);
-                context.getMatrices().scale(1, 1, zDepth);
-                context.fill(
-                    (int) (xStart + 1),
-                    (int) (ySetOffset),
-                    (int) (xStart),
-                    (int) (ySetOffset + textRenderer.fontHeight),
-                    RGB.getColor(175, 175, 175, alphaColor)
-                );
-                context.getMatrices().pop();
             }
 
             float drawX = xColStart;

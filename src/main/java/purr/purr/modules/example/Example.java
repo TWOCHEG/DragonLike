@@ -17,6 +17,10 @@ public class Example extends Parent {
     );
     public Group group = new Group("group/category");
     public Header header2 = (Header) new Header("настойки типо").addToGroup(group);
+    public ListSetting<String> list2 = (ListSetting<String>) new ListSetting<>(
+            "list",
+            Arrays.asList("1", "2", "3") // первый элемент используется как стандартный
+    ).addToGroup(group);
 
     public Setting<Boolean> visible = new Setting<>("visible", false);
     public Header header3 = (Header) new Header("ты видишь меня").visibleIf(m -> visible.getValue());

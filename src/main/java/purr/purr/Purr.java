@@ -16,7 +16,7 @@ import purr.purr.modules.world.*;
 
 public class Purr implements ModInitializer {
 	public static IEventBus eventBus = new EventBus();
-	public ModuleManager moduleManager = null;
+	public static ModuleManager moduleManager = null;
 
 	@Override
 	public void onInitialize() {
@@ -33,8 +33,7 @@ public class Purr implements ModInitializer {
 				new ConfigMenu(),
 				new FakePlayer(),
 				new Nuker(),
-				new Notify(),
-				new Example()
+				new Notify()
 			))
 		);
 	}

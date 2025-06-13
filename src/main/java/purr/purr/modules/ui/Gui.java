@@ -36,7 +36,7 @@ public class Gui extends Parent {
     ).visibleIf(m -> !image.getValue().equals("none"));
     public final Setting<Boolean> setBg = new Setting<>("settings bg", true);
     public final Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
-    private final Setting<Integer> animSpeed = new Setting<>("speed", 10, 1, 100);
+    public final Setting<Integer> animSpeed = new Setting<>("speed", 10, 1, 100);
 
     private static boolean key = false;
 
