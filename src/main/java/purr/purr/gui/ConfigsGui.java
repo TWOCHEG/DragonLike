@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 
 import purr.purr.modules.ui.ConfigMenu;
 import purr.purr.utils.RGB;
-import purr.purr.utils.AnimHandler;
+import purr.purr.utils.AnimHelper;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -456,13 +456,13 @@ public class ConfigsGui extends Screen {
     }
 
     public void animHandler(int animDiff) {
-        animPercent = AnimHandler.handleAnimValue(animReverse, animPercent);
-        animInput = AnimHandler.handleAnimValue(animInputReverse, animInput);
+        animPercent = AnimHelper.handleAnimValue(animReverse, animPercent);
+        animInput = AnimHelper.handleAnimValue(animInputReverse, animInput);
         if (animInput < 1) {
             inputText = "";
         }
 
-        AnimHandler.handleMapAnim(clickAnimations, clickAnimReverse);
+        AnimHelper.handleMapAnim(clickAnimations, clickAnimReverse);
     }
 
     private void onDelete(Path path) {

@@ -21,7 +21,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
 
-import purr.purr.utils.AnimHandler;
+import purr.purr.utils.AnimHelper;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -52,7 +52,7 @@ public class ClickGui extends Screen {
 
     private final Screen previous;
 
-    private Map<Parent, Object> hoverAnimations = new HashMap<>();
+    private Map<Object, Float> hoverAnimations = new HashMap<>();
 
     private Map<Object, Float> setAnim = new HashMap<>();
     private Map<Object, Boolean> setAnimReverse = new HashMap<>();
@@ -267,7 +267,7 @@ public class ClickGui extends Screen {
 
             for (Parent module : list) {
                 if (module.getName() == null) continue;
-                boolean hovered = (
+                boolean hovered = !(
                     (
                         mouseX >= xColStart
                         && mouseX <= xColStart + columnWidth
@@ -278,16 +278,8 @@ public class ClickGui extends Screen {
                     )
                 );
 
-                int hoverPercent = (int) hoverAnimations.getOrDefault(module, 0);
-                double t = hoverPercent / 100.0;
-                // крутая ease-in-out анимация
-                int easeDelta = (int) Math.ceil(GetAnimDiff.get() * (hovered ? (1 - t) : t));
-                easeDelta = Math.max(easeDelta, 1);
-                if (hovered) {
-                    hoverPercent = Math.min(hoverPercent + easeDelta, 100);
-                } else {
-                    hoverPercent = Math.max(hoverPercent - easeDelta, 0);
-                }
+                float hoverPercent = hoverAnimations.getOrDefault(module, 0f);
+                hoverPercent = AnimHelper.handleAnimValue(hovered, hoverPercent);
                 hoverAnimations.put(module, hoverPercent);
 
                 float maxScaleDelta = 0.2f;
@@ -301,10 +293,10 @@ public class ClickGui extends Screen {
                 if (showKeybind > 1) {
                     if (keyBind != -1) {
                         String key = keyName(keyBind);
-                        name = getAnimText(moduleName, key, (int) showKeybind);
+                        name = AnimHelper.getAnimText(moduleName, key, (int) showKeybind);
                     }
                 } else if (bindAnimPercent > 1 && bindingModule == module) {
-                    name = getAnimText(moduleName, "...", (int) bindAnimPercent);
+                    name = AnimHelper.getAnimText(moduleName, "...", (int) bindAnimPercent);
                 }
                 Formatting fmt = module.getEnable()
                         ? Formatting.UNDERLINE
@@ -354,7 +346,6 @@ public class ClickGui extends Screen {
                 maxWidth = Math.max(maxWidth, textRenderer.getWidth(name) * scale);
                 maxWidth = Math.max(maxWidth, winWidth);
 
-                // Сдвигаем yOffset на высоту отрисованного текста + отступ
                 yOffset += scaledHeight + spacing + winHeight;
             }
 
@@ -425,6 +416,7 @@ public class ClickGui extends Screen {
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj instanceof Parent module) {
+                System.out.println(1);
                 bindingModule = module;
                 bindAnimReverse = false;
                 return true;
@@ -497,17 +489,18 @@ public class ClickGui extends Screen {
     }
 
     private void animHandler() {
-        animPercent = AnimHandler.handleAnimValue(animReverse, animPercent);
+        animPercent = AnimHelper.handleAnimValue(animReverse, animPercent);
+        System.out.println(animPercent);
 
         long window = client.getWindow().getHandle();
         boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
-        showKeybind = AnimHandler.handleAnimValue(shiftDown, showKeybind);
+        showKeybind = AnimHelper.handleAnimValue(!shiftDown, showKeybind);
 
-        bindAnimPercent = AnimHandler.handleAnimValue(bindAnimReverse, bindAnimPercent);
+        bindAnimPercent = AnimHelper.handleAnimValue(bindAnimReverse, bindAnimPercent);
 
-        AnimHandler.handleMapAnim(setAnim, setAnimReverse);
-        AnimHandler.handleMapAnim(exsAnim, exsAnimReverse);
-        AnimHandler.handleMapAnim(setVisAnim, setVisAnimReverse, false);
+        AnimHelper.handleMapAnim(setAnim, setAnimReverse);
+        AnimHelper.handleMapAnim(exsAnim, exsAnimReverse);
+        AnimHelper.handleMapAnim(setVisAnim, setVisAnimReverse, false);
     }
 
     public List<Float> drawSettings(
@@ -588,7 +581,7 @@ public class ClickGui extends Screen {
                     setVisAnimReverse.put(set, false);
                 }
             }
-            boolean isGroupOpenOrNoGroup = (currentGroup == null || (currentGroup != null && currentGroup.isOpen()));
+            boolean isGroupOpenOrNoGroup = currentGroup == null || currentGroup.isOpen();
             if (isGroupOpenOrNoGroup) {
                 boolean meetsCondition = set.getVisible();
 
@@ -613,7 +606,7 @@ public class ClickGui extends Screen {
                     float exsPercent = visAnimPercent * exsAnim.getOrDefault(lst, 0.0f) / 100;
                     float drawX = xColStart + spacing;
                     float headerY = ySetOffset + drawOffsetY;
-                    Text hearderText = Text.literal(set.getName() + ": " + getAnimText((String) lst.getValue(), "", (int) exsPercent));
+                    Text hearderText = Text.literal(set.getName() + ": " + AnimHelper.getAnimText((String) lst.getValue(), "", (int) exsPercent));
                     context.getMatrices().push();
                     context.getMatrices().translate(drawX - spacing, headerY, zDepth);
                     context.getMatrices().scale(textScale, textScale, zDepth);
@@ -745,24 +738,9 @@ public class ClickGui extends Screen {
 
     private static String keyName(int keyKode) {
         InputUtil.Key key = InputUtil.fromKeyCode(keyKode, GLFW.glfwGetKeyScancode(keyKode));
-        String keyName = key.getTranslationKey()
+        return key.getTranslationKey()
                 .substring(key.getTranslationKey().lastIndexOf('.') + 1)
                 .toUpperCase();
-        return keyName;
-    }
-
-    private String getAnimText(String startText, String endText, int percent) {
-        percent = Math.max(0, Math.min(100, percent));
-        float pct = percent / 100f;
-        if (pct <= 0.5f) {
-            float keepRatio = 1 - pct * 2;
-            int keepChars = Math.round(startText.length() * keepRatio);
-            return startText.substring(0, keepChars);
-        } else {
-            float drawRatio = (pct - 0.5f) * 2;
-            int drawChars = Math.round(endText.length() * drawRatio);
-            return endText.substring(0, drawChars);
-        }
     }
 
     private Object getModuleUnderMouse(int mouseX, int mouseY) {

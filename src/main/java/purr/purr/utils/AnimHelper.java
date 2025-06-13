@@ -3,7 +3,7 @@ package purr.purr.utils;
 import java.util.Iterator;
 import java.util.Map;
 
-public class AnimHandler {
+public class AnimHelper {
     /**
      * @EaseInOut - замедление в начале и в конце (по умолчанию)
      * @EaseIn - замедление в начале
@@ -15,18 +15,16 @@ public class AnimHandler {
     public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
         percent = Math.max(percent, 0.1f);
 
-        if (!reverse && percent < 100) {
-            float t = percent / 100f;
-            float easeSpeed = calculateEaseSpeed(mode, t);
-            percent += Math.max(0.1f, GetAnimDiff.get() * easeSpeed);
-        } else if (reverse && percent > 0) {
-            float t = (100 - percent) / 100f;
-            float easeSpeed = 1 - calculateEaseSpeed(mode, t);
-            percent -= Math.max(0.1f, GetAnimDiff.get() * easeSpeed);
-        }
+        float t = reverse ? (100 - percent) / 100f : percent / 100f;
+        float easeFactor = calculateEaseSpeed(mode, t);
+        easeFactor = Math.max(easeFactor, 0.1f);
 
-        return Math.clamp(percent, 0, 100);
+        float delta = GetAnimDiff.get() * easeFactor * (reverse ? -1 : 1);
+        percent += delta;
+
+        return Math.max(0, Math.min(100, percent));
     }
+
     private static float calculateEaseSpeed(AnimMode mode, float t) {
         switch(mode) {
             case EaseIn:
@@ -34,13 +32,9 @@ public class AnimHandler {
             case EaseOut:
                 return 1 - (1 - t) * (1 - t);
             case EaseInOut:
-                if (t < 0.5f) {
-                    return 2 * t * t;
-                } else {
-                    return 1 - 2 * (1 - t) * (1 - t);
-                }
-            default:
-                return 1 - Math.abs(2 * t - 1);
+                if (t < 0.5f) return 4 * t * t * t;
+                else return 1 - 4 * (1 - t) * (1 - t) * (1 - t);
+            default: return 1;
         }
     }
     public static float handleAnimValue(boolean reverse, float percent) {
@@ -73,5 +67,19 @@ public class AnimHandler {
     }
     public static void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, Boolean delete) {
         handleMapAnim(animMap, reverceMap, AnimMode.EaseInOut, delete);
+    }
+
+    public static String getAnimText(String startText, String endText, int percent) {
+        percent = Math.max(0, Math.min(100, percent));
+        float pct = percent / 100f;
+        if (pct <= 0.5f) {
+            float keepRatio = 1 - pct * 2;
+            int keepChars = Math.round(startText.length() * keepRatio);
+            return startText.substring(0, keepChars);
+        } else {
+            float drawRatio = (pct - 0.5f) * 2;
+            int drawChars = Math.round(endText.length() * drawRatio);
+            return endText.substring(0, drawChars);
+        }
     }
 }

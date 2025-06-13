@@ -41,7 +41,7 @@ public class ConfigManager {
                 return defaultValue;
             }
             if (result instanceof Number) {
-                result = normalizeNumber(result);
+                result = normalizeNumber(result, defaultValue);
             }
             return (T) result;
         } catch (RuntimeException ignored) {}
@@ -109,13 +109,13 @@ public class ConfigManager {
         return new HashMap<>();
     }
 
-    public Object normalizeNumber(Object value) {
+    public Object normalizeNumber(Object value, Object defaultValue) {
         if (value instanceof Double) {
             double d = (Double) value;
-            if (d == (float) d) {
+            if (defaultValue instanceof Float) {
                 return (float) d;
             }
-            if (d == (int) d) {
+            if (defaultValue instanceof Integer) {
                 return (int) d;
             }
         }
