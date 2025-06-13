@@ -459,20 +459,21 @@ public class ClickGui extends Screen {
         if (inputSet != null && keyCode == GLFW.GLFW_KEY_ENTER) {
             if (inputSet.getValue() instanceof Integer) {
                 try {
-                    int value = Integer.valueOf(inputText);
+                    int value = Integer.parseInt(inputText);
                     inputSet.setValue(value);
-                } catch (NumberFormatException e) {}
+                } catch (NumberFormatException ignored) {}
             } else if (inputSet.getValue() instanceof Float) {
                 try {
-                    float value = Float.valueOf(inputText);
+                    float value = Float.parseFloat(inputText.replace(",", "."));
                     inputSet.setValue(value);
-                } catch (NumberFormatException e) {}
+                } catch (NumberFormatException ignored) {}
             } else {
                 inputSet.setValue(inputText);
             }
             inputSet = null;
             inputText = null;
             inputAnim = 0f;
+            return true;
         }
         if (inputSet != null && keyCode == GLFW.GLFW_KEY_BACKSPACE) {
             if (!inputText.isEmpty()) {
