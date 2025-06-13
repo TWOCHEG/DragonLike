@@ -7,7 +7,6 @@ import purr.purr.modules.settings.ListSetting;
 import purr.purr.modules.settings.Setting;
 import purr.purr.modules.ui.Gui;
 import purr.purr.utils.RGB;
-import purr.purr.utils.GetAnimDiff;
 import purr.purr.modules.Parent;
 
 import net.minecraft.client.gui.DrawContext;
@@ -36,8 +35,11 @@ public class ClickGui extends Screen {
     private List<Object> moduleAreas = new ArrayList<>();
 
     private Parent bindingModule = null;
-    private float bindAnimPercent = 0;
-    private boolean bindAnimReverse = true;
+
+    private Setting inputSet = null;
+    private String inputText = null;
+    private Float inputAnim = 0f;
+    private Boolean inputAnimReverse = true;
 
     private float animPercent = 0;
     private boolean animReverse = false;
@@ -52,7 +54,10 @@ public class ClickGui extends Screen {
 
     private final Screen previous;
 
-    private Map<Object, Float> hoverAnimations = new HashMap<>();
+    private Map<Object, Float> hoverAnim = new HashMap<>();
+
+    private Map<Object, Float> bindAnim = new HashMap<>();
+    private Map<Object, Boolean> bindAnimReverse = new HashMap<>();
 
     private Map<Object, Float> setAnim = new HashMap<>();
     private Map<Object, Boolean> setAnimReverse = new HashMap<>();
@@ -278,9 +283,9 @@ public class ClickGui extends Screen {
                     )
                 );
 
-                float hoverPercent = hoverAnimations.getOrDefault(module, 0f);
+                float hoverPercent = hoverAnim.getOrDefault(module, 0f);
                 hoverPercent = AnimHelper.handleAnimValue(hovered, hoverPercent);
-                hoverAnimations.put(module, hoverPercent);
+                hoverAnim.put(module, hoverPercent);
 
                 float maxScaleDelta = 0.2f;
                 float scale = 1.0f + maxScaleDelta * (hoverPercent / 100f);
@@ -295,8 +300,8 @@ public class ClickGui extends Screen {
                         String key = keyName(keyBind);
                         name = AnimHelper.getAnimText(moduleName, key, (int) showKeybind);
                     }
-                } else if (bindAnimPercent > 1 && bindingModule == module) {
-                    name = AnimHelper.getAnimText(moduleName, "...", (int) bindAnimPercent);
+                } else if (bindAnim.containsKey(module) && bindAnim.getOrDefault(module, 0f) > 0f) {
+                    name = AnimHelper.getAnimText(moduleName, "...", bindAnim.getOrDefault(module, 0f).intValue());
                 }
                 Formatting fmt = module.getEnable()
                         ? Formatting.UNDERLINE
@@ -318,7 +323,7 @@ public class ClickGui extends Screen {
                 } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
                     setAnimReverse.put(module, true);
                     // эта переменная может быть от 15
-                    float percent = (float) setAnim.get(module);
+                    float percent = setAnim.get(module);
 
                     if (percent % 2 == 0) {
                         xDifference -= 5f;
@@ -379,6 +384,9 @@ public class ClickGui extends Screen {
             } else if (obj instanceof Setting set) {
                 if (set.getValue() instanceof Boolean) {
                     set.setValue(! (Boolean) set.getValue());
+                } else if (set.getValue() instanceof String text) {
+                    inputSet = set;
+                    inputText = text;
                 }
                 return true;
             } else if (obj instanceof Parent module) {
@@ -416,9 +424,15 @@ public class ClickGui extends Screen {
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
             Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
             if (obj instanceof Parent module) {
-                System.out.println(1);
                 bindingModule = module;
-                bindAnimReverse = false;
+                bindAnimReverse.put(bindingModule, false);
+                bindAnim.put(bindingModule, 0f);
+                for (Object key : bindAnim.keySet()) {
+                    if (key.equals(bindingModule)) {
+                        continue;
+                    }
+                    bindAnimReverse.put(key, true);
+                }
                 return true;
             }
         }
@@ -430,9 +444,16 @@ public class ClickGui extends Screen {
         if (bindingModule != null) {
             int value = (keyCode == GLFW.GLFW_KEY_ESCAPE) ? -1 : keyCode;
             bindingModule.setKeybind(value);
-            bindAnimReverse = true;
+            bindAnimReverse.put(bindingModule, true);
             bindingModule = null;
             return true;
+        }
+        if (inputSet != null && keyCode == GLFW.GLFW_KEY_ENTER) {
+            inputSet.setValue(inputText);
+            System.out.println(inputText);
+            inputSet = null;
+            inputText = null;
+            inputAnim = 0f;
         }
         if (
             keyCode == GLFW.GLFW_KEY_RIGHT ||
@@ -490,14 +511,22 @@ public class ClickGui extends Screen {
 
     private void animHandler() {
         animPercent = AnimHelper.handleAnimValue(animReverse, animPercent);
-        System.out.println(animPercent);
 
         long window = client.getWindow().getHandle();
         boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS;
         showKeybind = AnimHelper.handleAnimValue(!shiftDown, showKeybind);
 
-        bindAnimPercent = AnimHelper.handleAnimValue(bindAnimReverse, bindAnimPercent);
+        if (inputSet != null) {
+            inputAnim = AnimHelper.handleAnimValue(inputAnimReverse, inputAnim);
+            if (inputAnim == 100f) {
+                inputAnimReverse = true;
+            } else if (inputAnim == 0f) {
+                inputAnimReverse = false;
+            }
+            System.out.println(inputAnim);
+        }
 
+        AnimHelper.handleMapAnim(bindAnim, bindAnimReverse);
         AnimHelper.handleMapAnim(setAnim, setAnimReverse);
         AnimHelper.handleMapAnim(exsAnim, exsAnimReverse);
         AnimHelper.handleMapAnim(setVisAnim, setVisAnimReverse, false);
@@ -672,6 +701,10 @@ public class ClickGui extends Screen {
                     } else {
                         color = RGB.getColor(255, 210, 230, alphaColor);
                     }
+                }
+                if (inputSet != null && inputSet.equals(set)) {
+                    name = set.getName() + ": " + (inputText != null && !inputText.isEmpty() ? inputText : "...");
+                    color = RGB.getColor(255,  255, 255, (int) (255 - (200 * inputAnim / 100)));
                 }
             } else {
                 name = set.getName();

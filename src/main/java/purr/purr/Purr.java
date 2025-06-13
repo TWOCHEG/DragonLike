@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import purr.purr.modules.ModuleManager;
+import purr.purr.modules.example.Example;
 import purr.purr.modules.ui.*;
 import purr.purr.modules.combat.*;
 import purr.purr.modules.world.*;
@@ -32,7 +33,8 @@ public class Purr implements ModInitializer {
 				new ConfigMenu(),
 				new FakePlayer(),
 				new Nuker(),
-				new Notify()
+				new Notify(),
+				new Example()
 			))
 		);
 	}
