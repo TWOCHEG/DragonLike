@@ -522,7 +522,7 @@ public class ClickGui extends Screen {
     ) {
         // параметры
         int zDepth = 3;
-        float setAnimPercent = setAnim.get(module);
+        float setAnimPercent = animPercent * setAnim.get(module) / 100;
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
@@ -600,7 +600,7 @@ public class ClickGui extends Screen {
                     setVisAnimReverse.put(set, false);
                 }
             }
-            float visAnimPercent = setVisAnim.getOrDefault(set, 100.0f) * animPercent / 100;
+            float visAnimPercent = setVisAnim.getOrDefault(set, 100.0f) * setAnimPercent / 100;
             if (visAnimPercent == 0.0f) continue;
 
             if (currentGroup != null) {
