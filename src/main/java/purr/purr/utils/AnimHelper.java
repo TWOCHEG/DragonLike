@@ -5,7 +5,6 @@ import java.util.Map;
 
 import purr.purr.Purr;
 import purr.purr.modules.ui.Gui;
-import purr.purr.config.ConfigManager;
 
 public class AnimHelper {
     /**

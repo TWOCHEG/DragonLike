@@ -55,6 +55,7 @@ public class ClickGui extends Screen {
     private final Screen previous;
 
     private Map<Object, Float> hoverAnim = new HashMap<>();
+    private Map<Object, Boolean> hovemrAnimReverse = new HashMap<>();
 
     private Map<Object, Float> bindAnim = new HashMap<>();
     private Map<Object, Boolean> bindAnimReverse = new HashMap<>();
@@ -217,7 +218,11 @@ public class ClickGui extends Screen {
                     )
                 );
 
-                float hoverPercent = handleHoveAnim(hovered, module);
+                hovemrAnimReverse.put(module, hovered);
+                if (!hoverAnim.containsKey(module)) {
+                    hoverAnim.put(module, 0f);
+                }
+                float hoverPercent = hoverAnim.get(module);
 
                 float maxScaleDelta = 0.2f;
                 float scale = 1.0f + maxScaleDelta * (hoverPercent / 100f);
@@ -498,13 +503,6 @@ public class ClickGui extends Screen {
         super.mouseMoved(mouseX, mouseY);
     }
 
-    private float handleHoveAnim(boolean hovered, Parent module) {
-        float hoverPercent = hoverAnim.getOrDefault(module, 0f);
-        hoverPercent = AnimHelper.handleAnimValue(hovered, hoverPercent);
-        hoverAnim.put(module, hoverPercent);
-        return hoverPercent;
-    }
-
     private void animHandler() {
         animPercent = AnimHelper.handleAnimValue(animReverse, animPercent);
 
@@ -521,6 +519,7 @@ public class ClickGui extends Screen {
             }
         }
 
+        AnimHelper.handleMapAnim(hoverAnim, hovemrAnimReverse, false);
         AnimHelper.handleMapAnim(bindAnim, bindAnimReverse);
         AnimHelper.handleMapAnim(setAnim, setAnimReverse);
         AnimHelper.handleMapAnim(exsAnim, exsAnimReverse);
