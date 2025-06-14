@@ -334,6 +334,11 @@ public class ClickGui extends Screen {
                     exsAnimReverse.put(set, true);
                 }
                 return true;
+            } else if (obj instanceof Setting set) {
+                if (set.getValue() instanceof Integer value) {
+                    inputSet = set;
+                    inputText = value.toString();
+                }
             } else if (obj instanceof Parent module) {
                 if (!setAnim.containsKey(module)) {
                     setAnim.put(module, 0.0F);
