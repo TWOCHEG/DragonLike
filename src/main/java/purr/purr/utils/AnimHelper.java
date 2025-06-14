@@ -3,6 +3,10 @@ package purr.purr.utils;
 import java.util.Iterator;
 import java.util.Map;
 
+import purr.purr.Purr;
+import purr.purr.modules.ui.Gui;
+import purr.purr.config.ConfigManager;
+
 public class AnimHelper {
     /**
      * @EaseInOut замедление в начале и в конце (по умолчанию)
@@ -10,41 +14,44 @@ public class AnimHelper {
      * @EaseOut замедление в конце
      */
     public enum AnimMode {
-        EaseInOut, EaseIn, EaseOut
-    }
-    public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
-        percent = Math.max(percent, 0.1f);
+        EaseIn,
+        EaseOut,
+        EaseInOut;
 
-        if (!reverse && percent < 100) {
-            float t = percent / 100f;
-            float easeSpeed = Math.max(calculateEaseSpeed(mode, t), 0.1f);
-            percent += Math.max(0.1f, GetAnimDiff.get() * easeSpeed);
-        } else if (reverse && percent > 0) {
-            float t = (100 - percent) / 100f;
-            float easeSpeed = 1 - Math.max(calculateEaseSpeed(mode, t), 0.1f);
-            percent -= Math.max(0.1f, GetAnimDiff.get() * easeSpeed);
-        }
-
-        return Math.clamp(percent, 0, 100);
-    }
-
-    private static float calculateEaseSpeed(AnimMode mode, float t) {
-        switch(mode) {
-            case EaseIn:
-                return t * t * t; // Кубическая функция для ease-in [[5]]
-            case EaseOut:
-                float f = 1 - t;
-                return 1 - f * f * f; // Обратная кубическая функция для ease-out [[5]]
-            case EaseInOut:
-                if (t < 0.5f) {
-                    return 4 * t * t * t; // Удвоенная кубическая для первой половины [[5]]
+        public float getDiff(float percent, float diff) {
+            percent = Math.max(percent, 1);
+            if (this.equals(EaseIn)) {
+                return diff * percent / 100;
+            } else if (this.equals(EaseOut)) {
+                return diff * (100 - percent) / 100;
+            } else if (this.equals(EaseInOut)) {
+                if (percent < 50f) {
+                    return diff * percent / 100;
                 } else {
-                    float a = 1 - t;
-                    return 1 - 4 * a * a * a; // Удвоенная обратная кубическая для второй половины [[5]]
+                    return diff * (100 - percent) / 100;
                 }
-            default:
-                return 1; // Линейная анимация
+            } else {
+                return diff;
+            }
         }
+        public float getDiff(float percent) {
+            return getDiff(percent, GetAnimDiff.get());
+        }
+    }
+
+    public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
+        if (Purr.moduleManager != null) {
+            Gui guiModule = (Gui) Purr.moduleManager.getModuleByClass(Gui.class);
+            if (guiModule != null && !guiModule.animEnable.getValue()) {
+                return reverse ? 0f : 100f;
+            }
+        }
+
+        float diff = Math.max(mode.getDiff(percent), 1);
+
+        percent = reverse ? percent - diff : percent + diff;
+
+        return Math.clamp(percent, 0f, 100f);
     }
     public static float handleAnimValue(boolean reverse, float percent) {
         return handleAnimValue(reverse, percent, AnimMode.EaseInOut);

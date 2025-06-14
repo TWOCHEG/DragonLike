@@ -127,7 +127,13 @@ public class ClickGui extends Screen {
             return;
         }
 
-        animHandler();
+        if (guiModule.runProcess.getValue()) {
+            new Thread(() -> {
+                animHandler();
+            }, "Purr-animations").start();
+        } else {
+            animHandler();
+        }
 
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
@@ -211,9 +217,7 @@ public class ClickGui extends Screen {
                     )
                 );
 
-                float hoverPercent = hoverAnim.getOrDefault(module, 0f);
-                hoverPercent = AnimHelper.handleAnimValue(hovered, hoverPercent);
-                hoverAnim.put(module, hoverPercent);
+                float hoverPercent = handleHoveAnim(hovered, module);
 
                 float maxScaleDelta = 0.2f;
                 float scale = 1.0f + maxScaleDelta * (hoverPercent / 100f);
@@ -492,6 +496,13 @@ public class ClickGui extends Screen {
         }
 
         super.mouseMoved(mouseX, mouseY);
+    }
+
+    private float handleHoveAnim(boolean hovered, Parent module) {
+        float hoverPercent = hoverAnim.getOrDefault(module, 0f);
+        hoverPercent = AnimHelper.handleAnimValue(hovered, hoverPercent);
+        hoverAnim.put(module, hoverPercent);
+        return hoverPercent;
     }
 
     private void animHandler() {
