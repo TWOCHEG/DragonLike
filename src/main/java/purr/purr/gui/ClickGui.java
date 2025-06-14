@@ -132,49 +132,7 @@ public class ClickGui extends Screen {
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
 
-        if (
-            guiModule != null &&
-            guiModule.image.getValue() != null &&
-            !guiModule.image.getValue().equals("none")
-        ) {
-            String path = guiModule.getImages().get(guiModule.image.getValue());
-            Identifier texture = Identifier.of("purr", path);
-            try {
-                Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
-                NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
-
-                float imageWidth = nativeImage.getWidth();
-                float imageHeight = nativeImage.getHeight();
-
-                nativeImage.close();
-
-                float screenMin = Math.min(screenWidth, screenHeight);
-                float fixedSize = screenMin * guiModule.imgSize.getValue();
-
-                float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
-
-                float scaledWidth = imageWidth * scale;
-                float scaledHeight = imageHeight * scale;
-
-                float x = screenWidth - (scaledWidth * animPercent / 100);
-                float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
-
-                context.getMatrices().push();
-                context.getMatrices().translate(0, 0, 2);
-                context.drawTexture(
-                    RenderLayer::getGuiTextured,
-                    texture,
-                    (int) x,
-                    (int) y,
-                    0, 0,
-                    (int) scaledWidth,
-                    (int) scaledHeight,
-                    (int) scaledWidth,
-                    (int) scaledHeight
-                );
-                context.getMatrices().pop();
-            } catch (Exception ignored) {}
-        }
+        handleGuiImage(context, screenWidth, screenHeight);
 
         // Фон с градиентом
         int alphaTop = 200 * (int) animPercent / 100;
@@ -343,14 +301,16 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // еее навалим говно кода, погнали
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && animPercent >= 100 && !animReverse) {
-            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+        Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+        if (obj == null) {
+            if (checkActive()) {
+                closeAll();
+            }
+        }
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             if (obj instanceof ListArea lst) {
                 lst.set();
-                return true;
-            } else if (obj instanceof Group group) {
-                group.setOpen(!group.isOpen());
                 return true;
             } else if (obj instanceof ListSetting set) {
                 int i = set.getOptions().indexOf(set.getValue());
@@ -360,20 +320,11 @@ public class ClickGui extends Screen {
                 }
                 set.setValue(set.getOptions().get(i));
                 return true;
-            } else if (obj instanceof Setting set) {
-                if (set.getValue() instanceof Boolean) {
-                    set.setValue(! (Boolean) set.getValue());
-                } else if (set.getValue() instanceof String text) {
-                    inputSet = set;
-                    inputText = text;
-                }
-                return true;
             } else if (obj instanceof Parent module) {
                 module.setEnable(!module.getEnable());
                 return true;
             }
-        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && animPercent >= 100 && !animReverse) {
-            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             if (obj instanceof ListSetting || obj instanceof ListArea) {
                 Setting set = (Setting) (obj instanceof ListArea ? ((ListArea) obj).module : obj);
                 if (!exsAnim.containsKey(set)) {
@@ -381,17 +332,6 @@ public class ClickGui extends Screen {
                     exsAnimReverse.put(set, false);
                 } else {
                     exsAnimReverse.put(set, true);
-                }
-                return true;
-            } else if (obj instanceof Group group) {
-                group.setOpen(!group.isOpen());
-                return true;
-            } else if (obj instanceof Setting set) {
-                if (set.getValue() instanceof Boolean) {
-                    set.setValue(! (Boolean) set.getValue());
-                } else if (set.getValue() instanceof Integer || set.getValue() instanceof Float) {
-                    inputSet = set;
-                    inputText = set.getValue().toString();
                 }
                 return true;
             } else if (obj instanceof Parent module) {
@@ -403,8 +343,7 @@ public class ClickGui extends Screen {
                 }
                 return true;
             }
-        } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && animPercent >= 100 && !animReverse) {
-            Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
             if (obj instanceof Parent module) {
                 bindingModule = module;
                 bindAnimReverse.put(bindingModule, false);
@@ -417,6 +356,21 @@ public class ClickGui extends Screen {
                 }
                 return true;
             }
+        }
+
+        if (obj instanceof Group group) {
+            group.setOpen(!group.isOpen());
+            return true;
+        }
+
+        if (obj instanceof Setting set) {
+            if (set.getValue() instanceof Boolean) {
+                set.setValue(!(Boolean) set.getValue());
+            } else if (set.getValue() instanceof String text) {
+                inputSet = set;
+                inputText = text;
+            }
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -584,7 +538,7 @@ public class ClickGui extends Screen {
         for (Setting set : sets) {
             float xColStart = xStart;
             int alphaColor = (int) (255 * setAnimPercent / 100);
-            float textScale = 0.7f;
+            float textScale = 0.8f;
             int color;
             String name;
             currentGroup = set.getGroup();
@@ -798,6 +752,52 @@ public class ClickGui extends Screen {
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;
 
         return new ArrayList<>(List.of(ySetOffset, (maxWidth + spacing) * setAnimPercent / 100));
+    }
+
+    private void handleGuiImage(DrawContext context, float screenWidth, float screenHeight) {
+        if (
+            guiModule != null &&
+            guiModule.image.getValue() != null &&
+            !guiModule.image.getValue().equals("none")
+        ) {
+            String path = guiModule.getImages().get(guiModule.image.getValue());
+            Identifier texture = Identifier.of("purr", path);
+            try {
+                Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+                NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
+
+                float imageWidth = nativeImage.getWidth();
+                float imageHeight = nativeImage.getHeight();
+
+                nativeImage.close();
+
+                float screenMin = Math.min(screenWidth, screenHeight);
+                float fixedSize = screenMin * guiModule.imgSize.getValue();
+
+                float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
+
+                float scaledWidth = imageWidth * scale;
+                float scaledHeight = imageHeight * scale;
+
+                float x = screenWidth - (scaledWidth * animPercent / 100);
+                float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
+
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, 2);
+                context.drawTexture(
+                    RenderLayer::getGuiTextured,
+                    texture,
+                    (int) x,
+                    (int) y,
+                    0, 0,
+                    (int) scaledWidth,
+                    (int) scaledHeight,
+                    (int) scaledWidth,
+                    (int) scaledHeight
+                );
+                context.getMatrices().pop();
+            } catch (Exception ignored) {}
+        }
     }
 
     private static String keyName(int keyKode) {

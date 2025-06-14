@@ -31,13 +31,19 @@ public class AnimHelper {
     private static float calculateEaseSpeed(AnimMode mode, float t) {
         switch(mode) {
             case EaseIn:
-                return t * t;
+                return t * t * t; // Кубическая функция для ease-in [[5]]
             case EaseOut:
-                return 1 - (1 - t) * (1 - t);
+                float f = 1 - t;
+                return 1 - f * f * f; // Обратная кубическая функция для ease-out [[5]]
             case EaseInOut:
-                float sqr = t * t;
-                return sqr / (2.0f * (sqr - t) + 1.0f); // эаэ сука какую формулу надо
-            default: return 1;
+                if (t < 0.5f) {
+                    return 4 * t * t * t; // Удвоенная кубическая для первой половины [[5]]
+                } else {
+                    float a = 1 - t;
+                    return 1 - 4 * a * a * a; // Удвоенная обратная кубическая для второй половины [[5]]
+                }
+            default:
+                return 1; // Линейная анимация
         }
     }
     public static float handleAnimValue(boolean reverse, float percent) {
