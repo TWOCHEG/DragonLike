@@ -63,26 +63,52 @@ public class ClickGui extends Screen {
     private final Map<Object, Float> bindAnim = new HashMap<>();
     private final Map<Object, Boolean> bindAnimReverse = new HashMap<>();
 
-    private final Map<Object, Float> setAnim = new HashMap<>();
-    private final Map<Object, Boolean> setAnimReverse = new HashMap<>();
+    private Map<Object, Float> setAnim = new HashMap<>();
+    private Map<Object, Boolean> setAnimReverse = new HashMap<>();
 
-    private final Map<Object, Float> exsAnim = new HashMap<>();
-    private final Map<Object, Boolean> exsAnimReverse = new HashMap<>();
+    private Map<Object, Float> exsAnim = new HashMap<>();
+    private Map<Object, Boolean> exsAnimReverse = new HashMap<>();
 
-    private final Map<Object, Float> setVisAnim = new HashMap<>();
-    private final Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
+    private Map<Object, Float> setVisAnim = new HashMap<>();
+    private Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
 
-    private final Map<Parent, List> settings = new HashMap<>();
+    private Map<Parent, List> settings = new HashMap<>();
 
-    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule) {
+    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule, List<Map> lastValues) {
         super(Text.literal("Purr Gui"));
         this.previous = previous;
         this.modules = moduleManager.getModules();
         this.guiModule = guiModule;
+
+        if (!lastValues.isEmpty()) {
+            setAnim = lastValues.getFirst();
+            setAnimReverse = lastValues.get(1);
+
+            exsAnim = lastValues.get(2);
+            exsAnimReverse = lastValues.get(3);
+
+            setVisAnim = lastValues.get(4);
+            setVisAnimReverse = lastValues.get(5);
+
+            settings = lastValues.getLast();
+        }
     }
 
     public void closeGui() {
         closeAll();
+
+        if (!guiModule.clearGui.getValue()) {
+            guiModule.lastValues.add(setAnim);
+            guiModule.lastValues.add(setAnimReverse);
+
+            guiModule.lastValues.add(exsAnim);
+            guiModule.lastValues.add(exsAnimReverse);
+
+            guiModule.lastValues.add(setVisAnim);
+            guiModule.lastValues.add(setVisAnimReverse);
+
+            guiModule.lastValues.add(settings);
+        }
 
         animReverse = true;
     }

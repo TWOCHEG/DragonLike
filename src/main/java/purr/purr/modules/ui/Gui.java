@@ -36,6 +36,9 @@ public class Gui extends Parent {
     public final Setting<Boolean> animEnable = new Setting<>("enable animations", true).addToGroup(animations);
     public final Setting<Boolean> runProcess = new Setting<>("run separate process", false).addToGroup(animations);
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
+    public final Setting<Boolean> clearGui = new Setting<>("clear data", false);
+
+    public List<Map> lastValues = new LinkedList<>();
 
     public Gui() {
         super("click gui", "ui");
@@ -50,7 +53,7 @@ public class Gui extends Parent {
     @Override
     public void onEnable() {
         if (client.currentScreen instanceof TitleScreen || client.currentScreen == null) {
-            client.setScreen(new ClickGui(client.currentScreen, moduleManager, this));
+            client.setScreen(new ClickGui(client.currentScreen, moduleManager, this, lastValues));
         }
     }
 
