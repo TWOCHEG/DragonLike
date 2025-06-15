@@ -1,7 +1,9 @@
 package purr.purr.modules.ui;
 
+import org.lwjgl.glfw.GLFW;
+import purr.purr.events.impl.EventTick;
 import purr.purr.gui.ClickGui;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.util.InputUtil;
@@ -38,33 +40,31 @@ public class Gui extends Parent {
     public final Group animations = new Group("animations");
     public final Setting<Boolean> animEnable = new Setting<>("enable animations", true).addToGroup(animations);
     public final Setting<Boolean> runProcess = new Setting<>("run separate process", false).addToGroup(animations);
-    public final Setting<Integer> animSpeed = new Setting<>("animations speed", 10, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
+    public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
 
-    private static boolean key = false;
-
-    public LinkedList<Map<?, ?>> animSave = new LinkedList<>();
+    private static boolean keyWasPressed = false;
 
     public Gui() {
         super("click gui", "ui");
+    }
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client != null) {
-                boolean isRightShiftPressed = InputUtil.isKeyPressed(
-                    client.getWindow().getHandle(),
-                    getKeybind() != -1 ? getKeybind() : 344
-                );
-                Screen currentScreen = client.currentScreen;
+    @EventHandler
+    public void onTick(EventTick e) {
+        if (client == null) return;
 
-                if (isRightShiftPressed && !key) {
-                    if (currentScreen instanceof ClickGui clickGuiScreen) {
-                        clickGuiScreen.closeGui();
-                    } else if (currentScreen == null || currentScreen instanceof TitleScreen) {
-                        client.setScreen(new ClickGui(client.currentScreen, moduleManager, this, animSave));
-                    }
-                }
-                key = isRightShiftPressed;
+        boolean isKeyPressed = InputUtil.isKeyPressed(
+            client.getWindow().getHandle(),
+            getKeybind() != -1 ? getKeybind() : GLFW.GLFW_KEY_RIGHT_SHIFT
+        );
+
+        if (isKeyPressed && !keyWasPressed) {
+            if (client.currentScreen instanceof ClickGui) {
+                ((ClickGui) client.currentScreen).closeGui();
+            } else {
+                client.setScreen(new ClickGui(client.currentScreen, moduleManager, this));
             }
-        });
+        }
+        keyWasPressed = isKeyPressed;
     }
 
     public Map<String, String> getImages() {

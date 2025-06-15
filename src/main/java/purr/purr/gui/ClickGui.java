@@ -6,6 +6,7 @@ import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
 import purr.purr.modules.settings.Setting;
 import purr.purr.modules.ui.Gui;
+import purr.purr.utils.KeyName;
 import purr.purr.utils.RGB;
 import purr.purr.modules.Parent;
 
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.render.RenderLayer;
@@ -57,50 +57,39 @@ public class ClickGui extends Screen {
 
     private final Screen previous;
 
-    private Map<Object, Float> hoverAnim = new HashMap<>();
-    private Map<Object, Boolean> hovemrAnimReverse = new HashMap<>();
+    private final Map<Object, Float> hoverAnim = new HashMap<>();
+    private final Map<Object, Boolean> hoverAnimReverse = new HashMap<>();
 
-    private Map<Object, Float> bindAnim = new HashMap<>();
-    private Map<Object, Boolean> bindAnimReverse = new HashMap<>();
+    private final Map<Object, Float> bindAnim = new HashMap<>();
+    private final Map<Object, Boolean> bindAnimReverse = new HashMap<>();
 
-    private Map<Object, Float> setAnim = new HashMap<>();
-    private Map<Object, Boolean> setAnimReverse = new HashMap<>();
+    private final Map<Object, Float> setAnim = new HashMap<>();
+    private final Map<Object, Boolean> setAnimReverse = new HashMap<>();
 
-    private Map<Object, Float> exsAnim = new HashMap<>();
-    private Map<Object, Boolean> exsAnimReverse = new HashMap<>();
+    private final Map<Object, Float> exsAnim = new HashMap<>();
+    private final Map<Object, Boolean> exsAnimReverse = new HashMap<>();
 
-    private Map<Object, Float> setVisAnim = new HashMap<>();
-    private Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
+    private final Map<Object, Float> setVisAnim = new HashMap<>();
+    private final Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
 
-    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule, LinkedList<Map<?, ?>> animSave) {
+    public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule) {
         super(Text.literal("Purr Gui"));
         this.previous = previous;
         this.modules = moduleManager.getModules();
         this.guiModule = guiModule;
-
-        if (animSave != null && animSave.size() == 6) {
-            setAnim = (Map<Object, Float>) animSave.get(0);
-            setAnimReverse = (Map<Object, Boolean>) (animSave.get(1));
-            exsAnim = (Map<Object, Float>) (animSave.get(2));
-            exsAnimReverse = (Map<Object, Boolean>) (animSave.get(3));
-            setVisAnim = (Map<Object, Float>) (animSave.get(4));
-            setVisAnimReverse = (Map<Object, Boolean>) (animSave.get(5));
-        }
     }
 
     public void closeGui() {
         closeAll();
 
-        animReverse = true;
-        LinkedList<Map<?, ?>> saveList = new LinkedList<>();
+        moduleAreas.clear();
+        hoverAnim.clear();
+        bindAnim.clear();
+        setAnim.clear();
+        exsAnim.clear();
+        setVisAnim.clear();
 
-        saveList.add(setAnim);
-        saveList.add(setAnimReverse);
-        saveList.add(exsAnim);
-        saveList.add(exsAnimReverse);
-        saveList.add(setVisAnim);
-        saveList.add(setVisAnimReverse);
-        guiModule.animSave = saveList;
+        animReverse = true;
     }
 
     public void closeAll() {
@@ -132,174 +121,159 @@ public class ClickGui extends Screen {
         }
 
         if (guiModule.runProcess.getValue()) {
-            new Thread(() -> {
-                animHandler();
-            }, "Purr-animations").start();
+            new Thread(this::animHandler, "PurrGui-animations").start();
         } else {
             animHandler();
         }
 
         moduleAreas.clear();
-
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
 
         handleGuiImage(context, screenWidth, screenHeight);
 
-        // Фон с градиентом
-        int alphaTop = 200 * (int) animPercent / 100;
-        int alphaBottom = 50 * (int) animPercent / 100;
         context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 1);
-        context.getMatrices().scale(1, 1, 1);
-        context.fillGradient(0, 0, width, height,
-            RGB.getColor(0, 0, 0, alphaTop),
-            RGB.getColor(0, 0, 0, alphaBottom)
-        );
-        context.getMatrices().pop();
-
-        // подсказки
-        String[] lines = hintsText.split("\n");
-        float hintsScale = 0.7f;
-        int alpha = 150 * (int) animPercent / 100;
-        int colorHints = RGB.getColor(255, 255, 255, alpha);
-        int xHints = 5;
-        float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
-        context.getMatrices().push();
-        context.getMatrices().translate(xHints, yHints, 2);
-        context.getMatrices().scale(hintsScale, hintsScale, 2);
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            context.drawTextWithShadow(textRenderer, Text.literal(line), 0, i * (textRenderer.fontHeight + 2), colorHints);
+        {
+            int alphaTop = 200 * (int) animPercent / 100;
+            int alphaBottom = 50 * (int) animPercent / 100;
+            context.getMatrices().translate(0, 0, 1);
+            context.getMatrices().scale(1, 1, 1);
+            context.fillGradient(0, 0, width, height,
+                RGB.getColor(0, 0, 0, alphaTop),
+                RGB.getColor(0, 0, 0, alphaBottom)
+            );
         }
         context.getMatrices().pop();
 
-        // параметры
-        float yStart = (10 + yMove) * animPercent / 100;
-        int baseTextHeight = textRenderer.fontHeight;
-        int spacing = 10;
-        int spacingColumns = 10;
-        int numCols = modules.size();
-        int columnWidth = Math.min(70, (width - spacingColumns * (numCols - 1)) / numCols);
-        int totalColsWidth = numCols * columnWidth + (numCols - 1) * spacingColumns;
-        float xColStart = (((width + xMove) - totalColsWidth) / 2);
+        context.getMatrices().push();
+        {
+            String[] lines = hintsText.split("\n");
+            float hintsScale = 0.7f;
+            int alpha = 150 * (int) animPercent / 100;
+            int colorHints = RGB.getColor(255, 255, 255, alpha);
+            int xHints = 5;
+            float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
+            context.getMatrices().translate(xHints, yHints, 2);
+            context.getMatrices().scale(hintsScale, hintsScale, 2);
+            for (int i = 0; i < lines.length; i++) {
+                context.drawTextWithShadow(textRenderer, Text.literal(lines[i]), 0, i * (textRenderer.fontHeight + 2), colorHints);
+            }
+        }
+        context.getMatrices().pop();
 
-        for (Map.Entry<String, List<Parent>> entry : modules.entrySet()) {
-            String category = entry.getKey();
-            if (category == null) continue;
-            List<Parent> list = entry.getValue();
+        context.getMatrices().push();
+        {
+            float yStart = (10 + yMove) * animPercent / 100;
+            int baseTextHeight = textRenderer.fontHeight;
+            int spacing = 10;
+            int spacingColumns = 10;
+            int numCols = modules.size();
+            int columnWidth = Math.min(70, (width - spacingColumns * (numCols - 1)) / numCols);
+            int totalColsWidth = numCols * columnWidth + (numCols - 1) * spacingColumns;
+            float xColStart = ((width + xMove) - totalColsWidth) / 2;
 
-            // Название категории
-            float categoryScale = 1.2f;
-            context.getMatrices().push();
-            context.getMatrices().translate(xColStart, yStart, 2);
-            context.getMatrices().scale(categoryScale, categoryScale, 2);
-            context.drawTextWithShadow(
-                textRenderer,
-                Text.literal(category).formatted(Formatting.BOLD),
-                0,
-                0,
-                RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
-            );
-            context.getMatrices().pop();
-
-            // Начинаем аккумулировать y для модулей под категорией
-            float yOffset = yStart + (baseTextHeight + spacing);
-
-            float maxWidth = 0;
-
-            for (Parent module : list) {
-                if (module.getName() == null) continue;
-                boolean hovered = !(
-                    (
-                        mouseX >= xColStart
-                        && mouseX <= xColStart + columnWidth
-                        && mouseY >= yOffset
-                        && mouseY <= yOffset + baseTextHeight
-                    ) || (
-                        setAnim.get(module) != null
-                    )
-                );
-
-                hovemrAnimReverse.put(module, hovered);
-                if (!hoverAnim.containsKey(module)) {
-                    hoverAnim.put(module, 0f);
-                }
-                float hoverPercent = hoverAnim.get(module);
-
-                float maxScaleDelta = 0.2f;
-                float scale = 1.0f + (maxScaleDelta * hoverPercent / 100f);
-                float scaledHeight = baseTextHeight * scale;
-
-                // Готовим текст
-                int keyBind = module.getKeybind();
-                String moduleName = module.getName();
-                String name = moduleName;
-                if (showKeybind > 1) {
-                    if (keyBind != -1) {
-                        String key = keyName(keyBind);
-                        name = AnimHelper.getAnimText(moduleName, key, (int) showKeybind);
-                    }
-                } else if (bindAnim.containsKey(module) && bindAnim.getOrDefault(module, 0f) > 0f) {
-                    name = AnimHelper.getAnimText(moduleName, "...", bindAnim.getOrDefault(module, 0f).intValue());
-                }
-                Formatting fmt = module.getEnable()
-                        ? Formatting.UNDERLINE
-                        : Formatting.RESET;
-                Text display = Text.literal(name).formatted(fmt);
-
-                // Цвет текста
-                int baseAlpha = 255 * (int) animPercent / 100;
-                int color = RGB.getColor(255, 255, 255, baseAlpha);
-
-                List<Setting<?>> sets = module.getSettings();
-                float winHeight = 0;
-                float winWidth = 0;
-                float xDifference = 0;
-                if (setAnim.containsKey(module) && !module.getSettings().isEmpty()) {
-                    List<Float> drawSettingsResult = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
-                    winHeight = drawSettingsResult.getFirst();
-                    winWidth = drawSettingsResult.get(1);
-                } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
-                    setAnimReverse.put(module, true);
-                    // эта переменная может быть от 15
-                    float percent = setAnim.get(module);
-
-                    if (percent % 2 == 0) {
-                        xDifference -= 5f;
-                    } else {
-                        xDifference += 5f;
-                    }
-                    xDifference = xDifference * percent / 100;
-                }
+            for (Map.Entry<String, List<Parent>> entry : modules.entrySet()) {
+                String category = entry.getKey();
+                if (category == null) continue;
+                List<Parent> list = entry.getValue();
 
                 context.getMatrices().push();
-                context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
-                context.getMatrices().scale(scale, scale, 4);
-                context.drawTextWithShadow(textRenderer, display, 0, 0, color);
+                {
+                    float categoryScale = 1.2f;
+                    context.getMatrices().translate(xColStart, yStart, 2);
+                    context.getMatrices().scale(categoryScale, categoryScale, 2);
+                    context.drawTextWithShadow(
+                        textRenderer,
+                        Text.literal(category).formatted(Formatting.BOLD),
+                        0,
+                        0,
+                        RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
+                    );
+                }
                 context.getMatrices().pop();
 
-                // Запоминаем область для клика
-                moduleAreas.add(new ModuleArea(
-                    module,
-                    xColStart,
-                    yOffset,
-                    (textRenderer.getWidth(name) * scale),
-                    scaledHeight
-                ));
+                float yOffset = yStart + (baseTextHeight + spacing);
+                float maxWidth = 0;
 
-                maxWidth = Math.max(maxWidth, textRenderer.getWidth(name) * scale);
-                maxWidth = Math.max(maxWidth, winWidth);
+                for (Parent module : list) {
+                    if (module.getName() == null) continue;
+                    boolean hovered = !(
+                        (mouseX >= xColStart && mouseX <= xColStart + columnWidth && mouseY >= yOffset && mouseY <= yOffset + baseTextHeight) ||
+                        (setAnim.get(module) != null)
+                    );
+                    hoverAnimReverse.put(module, hovered);
+                    if (!hoverAnim.containsKey(module)) {
+                        hoverAnim.put(module, 0f);
+                    }
+                    float hoverPercent = hoverAnim.get(module);
 
-                yOffset += scaledHeight + spacing + winHeight;
+                    float maxScaleDelta = 0.2f;
+                    float scale = 1.0f + (maxScaleDelta * hoverPercent / 100f);
+                    float scaledHeight = baseTextHeight * scale;
+
+                    int keyBind = module.getKeybind();
+                    String moduleName = module.getName();
+                    String name = moduleName;
+                    if (showKeybind > 1) {
+                        if (keyBind != -1) {
+                            String key = KeyName.get(keyBind);
+                            name = AnimHelper.getAnimText(moduleName, key, (int) showKeybind);
+                        }
+                    } else if (bindAnim.containsKey(module) && bindAnim.getOrDefault(module, 0f) > 0f) {
+                        name = AnimHelper.getAnimText(moduleName, "...", bindAnim.getOrDefault(module, 0f).intValue());
+                    }
+                    Formatting fmt = module.getEnable() ? Formatting.UNDERLINE : Formatting.RESET;
+                    Text display = Text.literal(name).formatted(fmt);
+
+                    int baseAlpha = 255 * (int) animPercent / 100;
+                    int color = RGB.getColor(255, 255, 255, baseAlpha);
+
+                    List<Setting<?>> sets = module.getSettings();
+                    float winHeight = 0;
+                    float winWidth = 0;
+                    float xDifference = 0;
+
+                    if (setAnim.containsKey(module) && !module.getSettings().isEmpty()) {
+                        List<Float> drawSettingsResult = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
+                        winHeight = drawSettingsResult.getFirst();
+                        winWidth = drawSettingsResult.get(1);
+                    } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
+                        setAnimReverse.put(module, true);
+                        float percent = setAnim.get(module);
+                        if (percent % 2 == 0) xDifference -= 5f;
+                        else xDifference += 5f;
+                        xDifference = xDifference * percent / 100;
+                    }
+
+                    context.getMatrices().push();
+                    {
+                        context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
+                        context.getMatrices().scale(scale, scale, 4);
+                        context.drawTextWithShadow(textRenderer, display, 0, 0, color);
+                    }
+                    context.getMatrices().pop();
+
+                    moduleAreas.add(new ModuleArea(
+                        module,
+                        xColStart,
+                        yOffset,
+                        (textRenderer.getWidth(name) * scale),
+                        scaledHeight
+                    ));
+
+                    maxWidth = Math.max(maxWidth, textRenderer.getWidth(name) * scale);
+                    maxWidth = Math.max(maxWidth, winWidth);
+                    yOffset += scaledHeight + spacing + winHeight;
+                }
+
+                float finalXOffset = columnWidth;
+                if (finalXOffset < maxWidth) {
+                    finalXOffset = maxWidth;
+                }
+                xColStart += finalXOffset + spacingColumns;
             }
-
-            float finalXOffset = columnWidth;
-            if (finalXOffset < maxWidth) {
-                finalXOffset = maxWidth;
-            }
-            xColStart += finalXOffset + spacingColumns;
         }
+        context.getMatrices().pop();
     }
 
     @Override
@@ -406,8 +380,8 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        xMove += (float) scrollX * 2;
-        yMove += (float) scrollY * 2;
+        xMove += (float) scrollX * 4;
+        yMove += (float) scrollY * 4;
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
@@ -529,7 +503,7 @@ public class ClickGui extends Screen {
             }
         }
 
-        AnimHelper.handleMapAnim(hoverAnim, hovemrAnimReverse, false);
+        AnimHelper.handleMapAnim(hoverAnim, hoverAnimReverse);
         AnimHelper.handleMapAnim(bindAnim, bindAnimReverse);
         AnimHelper.handleMapAnim(setAnim, setAnimReverse);
         AnimHelper.handleMapAnim(exsAnim, exsAnimReverse);
@@ -575,17 +549,17 @@ public class ClickGui extends Screen {
                 context.getMatrices().scale(textScale, textScale, zDepth);
                 int colorE = (int) (175 * setAnimPercent / 100);
                 context.drawTextWithShadow(
-                    textRenderer, hearderText, 0, 0,
-                    RGB.getColor(colorE, colorE, colorE, alphaColor)
+                        textRenderer, hearderText, 0, 0,
+                        RGB.getColor(colorE, colorE, colorE, alphaColor)
                 );
                 context.getMatrices().pop();
 
                 moduleAreas.add(new ModuleArea(
-                    currentGroup,
-                    xColStart,
-                    ySetOffset,
-                    textRenderer.getWidth(hearderText),
-                    textRenderer.fontHeight
+                        currentGroup,
+                        xColStart,
+                        ySetOffset,
+                        textRenderer.getWidth(hearderText),
+                        textRenderer.fontHeight
                 ));
 
                 maxWidth = Math.max(maxWidth, textRenderer.getWidth(hearderText));
@@ -632,13 +606,12 @@ public class ClickGui extends Screen {
                 xColStart += spacing;
                 context.getMatrices().push();
                 context.getMatrices().translate(0, 0, zDepth);
-                context.getMatrices().scale(1, 1, zDepth);
                 context.fill(
-                    (int) (xStart + 1),
-                    (int) (ySetOffset),
-                    (int) (xStart),
-                    (int) (ySetOffset + textRenderer.fontHeight),
-                    RGB.getColor(175, 175, 175, (int) (200 * visAnimPercent / 100))
+                        (int) (xStart + 1),
+                        (int) (ySetOffset),
+                        (int) (xStart),
+                        (int) (ySetOffset + textRenderer.fontHeight),
+                        RGB.getColor(175, 175, 175, (int) (200 * visAnimPercent / 100))
                 );
                 context.getMatrices().pop();
             }
@@ -656,17 +629,17 @@ public class ClickGui extends Screen {
                     context.getMatrices().scale(textScale, textScale, zDepth);
                     int colorE = (int) (255 - (55 * exsPercent / 100));
                     context.drawTextWithShadow(
-                        textRenderer, hearderText, 0, 0,
-                        RGB.getColor(colorE, colorE, colorE, alphaColor)
+                            textRenderer, hearderText, 0, 0,
+                            RGB.getColor(colorE, colorE, colorE, alphaColor)
                     );
                     context.getMatrices().pop();
                     if (visAnimPercent == 100f) {
                         moduleAreas.add(new ModuleArea(
-                            lst,
-                            drawX - spacing,
-                            headerY,
-                            textRenderer.getWidth(hearderText) * textScale,
-                            textRenderer.fontHeight
+                                lst,
+                                drawX - spacing,
+                                headerY,
+                                textRenderer.getWidth(hearderText) * textScale,
+                                textRenderer.fontHeight
                         ));
                     }
                     maxWidth = Math.max(maxWidth, (textRenderer.getWidth(hearderText) * textScale) * exsPercent / 100);
@@ -685,18 +658,18 @@ public class ClickGui extends Screen {
                         context.getMatrices().scale(textScale, textScale, zDepth);
                         int colorE2 = (int) ((alphaColor * animPercent / 100) * exsPercent / 100);
                         context.drawTextWithShadow(
-                            textRenderer, display, 0, 0, RGB.getColor(255, 255, 255, colorE2)
+                                textRenderer, display, 0, 0, RGB.getColor(255, 255, 255, colorE2)
                         );
                         context.getMatrices().pop();
 
                         if (exsPercent == 100f) {
                             moduleAreas.add(new ListArea(
-                                lst,
-                                element,
-                                drawX,
-                                drawY,
-                                width,
-                                height
+                                    lst,
+                                    element,
+                                    drawX,
+                                    drawY,
+                                    width,
+                                    height
                             ));
                         }
 
@@ -747,11 +720,11 @@ public class ClickGui extends Screen {
 
             if (visAnimPercent == 100f) {
                 moduleAreas.add(new ModuleArea(
-                    set,
-                    drawX,
-                    drawY,
-                    width,
-                    height
+                        set,
+                        drawX,
+                        drawY,
+                        width,
+                        height
                 ));
             }
 
@@ -779,20 +752,19 @@ public class ClickGui extends Screen {
 
                 context.getMatrices().push();
                 context.getMatrices().translate(0, 0, zDepth + 1);
-                context.getMatrices().scale(1, 1, zDepth + 1);
                 context.fill(
-                    (int) xColStart,
-                    (int) (drawY + 2),
-                    (int) (xStart + totalWidth),
-                    (int) (drawY + 3),
-                    RGB.getColor(175, 175, 175, (int) (200 * (visAnimPercent) / 100))
+                        (int) xColStart,
+                        (int) (drawY + 2),
+                        (int) (xStart + totalWidth),
+                        (int) (drawY + 3),
+                        RGB.getColor(175, 175, 175, (int) (200 * (visAnimPercent) / 100))
                 );
                 context.fill(
-                    (int) xColStart,
-                    (int) (drawY + 2),
-                    (int) (xColStart + filledWidth),
-                    (int) (drawY + 3),
-                    RGB.getColor(220, 220, 220, (int) (200 * (visAnimPercent) / 100))
+                        (int) xColStart,
+                        (int) (drawY + 2),
+                        (int) (xColStart + filledWidth),
+                        (int) (drawY + 3),
+                        RGB.getColor(220, 220, 220, (int) (200 * (visAnimPercent) / 100))
                 );
                 context.getMatrices().pop();
 
@@ -810,13 +782,12 @@ public class ClickGui extends Screen {
         if (guiModule.setBg.getValue()) {
             context.getMatrices().push();
             context.getMatrices().translate(0, 0, zDepth);
-            context.getMatrices().scale(1, 1, zDepth);
             context.fill(
-                (int) (xStart + maxWidth + spacing),
-                (int) (ySetOffset + drawOffsetY),
-                (int) (xStart - spacing),
-                (int) (rectY + drawOffsetY),
-                RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
+                    (int) (xStart + maxWidth + spacing),
+                    (int) (ySetOffset + drawOffsetY),
+                    (int) (xStart - spacing),
+                    (int) (rectY + drawOffsetY),
+                    RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
             );
             context.getMatrices().pop();
         }
@@ -872,16 +843,9 @@ public class ClickGui extends Screen {
         }
     }
 
-    private static String keyName(int keyKode) {
-        InputUtil.Key key = InputUtil.fromKeyCode(keyKode, GLFW.glfwGetKeyScancode(keyKode));
-        return key.getTranslationKey()
-                .substring(key.getTranslationKey().lastIndexOf('.') + 1)
-                .toUpperCase();
-    }
-
     private Object getModuleUnderMouse(float mouseX, float mouseY) {
-        for (Object mobule : moduleAreas) {
-             if (mobule instanceof ModuleArea area) {
+        for (Object module : moduleAreas) {
+             if (module instanceof ModuleArea area) {
                 if (mouseX >= area.x
                         && mouseX <= area.x + area.width
                         && mouseY >= area.y

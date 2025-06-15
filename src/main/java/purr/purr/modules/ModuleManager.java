@@ -36,21 +36,16 @@ public class ModuleManager {
     }
 
     public Parent getModuleById(String id) {
-        for (Parent module : modules) {
-            String name = module.getName();
-            if (name != null && name.equals(id)) {
-                return module;
-            }
-        }
-        return null;
+        return modules.stream()
+            .filter(m -> m.getName() != null && m.getName().equals(id))
+            .findFirst()
+            .orElse(null);
     }
 
     public Parent getModuleByClass(Class c) {
-        for (Parent module : modules) {
-            if (module.getClass().equals(c)) {
-                return module;
-            }
-        }
-        return null;
+        return modules.stream()
+            .filter(m -> m.getClass().equals(c))
+            .findFirst()
+            .orElse(null);
     }
 }
