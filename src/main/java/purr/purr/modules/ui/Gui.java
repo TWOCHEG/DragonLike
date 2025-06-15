@@ -34,10 +34,10 @@ public class Gui extends Parent {
     ).visibleIf(m -> !image.getValue().equals("none"));
     public final Setting<Boolean> setBg = new Setting<>("settings bg", true);
     public final Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
-
+    public final Setting<Float> settingsScale = new Setting<>("settings scale", 0.8f, 0.1f, 2f).visibleIf(m -> setBg.getValue());
     public final Group animations = new Group("animations");
     public final Setting<Boolean> animEnable = new Setting<>("enable animations", true).addToGroup(animations);
-    public final Setting<Boolean> runProcess = new Setting<>("run separate process", false).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
+    public final Setting<Boolean> runProcess = new Setting<>("run separate process", false).addToGroup(animations);
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 10, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
 
     private static boolean key = false;
@@ -45,7 +45,7 @@ public class Gui extends Parent {
     public LinkedList<Map<?, ?>> animSave = new LinkedList<>();
 
     public Gui() {
-        super("click gui", "click_gui", "ui");
+        super("click gui", "ui");
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client != null) {

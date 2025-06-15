@@ -66,7 +66,7 @@ public class Nuker extends Parent {
     private boolean animReverse = false;
 
     public Nuker() {
-        super("nuker", "nuker", "world");
+        super("nuker", "world");
 
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable && client.world != null) {

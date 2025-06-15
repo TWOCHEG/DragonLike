@@ -1,6 +1,7 @@
 // местая зона отчуждения, просьба не заходить без подготовки (хотя бы моральной)
 package purr.purr.gui;
 
+import net.minecraft.structure.rule.blockentity.AppendLootRuleBlockEntityModifier;
 import purr.purr.modules.ModuleManager;
 import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
@@ -136,6 +137,8 @@ public class ClickGui extends Screen {
             animHandler();
         }
 
+        moduleAreas.clear();
+
         float screenHeight = context.getScaledWindowHeight();
         float screenWidth = context.getScaledWindowWidth();
 
@@ -168,8 +171,6 @@ public class ClickGui extends Screen {
             context.drawTextWithShadow(textRenderer, Text.literal(line), 0, i * (textRenderer.fontHeight + 2), colorHints);
         }
         context.getMatrices().pop();
-
-        moduleAreas.clear();
 
         // параметры
         float yStart = (10 + yMove) * animPercent / 100;
@@ -225,7 +226,7 @@ public class ClickGui extends Screen {
                 float hoverPercent = hoverAnim.get(module);
 
                 float maxScaleDelta = 0.2f;
-                float scale = 1.0f + maxScaleDelta * (hoverPercent / 100f);
+                float scale = 1.0f + (maxScaleDelta * hoverPercent / 100f);
                 float scaledHeight = baseTextHeight * scale;
 
                 // Готовим текст
@@ -311,10 +312,9 @@ public class ClickGui extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-        if (obj == null) {
-            if (checkActive()) {
-                closeAll();
-            }
+        if (obj == null && checkActive()) {
+            closeAll();
+            return true;
         }
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
@@ -343,11 +343,6 @@ public class ClickGui extends Screen {
                     exsAnimReverse.put(set, true);
                 }
                 return true;
-            } else if (obj instanceof Setting set) {
-                if (set.getValue() instanceof Integer value) {
-                    inputSet = set;
-                    inputText = value.toString();
-                }
             } else if (obj instanceof Parent module) {
                 if (!setAnim.containsKey(module)) {
                     setAnim.put(module, 0.0F);
@@ -372,6 +367,11 @@ public class ClickGui extends Screen {
             }
         }
 
+        if (obj instanceof IntArea area) {
+            float x = ((Double) mouseX).floatValue();
+            area.set(x);
+        }
+
         if (obj instanceof Group group) {
             group.setOpen(!group.isOpen());
             return true;
@@ -380,9 +380,9 @@ public class ClickGui extends Screen {
         if (obj instanceof Setting set) {
             if (set.getValue() instanceof Boolean) {
                 set.setValue(!(Boolean) set.getValue());
-            } else if (set.getValue() instanceof String text) {
+            } else if (set.getValue() instanceof String || set.getValue() instanceof Integer || set.getValue() instanceof Float) {
                 inputSet = set;
-                inputText = text;
+                inputText = set.getValue() instanceof String ? (String) set.getValue() : set.getValue().toString();
             }
             return true;
         }
@@ -391,22 +391,9 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        Object obj = getModuleUnderMouse((int) mouseX, (int) mouseY);
-        if (obj instanceof Setting set && obj != inputSet && button == 0) {
-            if (set.getValue() instanceof Integer value) {
-                int step = (deltaX > 0) ? 1 : -1;
-                value += step;
-                value = Math.min(Math.max(value, (int) set.min), (int) set.max);
-                set.setValue(value);
-                return true;
-            } else if (set.getValue() instanceof Float floatValue) {
-                float sensitivity = 0.1f;
-                floatValue += (float) (deltaX * sensitivity);
-                floatValue = Math.min(Math.max(floatValue, (float) set.min), (float) set.max);
-                floatValue = Math.round(floatValue * 10f) / 10f;
-                set.setValue(floatValue);
-                return true;
-            }
+        Object obj = getModuleUnderMouse(mouseX, mouseY);
+        if (obj instanceof IntArea area) {
+            area.set((float) mouseX);
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
@@ -547,13 +534,13 @@ public class ClickGui extends Screen {
         float ySetOffset = paddingBelowText + rectY;
 
         float maxWidth = 0f;
-        Group currentGroup = null;
+        Group currentGroup;
         Group lastDrawGroup = null;
 
         for (Setting set : sets) {
             float xColStart = xStart;
             int alphaColor = (int) (255 * setAnimPercent / 100);
-            float textScale = 0.8f;
+            float textScale = guiModule.settingsScale.getValue();
             int color;
             String name;
             currentGroup = set.getGroup();
@@ -745,9 +732,56 @@ public class ClickGui extends Screen {
                 ));
             }
 
+            drawY += textRenderer.fontHeight;
+
+            if (set.getValue() instanceof Integer || set.getValue() instanceof Float) {
+                double currentValue = set.getValue() instanceof Float
+                        ? ((Float) set.getValue()).doubleValue()
+                        : ((Integer) set.getValue()).doubleValue();
+
+                double currentMin = set.min instanceof Float
+                        ? ((Float) set.min).doubleValue()
+                        : ((Integer) set.min).doubleValue();
+
+                double currentMax = set.max instanceof Float
+                        ? ((Float) set.max).doubleValue()
+                        : ((Integer) set.max).doubleValue();
+                double totalWidth = (xStart + (spacing * 2) + Math.max(textRenderer.getWidth(set.getName()), 50) * textScale) - xColStart;
+                double ratio = 0.0;
+                if (currentMax - currentMin != 0) {
+                    ratio = (currentValue - currentMin) / (currentMax - currentMin);
+                }
+                int filledWidth = (int) (totalWidth * ratio);
+                maxWidth = Math.max(maxWidth, (filledWidth + spacing) * visAnimPercent / 100);
+
+                context.getMatrices().push();
+                context.getMatrices().translate(0, 0, zDepth + 1);
+                context.getMatrices().scale(1, 1, zDepth + 1);
+                context.fill(
+                    (int) xColStart,
+                    (int) (drawY + 2),
+                    (int) (xStart + totalWidth),
+                    (int) (drawY + 3),
+                    RGB.getColor(175, 175, 175, (int) (200 * (visAnimPercent) / 100))
+                );
+                context.fill(
+                    (int) xColStart,
+                    (int) (drawY + 2),
+                    (int) (xColStart + filledWidth),
+                    (int) (drawY + 3),
+                    RGB.getColor(220, 220, 220, (int) (200 * (visAnimPercent) / 100))
+                );
+                context.getMatrices().pop();
+
+                if (visAnimPercent == 100f) {
+                    moduleAreas.add(new IntArea(set, xColStart, drawY, (float) totalWidth + (spacing * 2), 6));
+                }
+                height += 4;
+            }
+
             maxWidth = Math.max(maxWidth, width * visAnimPercent / 100);
 
-            ySetOffset += ((textRenderer.fontHeight * textScale) + spacing) * visAnimPercent / 100;
+            ySetOffset += (height + spacing) * visAnimPercent / 100;
         }
 
         if (guiModule.setBg.getValue()) {
@@ -822,26 +856,50 @@ public class ClickGui extends Screen {
                 .toUpperCase();
     }
 
-    private Object getModuleUnderMouse(int mouseX, int mouseY) {
-        // хуйня
+    private Object getModuleUnderMouse(float mouseX, float mouseY) {
         for (Object mobule : moduleAreas) {
-             if (mobule instanceof ListArea area) {
+             if (mobule instanceof ModuleArea area) {
                 if (mouseX >= area.x
                         && mouseX <= area.x + area.width
                         && mouseY >= area.y
                         && mouseY <= area.y + area.height) {
-                    return area;
-                }
-            } else if (mobule instanceof ModuleArea area) {
-                if (mouseX >= area.x
-                        && mouseX <= area.x + area.width
-                        && mouseY >= area.y
-                        && mouseY <= area.y + area.height) {
-                    return area.module;
+                    return (
+                        area instanceof ListArea ||
+                        area instanceof IntArea
+                    ) ? area : area.module;
                 }
             }
         }
         return null;
+    }
+    private Object getModuleUnderMouse(double mouseX, double mouseY) {
+        return getModuleUnderMouse(((Double) mouseX).floatValue(), ((Double) mouseY).floatValue());
+    }
+
+    private static class IntArea extends ModuleArea {
+        public IntArea(Setting set, float x, float y, float width, float height) {
+            super(set, x, y - 2, width, height + 2);
+        }
+
+        public void set(float mouseX) {
+            if (module instanceof Setting set) {
+                float normalizedX = mouseX - x;
+                normalizedX = Math.max(0f, Math.min(normalizedX, width));
+
+                double currentMin = ((Number) set.min).doubleValue();
+                double currentMax = ((Number) set.max).doubleValue();
+
+                double ratio = width > 0 ? normalizedX / width : 0;
+
+                double calculatedValue = currentMin + (currentMax - currentMin) * ratio;
+
+                if (set.getValue() instanceof Integer) {
+                    set.setValue((int) Math.round(calculatedValue));
+                } else if (set.getValue() instanceof Float) {
+                    set.setValue((float) (Math.round(calculatedValue * 10.0) / 10.0)); // Округление до 1 знака
+                }
+            }
+        }
     }
 
     private static class ListArea extends ModuleArea {

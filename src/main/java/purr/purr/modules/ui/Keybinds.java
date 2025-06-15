@@ -15,7 +15,7 @@ public class Keybinds extends Parent {
     private static ConfigManager config = new ConfigManager();
 
     public Keybinds() {
-        super(null, null, null);
+        super(null, null);
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.currentScreen instanceof ClickGui || client.currentScreen instanceof ConfigsGui) return;

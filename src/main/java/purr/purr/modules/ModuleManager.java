@@ -37,7 +37,8 @@ public class ModuleManager {
 
     public Parent getModuleById(String id) {
         for (Parent module : modules) {
-            if (module.getId().equals(id)) {
+            String name = module.getName();
+            if (name != null && name.equals(id)) {
                 return module;
             }
         }

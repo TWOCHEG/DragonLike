@@ -26,6 +26,6 @@ public class Example extends Parent {
     public Header header3 = (Header) new Header("ты видишь меня").visibleIf(m -> visible.getValue());
 
     public Example() {
-        super("example", "example", "example");
+        super("example", "example");
     }
 }

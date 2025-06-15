@@ -31,7 +31,7 @@ public class FakePlayer extends Parent {
     private final Setting<Float> moveSpeed = new Setting<>("move speed", 3.0f, 0.1f, 6.0f).visibleIf(m -> move.getValue());
 
     public FakePlayer() {
-        super("fake player", "fake_player", "world");
+        super("fake player", "world");
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

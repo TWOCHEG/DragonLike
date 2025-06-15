@@ -9,7 +9,7 @@ import purr.purr.modules.Parent;
 public class ConfigMenu extends Parent {
     public boolean show = false;
     public ConfigMenu() {
-        super("configs", "config_menu", "ui");
+        super("configs", "ui");
         init();
     }
 

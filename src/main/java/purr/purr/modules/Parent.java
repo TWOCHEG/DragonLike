@@ -14,24 +14,13 @@ public abstract class Parent {
     private final String category;
     protected final ConfigManager config;
     protected ModuleManager moduleManager = null;
-    protected Purr mainClass = null;
-    protected final String id;
     protected boolean enable;
     protected int keybindCode;
     protected MinecraftClient client = MinecraftClient.getInstance();
 
-    public Parent(String name, String id, String category) {
-        this.name = name;
-        this.config = new ConfigManager(id);
-        this.id = id;
-        this.enable = (boolean) getValue("enable", false);
-        this.keybindCode = (int) getValue("keybind", -1);
-        this.category = category;
-    }
     public Parent(String name, String category) {
         this.name = name;
         this.config = new ConfigManager(name);
-        this.id = name;
         this.enable = (boolean) getValue("enable", false);
         this.keybindCode = (int) getValue("keybind", -1);
         this.category = category;
@@ -45,10 +34,6 @@ public abstract class Parent {
 
     public String getName() {
         return name;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getCategory() {
@@ -136,9 +121,5 @@ public abstract class Parent {
 
     public void setModuleManager(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
-    }
-
-    public void setMainClass(Purr mainClass) {
-        this.mainClass = mainClass;
     }
 }
