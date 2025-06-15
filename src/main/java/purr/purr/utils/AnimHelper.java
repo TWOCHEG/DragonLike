@@ -39,6 +39,9 @@ public class AnimHelper {
     }
 
     public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
+        if (percent == 100f && !reverse) return 100f;
+        if (percent == 0f && reverse) return 0f;
+
         if (Purr.moduleManager != null) {
             Gui guiModule = (Gui) Purr.moduleManager.getModuleByClass(Gui.class);
             if (guiModule != null && !guiModule.animEnable.getValue()) {
@@ -64,10 +67,11 @@ public class AnimHelper {
                 float percent = animMap.get(obj);
                 boolean reverse = reverceMap.getOrDefault(obj, false);
 
-                percent = handleAnimValue(reverse, percent, mode);
-                animMap.put(obj, percent);
+                float newPercent = handleAnimValue(reverse, percent, mode);
+                if (newPercent == percent) continue;
+                animMap.put(obj, newPercent);
 
-                if ((reverse && percent <= 1) && delete) {
+                if ((reverse && newPercent <= 1) && delete) {
                     it.remove();
                     reverceMap.remove(obj);
                 }
