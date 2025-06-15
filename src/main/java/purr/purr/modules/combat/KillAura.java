@@ -13,11 +13,11 @@ import java.util.*;
 import java.util.Timer;
 
 public class KillAura extends Parent {
-    public final Setting<Float> attackRange = new Setting<>("range", 3.0f, 1f, 6.0f);
-    public final Setting<Float> wallRange = new Setting<>("walls range", 0f, 0f, 6.0f);
+    public final Setting<Float> attackRange = new Setting<>("range", 3f, 1f, 6f);
+    public final Setting<Float> wallRange = new Setting<>("walls range", 0f, 0f, .0f);
     public final Setting<Boolean> elytra = new Setting<>("elytra override",true);
-    public final Setting<Float> elytraAttackRange = new Setting<>("elytra range", 1.5f, 1f, 6.0f).visibleIf(m -> elytra.getValue());
-    public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 0f, 0f, 6.0f).visibleIf(m -> elytra.getValue());
+    public final Setting<Float> elytraAttackRange = new Setting<>("elytra range", 1.5f, 0f, 6f).visibleIf(m -> elytra.getValue());
+    public final Setting<Float> elytraWallRange = new Setting<>("elytra walls range", 0f, 0f, 6f).visibleIf(m -> elytra.getValue());
     public final ListSetting<String> wallsBypass = new ListSetting<>(
         "walls bypass",
         new ArrayList<>(List.of("off", "V1", "V2"))
@@ -61,7 +61,7 @@ public class KillAura extends Parent {
 
     /*   ADVANCED   */
     public final Group advanced = new Group("advanced");
-    public final Setting<Float> aimRange = new Setting<>("aim range", 3.1f, 0f, 6.0f).addToGroup(advanced);
+    public final Setting<Float> aimRange = new Setting<>("aim range", 3.1f, 0f, 6f).addToGroup(advanced);
     public final Setting<Boolean> randomHitDelay = new Setting<>("random hit delay", false).addToGroup(advanced);
     public final Setting<Boolean> pauseInInventory = new Setting<>("pause in inventory", false).addToGroup(advanced);
     public final Setting<Boolean> dropSprint = new Setting<>("drop sprint", false).addToGroup(advanced);

@@ -40,8 +40,8 @@ public class Nuker extends Parent {
     );
     private Setting<Float> breakRange = new Setting<>(
         "break range",
-        6.0f,
-        1.0f, 6.0f
+        6f,
+        1f, 6f
     );
     private Header header = new Header("\"/nuker blocksList\"");
     private ListSetting<String> blockMode = new ListSetting<>(

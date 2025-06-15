@@ -1,7 +1,6 @@
 // местая зона отчуждения, просьба не заходить без подготовки (хотя бы моральной)
 package purr.purr.gui;
 
-import net.minecraft.structure.rule.blockentity.AppendLootRuleBlockEntityModifier;
 import purr.purr.modules.ModuleManager;
 import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
@@ -52,6 +51,9 @@ public class ClickGui extends Screen {
 
     private float xMove = 0;
     private float yMove = 0;
+
+    private double lastClickX = -1;
+    private double lastClickY = -1;
 
     private final Screen previous;
 
@@ -391,11 +393,31 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        Object obj = getModuleUnderMouse(mouseX, mouseY);
+        if (lastClickX == -1 && lastClickY == -1) {
+            lastClickX = mouseX;
+            lastClickY = mouseY;
+        }
+        Object obj = getModuleUnderMouse(lastClickX, lastClickY);
         if (obj instanceof IntArea area) {
             area.set((float) mouseX);
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        xMove += (float) scrollX * 2;
+        yMove += (float) scrollY * 2;
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (lastClickX != -1 || lastClickY != -1) {
+            lastClickX = -1;
+            lastClickY = -1;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
@@ -415,12 +437,12 @@ public class ClickGui extends Screen {
             if (inputSet.getValue() instanceof Integer) {
                 try {
                     int value = Integer.parseInt(inputText);
-                    inputSet.setValue(value);
+                    inputSet.setValue(Math.clamp(value, (int) inputSet.min, (int) inputSet.max));
                 } catch (NumberFormatException ignored) {}
             } else if (inputSet.getValue() instanceof Float) {
                 try {
                     float value = Float.parseFloat(inputText.replace(",", "."));
-                    inputSet.setValue(value);
+                    inputSet.setValue(Math.clamp(value, (float) inputSet.min, (float) inputSet.max));
                 } catch (NumberFormatException ignored) {}
             } else {
                 inputSet.setValue(inputText);
@@ -454,6 +476,7 @@ public class ClickGui extends Screen {
             if (keyCode == GLFW.GLFW_KEY_LEFT) {
                 xMove -= 10;
             }
+
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -774,7 +797,7 @@ public class ClickGui extends Screen {
                 context.getMatrices().pop();
 
                 if (visAnimPercent == 100f) {
-                    moduleAreas.add(new IntArea(set, xColStart - spacing, drawY, (float) totalWidth + (spacing * 3), 6));
+                    moduleAreas.add(new IntArea(set, xColStart, drawY, (float) totalWidth, 6));
                 }
                 height += 4;
             }
@@ -894,9 +917,13 @@ public class ClickGui extends Screen {
                 double calculatedValue = currentMin + (currentMax - currentMin) * ratio;
 
                 if (set.getValue() instanceof Integer) {
-                    set.setValue((int) Math.round(calculatedValue));
+                    set.setValue(
+                        Math.clamp((int) Math.round(calculatedValue), (int) set.min, (int) set.max)
+                    );
                 } else if (set.getValue() instanceof Float) {
-                    set.setValue((float) (Math.round(calculatedValue * 10.0) / 10.0)); // Округление до 1 знака
+                    set.setValue(
+                        Math.clamp((float) (Math.round(calculatedValue * 10.0) / 10.0), (float) set.min, (float) set.max)
+                    );
                 }
             }
         }

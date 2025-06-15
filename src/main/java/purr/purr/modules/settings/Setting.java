@@ -33,7 +33,7 @@ public class Setting<T> {
         return value != null ? value : defaultValue;
     }
     public void setValue(T value) {
-        if (value != null) {
+        if (this.value != null) {
             this.value = value;
             module.setValue(name, value);
         }
