@@ -774,7 +774,7 @@ public class ClickGui extends Screen {
                 context.getMatrices().pop();
 
                 if (visAnimPercent == 100f) {
-                    moduleAreas.add(new IntArea(set, xColStart, drawY, (float) totalWidth + (spacing * 2), 6));
+                    moduleAreas.add(new IntArea(set, xColStart - spacing, drawY, (float) totalWidth + (spacing * 3), 6));
                 }
                 height += 4;
             }
