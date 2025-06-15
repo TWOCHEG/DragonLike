@@ -108,6 +108,8 @@ public class ClickGui extends Screen {
             guiModule.lastValues.add(setVisAnimReverse);
 
             guiModule.lastValues.add(settings);
+        } else if (!guiModule.lastValues.isEmpty()) {
+            guiModule.lastValues.clear();
         }
 
         animReverse = true;
