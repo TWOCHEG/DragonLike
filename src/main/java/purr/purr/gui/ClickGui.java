@@ -82,13 +82,6 @@ public class ClickGui extends Screen {
     public void closeGui() {
         closeAll();
 
-        moduleAreas.clear();
-        hoverAnim.clear();
-        bindAnim.clear();
-        setAnim.clear();
-        exsAnim.clear();
-        setVisAnim.clear();
-
         animReverse = true;
     }
 
