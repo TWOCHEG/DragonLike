@@ -4,9 +4,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
+import purr.purr.events.impl.EventTick;
 import purr.purr.modules.Parent;
 import purr.purr.modules.settings.Setting;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import meteordevelopment.orbit.EventHandler;
 import purr.purr.utils.AnimHelper;
 import purr.purr.utils.RGB;
 
@@ -89,7 +90,7 @@ public class Notify extends Parent {
         for (NotifyType notifyType : NotifyType.values()) {
             LinkedHashMap<Object, Boolean> reverseMap = reverseAnim.get(notifyType);
             LinkedHashMap<Object, Float> animMap = history.get(notifyType);
-            AnimHelper.handleMapAnim(animMap, reverseMap);
+            AnimHelper.handleMapAnim(animMap, reverseMap, AnimHelper.AnimMode.EaseOut);
             for (Object k1 : animMap.keySet()) {
                 if (k1 instanceof String k) {
                     if (animMap.get(k) == 0f && reverseMap.get(k)) {
@@ -104,15 +105,16 @@ public class Notify extends Parent {
     private void closeHandler() {
         for (NotifyType notifyType : NotifyType.values()) {
             LinkedHashMap<Object, Boolean> reverseMap = reverseAnim.get(notifyType);
+            LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
 
             LinkedList<String> notReverse = new LinkedList<>();
             for (Object k1 : reverseMap.keySet()) {
                 if (k1 instanceof String k) {
-                    if (!reverseMap.get(k)) {
+                    if (!reverseMap.get(k) || timeMap.getOrDefault(k, 0) < 1) {
                         notReverse.add(k);
                     }
                 }
-            };
+            }
             if (notReverse.size() > limits.getOrDefault(notifyType, 5)) {
                 int i = 0;
                 for (String e : notReverse) {
@@ -122,7 +124,22 @@ public class Notify extends Parent {
                     i++;
                 }
             }
+            System.out.println(reverseMap);
             reverseAnim.put(notifyType, reverseMap);
+        }
+    }
+
+    @EventHandler
+    private void onTick(EventTick e) {
+        for (NotifyType notifyType : NotifyType.values()) {
+            LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
+            for (Object k : timeMap.keySet()) {
+                timeMap.put(k, timeMap.get(k) - 1);
+                if (timeMap.get(k) <= 0) {
+                    timeMap.remove(k);
+                }
+            }
+            liveTime.put(notifyType, timeMap);
         }
     }
 
@@ -136,6 +153,11 @@ public class Notify extends Parent {
         while (h.containsKey(text)) {
             text += " ";
         }
+
+        LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
+        timeMap.put(text, liveTimeSet.getValue());
+        liveTime.put(notifyType, timeMap);
+
         h.put(text, 0f);
         history.put(notifyType, h);
     }
