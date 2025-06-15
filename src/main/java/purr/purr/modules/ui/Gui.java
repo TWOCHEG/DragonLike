@@ -1,12 +1,7 @@
 package purr.purr.modules.ui;
 
-import org.lwjgl.glfw.GLFW;
-import purr.purr.events.impl.EventTick;
 import purr.purr.gui.ClickGui;
-import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.util.InputUtil;
 import purr.purr.modules.Parent;
 import purr.purr.modules.settings.*;
 
@@ -42,33 +37,28 @@ public class Gui extends Parent {
     public final Setting<Boolean> runProcess = new Setting<>("run separate process", false).addToGroup(animations);
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
 
-    private static boolean keyWasPressed = false;
-
     public Gui() {
         super("click gui", "ui");
-    }
-
-    @EventHandler
-    public void onTick(EventTick e) {
-        if (client == null) return;
-
-        boolean isKeyPressed = InputUtil.isKeyPressed(
-            client.getWindow().getHandle(),
-            getKeybind() != -1 ? getKeybind() : GLFW.GLFW_KEY_RIGHT_SHIFT
-        );
-
-        if (isKeyPressed && !keyWasPressed) {
-            if (client.currentScreen instanceof ClickGui) {
-                ((ClickGui) client.currentScreen).closeGui();
-            } else {
-                client.setScreen(new ClickGui(client.currentScreen, moduleManager, this));
-            }
-        }
-        keyWasPressed = isKeyPressed;
+        getConfig().set("keybind", getConfig().get("keybind", 344));
+        enable = false;
     }
 
     public Map<String, String> getImages() {
         return images;
+    }
+
+    @Override
+    public void onEnable() {
+        if (client.currentScreen instanceof TitleScreen || client.currentScreen == null) {
+            client.setScreen(new ClickGui(client.currentScreen, moduleManager, this));
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (client.currentScreen instanceof ClickGui clickGui) {
+            clickGui.closeGui();
+        }
     }
 
     @Override
@@ -77,15 +67,5 @@ public class Gui extends Parent {
             config.set("keybind", code);
             keybindCode = code;
         }
-    }
-
-    @Override
-    public void setEnable(boolean value) {
-        enable = false;
-    }
-
-    @Override
-    public boolean getEnable() {
-        return false;
     }
 }

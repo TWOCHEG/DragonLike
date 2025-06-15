@@ -124,24 +124,23 @@ public class Notify extends Parent {
                     i++;
                 }
             }
-            System.out.println(reverseMap);
             reverseAnim.put(notifyType, reverseMap);
         }
     }
 
-    @EventHandler
-    private void onTick(EventTick e) {
-        for (NotifyType notifyType : NotifyType.values()) {
-            LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
-            for (Object k : timeMap.keySet()) {
-                timeMap.put(k, timeMap.get(k) - 1);
-                if (timeMap.get(k) <= 0) {
-                    timeMap.remove(k);
-                }
-            }
-            liveTime.put(notifyType, timeMap);
-        }
-    }
+//    @EventHandler
+//    private void onTick(EventTick e) {
+//        for (NotifyType notifyType : NotifyType.values()) {
+//            LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
+//            for (Object k : timeMap.keySet()) {
+//                timeMap.put(k, timeMap.get(k) - 1);
+//                if (timeMap.get(k) <= 0) {
+//                    timeMap.remove(k);
+//                }
+//            }
+//            liveTime.put(notifyType, timeMap);
+//        }
+//    }
 
     public void add(String text, NotifyType notifyType) {
         LinkedHashMap<String, Float> h = history.get(notifyType);

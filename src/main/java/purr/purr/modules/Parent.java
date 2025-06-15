@@ -102,9 +102,7 @@ public abstract class Parent {
                 try {
                     field.setAccessible(true);
                     settingList.add((Setting<?>) field.get(this));
-                } catch (IllegalAccessException error) {
-                    System.out.println(error.getMessage());
-                }
+                } catch (IllegalAccessException ignored) {}
             }
 
             currentSuperclass = currentSuperclass.getSuperclass();

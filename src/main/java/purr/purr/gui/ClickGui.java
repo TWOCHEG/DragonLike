@@ -72,6 +72,8 @@ public class ClickGui extends Screen {
     private final Map<Object, Float> setVisAnim = new HashMap<>();
     private final Map<Object, Boolean> setVisAnimReverse = new HashMap<>();
 
+    private final Map<Parent, List> settings = new HashMap<>();
+
     public ClickGui(Screen previous, ModuleManager moduleManager, Gui guiModule) {
         super(Text.literal("Purr Gui"));
         this.previous = previous;
@@ -221,13 +223,15 @@ public class ClickGui extends Screen {
                     int baseAlpha = 255 * (int) animPercent / 100;
                     int color = RGB.getColor(255, 255, 255, baseAlpha);
 
-                    List<Setting<?>> sets = module.getSettings();
+                    if (!settings.containsKey(module)) {
+                        settings.put(module, module.getSettings());
+                    }
                     float winHeight = 0;
                     float winWidth = 0;
                     float xDifference = 0;
 
                     if (setAnim.containsKey(module) && !module.getSettings().isEmpty()) {
-                        List<Float> drawSettingsResult = drawSettings(module, sets, context, yOffset, xColStart, scale, baseTextHeight);
+                        List<Float> drawSettingsResult = drawSettings(module, settings.get(module), context, yOffset, xColStart, scale, baseTextHeight);
                         winHeight = drawSettingsResult.getFirst();
                         winWidth = drawSettingsResult.get(1);
                     } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
@@ -425,27 +429,21 @@ public class ClickGui extends Screen {
             }
             return true;
         }
-        if (
-            keyCode == GLFW.GLFW_KEY_RIGHT ||
-            keyCode == GLFW.GLFW_KEY_LEFT ||
-            keyCode == GLFW.GLFW_KEY_DOWN ||
-            keyCode == GLFW.GLFW_KEY_UP
-        ) {
-            if (keyCode == GLFW.GLFW_KEY_UP) {
-                yMove -= 10;
-            }
-            if (keyCode == GLFW.GLFW_KEY_DOWN) {
-                yMove += 10;
-            }
-            if (keyCode == GLFW.GLFW_KEY_RIGHT) {
-                xMove += 10;
-            }
-            if (keyCode == GLFW.GLFW_KEY_LEFT) {
-                xMove -= 10;
-            }
 
+        if (keyCode == GLFW.GLFW_KEY_UP) {
+            yMove -= 10;
+            return true;
+        } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
+            yMove += 10;
+            return true;
+        } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
+            xMove += 10;
+            return true;
+        } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
+            xMove -= 10;
             return true;
         }
+
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             closeGui();
             return true;
@@ -514,7 +512,7 @@ public class ClickGui extends Screen {
     ) {
         // параметры
         int zDepth = 3;
-        float setAnimPercent = animPercent * setAnim.get(module) / 100;
+        float setAnimPercent = animPercent * setAnim.getOrDefault(module, 0f) / 100;
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
         int spacing = 5;
