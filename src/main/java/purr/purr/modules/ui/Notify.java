@@ -13,6 +13,8 @@ import purr.purr.utils.RGB;
 
 import java.util.*;
 
+// ... (import statements remain the same)
+
 public class Notify extends Parent {
     private Setting<Integer> liveTimeSet = new Setting<>(
         "live time",
@@ -20,9 +22,9 @@ public class Notify extends Parent {
         10, 100
     );
 
-    public Map<NotifyType, LinkedHashMap> history = new LinkedHashMap<>();
-    public Map<NotifyType, LinkedHashMap> reverseAnim = new LinkedHashMap<>();
-    public Map<NotifyType, LinkedHashMap> liveTime = new LinkedHashMap<>();
+    public Map<NotifyType, LinkedHashMap<String, Float>> history = new LinkedHashMap<>();
+    public Map<NotifyType, LinkedHashMap<String, Boolean>> reverseAnim = new LinkedHashMap<>();
+    public Map<NotifyType, LinkedHashMap<String, Integer>> liveTime = new LinkedHashMap<>();
 
     private Map<NotifyType, Integer> limits = Map.of(
         NotifyType.Important, 1,
@@ -37,6 +39,7 @@ public class Notify extends Parent {
     public Notify() {
         super("notify", "ui");
         enable = config.get("enable", true);
+
         for (NotifyType notifyType : NotifyType.values()) {
             history.put(notifyType, new LinkedHashMap<>());
             reverseAnim.put(notifyType, new LinkedHashMap<>());
@@ -53,111 +56,146 @@ public class Notify extends Parent {
     private void renderImportant(DrawContext context) {
         TextRenderer textRenderer = client.textRenderer;
         LinkedHashMap<String, Float> notifyHistory = history.get(NotifyType.Important);
+        LinkedHashMap<String, Boolean> reverseMap = reverseAnim.get(NotifyType.Important);
+        LinkedHashMap<String, Integer> timeMap = liveTime.get(NotifyType.Important);
+
         float y = 10;
-        for (String text : notifyHistory.keySet()) {
+        Iterator<Map.Entry<String, Float>> iterator = notifyHistory.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<String, Float> entry = iterator.next();
+            String text = entry.getKey();
+            float animPercent = entry.getValue();
+
+            // Рендеринг текста
             Text renderText = Text.literal(text.strip());
-
-            if (!notifyHistory.containsKey(text)) {
-                notifyHistory.remove(text);
-                continue;
-            }
-            float animPercent = notifyHistory.get(text);
-
             float screenWidth = context.getScaledWindowWidth();
             float screenHeight = context.getScaledWindowHeight();
 
             context.getMatrices().push();
             context.getMatrices().translate(
-                (screenWidth / 2) - ((float) textRenderer.getWidth(renderText) / 2),
-                y * animPercent / 100,
-                1
+                    (screenWidth / 2) - ((float) textRenderer.getWidth(renderText) / 2),
+                    y * animPercent / 100,
+                    1
             );
             context.drawTextWithShadow(
-                textRenderer,
-                renderText,
-                0,
-                0,
-                RGB.getColor(255, 255, 255, (int) (255 * animPercent / 100))
+                    textRenderer,
+                    renderText,
+                    0,
+                    0,
+                    RGB.getColor(255, 255, 255, (int) (255 * animPercent / 100))
             );
             context.getMatrices().pop();
 
             y += textRenderer.fontHeight + 5;
+
+            // Удаление уведомления после завершения анимации
+            if (animPercent <= 0 && reverseMap.getOrDefault(text, false)) {
+                iterator.remove();
+                reverseMap.remove(text);
+                timeMap.remove(text);
+            }
         }
+
         history.put(NotifyType.Important, notifyHistory);
+        reverseAnim.put(NotifyType.Important, reverseMap);
+        liveTime.put(NotifyType.Important, timeMap);
     }
 
     private void animHandler() {
         for (NotifyType notifyType : NotifyType.values()) {
-            LinkedHashMap<Object, Boolean> reverseMap = reverseAnim.get(notifyType);
-            LinkedHashMap<Object, Float> animMap = history.get(notifyType);
+            LinkedHashMap<String, Boolean> reverseMap = reverseAnim.get(notifyType);
+            LinkedHashMap<String, Float> animMap = history.get(notifyType);
+
             AnimHelper.handleMapAnim(animMap, reverseMap, AnimHelper.AnimMode.EaseOut);
-            for (Object k1 : animMap.keySet()) {
-                if (k1 instanceof String k) {
-                    if (animMap.get(k) == 0f && reverseMap.get(k)) {
-                        animMap.remove(k);
-                    }
+
+            List<String> toRemove = new ArrayList<>();
+            for (Map.Entry<String, Float> entry : animMap.entrySet()) {
+                if (Math.abs(entry.getValue()) <= 0f && Boolean.TRUE.equals(reverseMap.get(entry.getKey()))) {
+                    toRemove.add(entry.getKey());
                 }
             }
+
+            for (String key : toRemove) {
+                animMap.remove(key);
+                reverseMap.remove(key);
+                liveTime.get(notifyType).remove(key);
+            }
+
             history.put(notifyType, animMap);
+            reverseAnim.put(notifyType, reverseMap);
         }
     }
 
     private void closeHandler() {
         for (NotifyType notifyType : NotifyType.values()) {
-            LinkedHashMap<Object, Boolean> reverseMap = reverseAnim.get(notifyType);
-            LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
+            LinkedHashMap<String, Boolean> reverseMap = reverseAnim.get(notifyType);
+            LinkedHashMap<String, Integer> timeMap = liveTime.get(notifyType);
 
-            LinkedList<String> notReverse = new LinkedList<>();
-            for (Object k1 : reverseMap.keySet()) {
-                if (k1 instanceof String k) {
-                    if (!reverseMap.get(k) || timeMap.getOrDefault(k, 0) < 1) {
-                        notReverse.add(k);
-                    }
+            for (Map.Entry<String, Integer> entry : timeMap.entrySet()) {
+                String key = entry.getKey();
+                if (entry.getValue() <= 0 && !reverseMap.getOrDefault(key, false)) {
+                    reverseMap.put(key, true);
                 }
             }
-            if (notReverse.size() > limits.getOrDefault(notifyType, 5)) {
-                int i = 0;
-                for (String e : notReverse) {
-                    if (notReverse.size() - limits.getOrDefault(notifyType, 5) >= i) break;
-                    notReverse.remove(e);
-                    reverseMap.put(e, true);
-                    i++;
+
+            int limit = limits.getOrDefault(notifyType, 5);
+            if (timeMap.size() > limit) {
+                Iterator<String> iterator = timeMap.keySet().iterator();
+                int overflowCount = timeMap.size() - limit;
+
+                for (int i = 0; i < overflowCount && iterator.hasNext(); i++) {
+                    String key = iterator.next();
+                    reverseMap.put(key, true);
+                    iterator.remove();
                 }
             }
+
             reverseAnim.put(notifyType, reverseMap);
+            liveTime.put(notifyType, timeMap);
         }
     }
 
-//    @EventHandler
-//    private void onTick(EventTick e) {
-//        for (NotifyType notifyType : NotifyType.values()) {
-//            LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
-//            for (Object k : timeMap.keySet()) {
-//                timeMap.put(k, timeMap.get(k) - 1);
-//                if (timeMap.get(k) <= 0) {
-//                    timeMap.remove(k);
-//                }
-//            }
-//            liveTime.put(notifyType, timeMap);
-//        }
-//    }
+    @EventHandler
+    private void onTick(EventTick e) {
+        for (NotifyType notifyType : NotifyType.values()) {
+            LinkedHashMap<String, Integer> timeMap = liveTime.get(notifyType);
+            List<String> toRemove = new ArrayList<>();
+
+            for (Map.Entry<String, Integer> entry : timeMap.entrySet()) {
+                int newValue = entry.getValue() - 1;
+                if (newValue <= 0) {
+                    toRemove.add(entry.getKey());
+                } else {
+                    entry.setValue(newValue);
+                }
+            }
+
+            for (String key : toRemove) {
+                timeMap.put(key, 0);
+            }
+
+            liveTime.put(notifyType, timeMap);
+        }
+    }
 
     public void add(String text, NotifyType notifyType) {
         LinkedHashMap<String, Float> h = history.get(notifyType);
-        String last = "";
-        for (String e : h.keySet()) {
-            last = e;
-        }
-        if (Objects.equals(last, text)) return;
-        while (h.containsKey(text)) {
-            text += " ";
+        LinkedHashMap<String, Boolean> r = reverseAnim.get(notifyType);
+        LinkedHashMap<String, Integer> t = liveTime.get(notifyType);
+
+        String uniqueText = text;
+        int suffix = 1;
+        while (h.containsKey(uniqueText)) {
+            uniqueText = text + " [" + (++suffix) + "]";
         }
 
-        LinkedHashMap<Object, Integer> timeMap = liveTime.get(notifyType);
-        timeMap.put(text, liveTimeSet.getValue());
-        liveTime.put(notifyType, timeMap);
+        h.put(uniqueText, 0f);
+        r.put(uniqueText, false);
+        t.put(uniqueText, liveTimeSet.getValue());
 
-        h.put(text, 0f);
         history.put(notifyType, h);
+        reverseAnim.put(notifyType, r);
+        liveTime.put(notifyType, t);
     }
 }

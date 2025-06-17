@@ -60,33 +60,33 @@ public class AnimHelper {
         return handleAnimValue(reverse, percent, GetAnimDiff.get(), AnimMode.EaseInOut);
     }
 
-    public static void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, AnimMode mode, Boolean delete) {
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, AnimMode mode, Boolean delete) {
         if (!animMap.isEmpty()) {
-            Iterator<Object> it = animMap.keySet().iterator();
+            Iterator<K> it = animMap.keySet().iterator();
             while (it.hasNext()) {
-                Object obj = it.next();
-                float percent = animMap.get(obj);
-                boolean reverse = reverceMap.getOrDefault(obj, false);
+                K key = it.next();
+                float percent = animMap.get(key);
+                boolean reverse = reverseMap.getOrDefault(key, false);
 
                 float newPercent = handleAnimValue(reverse, percent, mode);
                 if (newPercent == percent) continue;
-                animMap.put(obj, newPercent);
+                animMap.put(key, newPercent);
 
                 if ((reverse && newPercent <= 1) && delete) {
                     it.remove();
-                    reverceMap.remove(obj);
+                    reverseMap.remove(key);
                 }
             }
         }
     }
-    public static void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, AnimMode mode) {
-        handleMapAnim(animMap, reverceMap, mode, true);
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, AnimMode mode) {
+        handleMapAnim(animMap, reverseMap, mode, true);
     }
-    public static void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap) {
-        handleMapAnim(animMap, reverceMap, AnimMode.EaseInOut);
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap) {
+        handleMapAnim(animMap, reverseMap, AnimMode.EaseInOut);
     }
-    public static void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, Boolean delete) {
-        handleMapAnim(animMap, reverceMap, AnimMode.EaseInOut, delete);
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, Boolean delete) {
+        handleMapAnim(animMap, reverseMap, AnimMode.EaseInOut, delete);
     }
 
     public static String getAnimText(String startText, String endText, int percent) {
