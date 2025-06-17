@@ -1,11 +1,22 @@
 package purr.purr.modules.combat;
 
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.SlimeEntity;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import purr.purr.modules.Parent;
 import purr.purr.modules.settings.*;
+import net.minecraft.entity.Entity;
 
 import javax.swing.*;
-import javax.swing.text.html.parser.Entity;
 import java.util.*;
 import java.util.Timer;
 
@@ -19,7 +30,7 @@ public class KillAura extends Parent {
         "walls bypass",
         new ArrayList<>(List.of("off", "V1", "V2"))
     );
-    public final Setting<Integer> fov = new Setting<>("FOV", 180, 1, 180);
+    public final Setting<Integer> fov = new Setting<>("FOV", 180, 1, 360);
     public final ListSetting<String> rotationMode = new ListSetting<>(
         "rotation mode",
         new ArrayList<>(List.of("track", "interact", "grim", "none"))
@@ -41,13 +52,6 @@ public class KillAura extends Parent {
     public final Setting<Boolean> oldDelay = new Setting<>("old delay", false);
     public final Setting<Integer> minCPS = new Setting<>("min CPS", 7, 1, 20).visibleIf(m -> oldDelay.getValue());
     public final Setting<Integer> maxCPS = new Setting<>("max CPS", 12, 1, 20).visibleIf(m -> oldDelay.getValue());
-
-//    public final Setting<ESP> esp = new Setting<>("ESP", ESP.ThunderHack);
-//    public final Setting<SettingGroup> espGroup = new Setting<>("ESPSettings", new SettingGroup(false, 0), v -> esp.is(ESP.ThunderHackV2));
-//    public final Setting<Integer> espLength = new Setting<>("ESPLength", 14, 1, 40, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);
-//    public final Setting<Integer> espFactor = new Setting<>("ESPFactor", 8, 1, 20, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);
-//    public final Setting<Float> espShaking = new Setting<>("ESPShaking", 1.8f, 1.5f, 10f, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);
-//    public final Setting<Float> espAmplitude = new Setting<>("ESPAmplitude", 3f, 0.1f, 8f, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);
 
     public final ListSetting<String> sort = new ListSetting<>(
         "sort",
@@ -123,8 +127,8 @@ public class KillAura extends Parent {
     private int trackticks;
     private boolean lookingAtHitbox;
 
-    private final Timer delayTimer = new Timer();
-    private final Timer pauseTimer = new Timer();
+    private Timer delayTimer = new Timer();
+    private Timer pauseTimer = new Timer();
 
     public Box resolvedBox;
     static boolean wasTargeted = false;
@@ -132,5 +136,146 @@ public class KillAura extends Parent {
     public KillAura() {
         super("kill aura", "combat");
     }
+
+    @Override
+    public void onEnable() {
+        target = null;
+        lookingAtHitbox = false;
+        rotationPoint = Vec3d.ZERO;
+        rotationMotion = Vec3d.ZERO;
+        rotationYaw = client.player.getYaw();
+        rotationPitch = client.player.getPitch();
+        delayTimer = null;
+        delayTimer = new Timer();
+    }
+
+    @Override
+    public void onDisable() {
+        target = null;
+    }
+
+//    public Entity findTarget() {
+//        List<Entity> validTargets = new ArrayList<>();
+//        Vec3d playerPos = client.player.getPos();
+//        float playerYaw = client.player.getYaw();
+//
+//        for (Entity entity : client.world.getEntities()) {
+//            if (!isTargetTypeEnabled(entity)) continue;
+//
+//            if (shouldIgnoreEntity(entity)) continue;
+//
+//            float distance = (float) playerPos.distanceTo(entity.getPos());
+//            float effectiveRange = elytra.getValue() && entity.equals(target) ?
+//                    elytraAttackRange.getValue() : attackRange.getValue();
+//
+//            if (distance > effectiveRange) continue;
+//
+//            if (!isInFOV(entity, playerYaw, playerPos)) continue;
+//
+//            validTargets.add(entity);
+//        }
+//
+//        sortTargets(validTargets, playerPos);
+//
+//        return validTargets.isEmpty() ? null : validTargets.get(0);
+//    }
+//    private boolean isSameTeam(Entity entity) {
+//        return false;
+//    }
+//    private boolean isTargetTypeEnabled(Entity entity) {
+//        if (entity instanceof PlayerEntity && !Players.getValue()) return false;
+//        if (entity instanceof MobEntity && !Mobs.getValue()) return false;
+//        if (entity instanceof AnimalEntity && !Animals.getValue()) return false;
+//        if (entity instanceof VillagerEntity && !Villagers.getValue()) return false;
+//        if (entity instanceof SlimeEntity && !Slimes.getValue()) return false;
+//        if (entity instanceof HostileEntity && hostiles.getValue() &&
+//                onlyAngry.getValue() && !((HostileEntity)entity).isAngryAt(client.getServer().getWorld(client.world.getRegistryKey()), client.player)) return false;
+//        return true;
+//    }
+//    private boolean shouldIgnoreEntity(Entity entity) {
+//        if (ignoreInvisible.getValue() && !entity.isInvisible()) return true;
+//        if (ignoreNamed.getValue() && entity.hasCustomName()) return true;
+//        if (ignoreTeam.getValue() && isSameTeam(entity)) return true;
+//        if (ignoreCreative.getValue() && entity instanceof PlayerEntity &&
+//                ((PlayerEntity)entity).isCreative()) return true;
+//        if (ignoreNaked.getValue() && hasArmor(entity)) return true;
+//        if (ignoreShield.getValue() && isShieldBlocking(entity)) return true;
+//        return false;
+//    }
+//    private boolean isInFOV(Entity entity, float playerYaw, Vec3d playerPos) {
+//        Vec3d entityDir = entity.getPos().subtract(playerPos).normalize();
+//        double angle = Math.toDegrees(Math.acos(entityDir.dotProduct(
+//                Vec3d.fromPolar(playerYaw, 0))));
+//        return angle <= fov.getValue() / 2f;
+//    }
+//    private void sortTargets(List<Entity> targets, Vec3d playerPos) {
+//        String sortMode = sort.getValue();
+//        targets.sort((a, b) -> {
+//            if (!a.isLiving() || !b.isLiving()) {
+//                return 0;
+//            }
+//
+//            float distA = (float) playerPos.distanceTo(a.getPos());
+//            float distB = (float) playerPos.distanceTo(b.getPos());
+//
+//            return switch (sortMode) {
+//                case "lowest distance" -> Float.compare(distA, distB);
+//                case "highest distance" -> Float.compare(distB, distA);
+//                case "lowest health" -> Float.compare(((LivingEntity) a).getHealth(), ((LivingEntity) b).getHealth());
+//                case "highest health" -> Float.compare(((LivingEntity) b).getHealth(), ((LivingEntity) a).getHealth());
+//                case "lowest durability" -> Integer.compare(
+//                        getArmorDurability(a), getArmorDurability(b));
+//                case "highest durability" -> Integer.compare(
+//                        getArmorDurability(b), getArmorDurability(a));
+//                case "look" -> Float.compare(
+//                        getAngleToEntity(a, playerPos), getAngleToEntity(b, playerPos));
+//                default -> 0;
+//            };
+//        });
+//    }
+//    private boolean hasArmor(Entity entity) {
+//        if (!(entity instanceof LivingEntity living)) return false;
+//
+//        for (EquipmentSlot slot : EquipmentSlot.values()) {
+//            if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+//                ItemStack stack = living.getEquippedStack(slot);
+//                if (!stack.isEmpty() && stack.getItem() instanceof ArmorItem) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
+//    private boolean isShieldBlocking(Entity entity) {
+//        if (!(entity instanceof LivingEntity living)) return false;
+//
+//        ItemStack offhand = living.getOffHandStack();
+//        return !offhand.isEmpty() && offhand.getItem() == Items.SHIELD &&
+//                living.isUsingItem() && living.getActiveItem() == offhand;
+//    }
+//    private int getArmorDurability(Entity entity) {
+//        if (!(entity instanceof LivingEntity living)) return 0;
+//
+//        int durability = 0;
+//
+//        for (EquipmentSlot slot : EquipmentSlot.values()) {
+//            if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+//                ItemStack stack = living.getEquippedStack(slot);
+//                if (!stack.isEmpty() && stack.getItem() instanceof ArmorItem) {
+//                    durability += stack.getDamage();
+//                }
+//            }
+//        }
+//        return durability;
+//    }
+//    private float getAngleToEntity(Entity entity, Vec3d playerPos) {
+//        double dx = entity.getX() - playerPos.x;
+//        double dz = entity.getZ() - playerPos.z;
+//
+//        double targetAngle = Math.atan2(dz, dx) * 180 / Math.PI;
+//        float angleDiff = MathHelper.wrapDegrees(client.player.getYaw() - (float)targetAngle);
+//
+//        return Math.abs(angleDiff);
+//    }
 }
 

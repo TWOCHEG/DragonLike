@@ -5,9 +5,15 @@
   "client": [
     "MixinClientPlayerEntity",
     "MixinMinecraftClient",
-    "MixinKeyboard"
+    "MixinKeyboard",
+    "MixinKeyboardInput",
+    "MixinCamera"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "MixinLivingEntity",
+    "MixinEntity"
+  ]
 }

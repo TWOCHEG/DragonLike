@@ -23,6 +23,8 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
 import purr.purr.utils.BlockHighlight;
+import purr.purr.utils.RotateUtils;
+
 import java.util.*;
 
 public class Nuker extends Parent {
@@ -251,17 +253,17 @@ public class Nuker extends Parent {
 
         Vec3d targetCenter = new Vec3d(centerX, centerY, centerZ);
         BlockHitResult ray = client.world.raycast(new RaycastContext(
-                eyePos,
-                targetCenter,
-                RaycastContext.ShapeType.OUTLINE,
-                RaycastContext.FluidHandling.NONE,
-                player
+            eyePos,
+            targetCenter,
+            RaycastContext.ShapeType.OUTLINE,
+            RaycastContext.FluidHandling.NONE,
+            player
         ));
 
         return (
-                ray.getType() == HitResult.Type.BLOCK &&
-                        ray.getBlockPos().equals(pos) &&
-                        client.world.getBlockState(pos).getBlock().getHardness() != -1
+            ray.getType() == HitResult.Type.BLOCK &&
+            ray.getBlockPos().equals(pos) &&
+            client.world.getBlockState(pos).getBlock().getHardness() != -1
         );
     }
 
@@ -307,20 +309,15 @@ public class Nuker extends Parent {
         pitch = currentPitch + (pitch - currentPitch) * 0.4f;
         pitch = MathHelper.clamp(pitch, -90, 90);
 
-        client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(
-            yaw,
-            pitch,
-            client.player.isOnGround(),
-            client.player.horizontalCollision
-        ));
+        RotateUtils.packetRotate(yaw, pitch);
     }
 
     private void abortMining() {
         if (miningTarget != null && miningHit != null) {
             client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
-                    PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK,
-                    miningTarget,
-                    miningHit.getSide()
+                PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK,
+                miningTarget,
+                miningHit.getSide()
             ));
         }
         resetMining();

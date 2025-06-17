@@ -18,10 +18,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.resource.Resource;
 
-import purr.purr.utils.AnimHelper;
+import purr.purr.utils.math.AnimHelper;
 
 import org.lwjgl.glfw.GLFW;
 

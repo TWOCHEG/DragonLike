@@ -7,9 +7,12 @@ import net.fabricmc.api.ModInitializer;
 import java.lang.invoke.MethodHandles;
 
 import purr.purr.modules.ModuleManager;
+
+import purr.purr.modules.Player.*;
 import purr.purr.modules.ui.*;
 import purr.purr.modules.combat.*;
 import purr.purr.modules.world.*;
+import purr.purr.utils.TravelChangeManager;
 
 public class Purr implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
@@ -22,6 +25,8 @@ public class Purr implements ModInitializer {
 			(lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup())
 		);
 
+		new TravelChangeManager();
+
 		moduleManager = new ModuleManager(
 			new Gui(),
 			new Keybinds(),
@@ -29,7 +34,8 @@ public class Purr implements ModInitializer {
 			new ConfigMenu(),
 			new FakePlayer(),
 			new Nuker(),
-			new Notify()
+			new Notify(),
+			new FreeCam()
 		);
 	}
 }

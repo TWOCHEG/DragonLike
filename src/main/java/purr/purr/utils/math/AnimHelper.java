@@ -1,10 +1,11 @@
-package purr.purr.utils;
+package purr.purr.utils.math;
 
 import java.util.Iterator;
 import java.util.Map;
 
 import purr.purr.Purr;
 import purr.purr.modules.ui.Gui;
+import purr.purr.utils.GetAnimDiff;
 
 public class AnimHelper {
     /**

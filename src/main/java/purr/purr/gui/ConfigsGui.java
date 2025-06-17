@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 
 import purr.purr.modules.ui.ConfigMenu;
 import purr.purr.utils.RGB;
-import purr.purr.utils.AnimHelper;
+import purr.purr.utils.math.AnimHelper;
 
 import java.nio.file.Path;
 import java.util.*;

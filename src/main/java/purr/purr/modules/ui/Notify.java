@@ -8,7 +8,7 @@ import purr.purr.events.impl.EventTick;
 import purr.purr.modules.Parent;
 import purr.purr.modules.settings.Setting;
 import meteordevelopment.orbit.EventHandler;
-import purr.purr.utils.AnimHelper;
+import purr.purr.utils.math.AnimHelper;
 import purr.purr.utils.RGB;
 
 import java.util.*;
