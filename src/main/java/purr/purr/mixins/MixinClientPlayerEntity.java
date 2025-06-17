@@ -46,7 +46,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     @Inject(method = "tick", at = @At("HEAD"))
     public void tickHook(CallbackInfo info) {
         // if(Module.fullNullCheck()) return;
-        Purr.eventBus.post(new EventPlayerUpdate());
+        Purr.EVENT_BUS.post(new EventPlayerUpdate());
     }
 
     @Redirect(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"), require = 0)
@@ -73,7 +73,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     public void onMoveHook(MovementType movementType, Vec3d movement, CallbackInfo ci) {
         // if(Module.fullNullCheck()) return;
         EventMove event = new EventMove(movement.x, movement.y, movement.z);
-        Purr.eventBus.post(event);
+        Purr.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             super.move(movementType, new Vec3d(event.getX(), event.getY(), event.getZ()));
             ci.cancel();
@@ -84,11 +84,11 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     private void sendMovementPacketsHook(CallbackInfo info) {
         // if (fullNullCheck()) return;
         EventSync event = new EventSync(getYaw(), getPitch());
-        Purr.eventBus.post(event);
+        Purr.EVENT_BUS.post(event);
         postAction = event.getPostAction();
         EventSprint e = new EventSprint(isSprinting());
-        Purr.eventBus.post(e);
-        Purr.eventBus.post(new EventAfterRotate());
+        Purr.EVENT_BUS.post(e);
+        Purr.EVENT_BUS.post(new EventAfterRotate());
         MinecraftClient mc = MinecraftClient.getInstance();
         if (e.getSprintState() != mc.player.isSprinting()) {
             if (e.getSprintState())
@@ -109,7 +109,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         MinecraftClient mc = MinecraftClient.getInstance();
         mc.options.sprintKey.setPressed(pre_sprint_state);
         EventPostSync event = new EventPostSync();
-        Purr.eventBus.post(event);
+        Purr.EVENT_BUS.post(event);
         if(postAction != null) {
             postAction.run();
             postAction = null;
@@ -125,7 +125,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
             return;
         }
         EventPostPlayerUpdate playerUpdateEvent = new EventPostPlayerUpdate();
-        Purr.eventBus.post(playerUpdateEvent);
+        Purr.EVENT_BUS.post(playerUpdateEvent);
         if (playerUpdateEvent.isCancelled()) {
             info.cancel();
             if (playerUpdateEvent.getIterations() > 0) {

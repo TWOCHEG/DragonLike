@@ -8,12 +8,12 @@ import java.util.*;
 public class ModuleManager {
     private final List<Parent> modules;
 
-    public ModuleManager(List<Parent> modules) {
-        this.modules = modules;
+    public ModuleManager(Parent... modules) {
+        this.modules = List.of(modules);
 
-        modules.forEach(m -> {
+        this.modules.forEach(m -> {
             m.setModuleManager(this);
-            Purr.eventBus.subscribe(m);
+            Purr.EVENT_BUS.subscribe(m);
         });
     }
 
@@ -37,14 +37,21 @@ public class ModuleManager {
 
     public Parent getModuleById(String id) {
         return modules.stream()
-            .filter(m -> m.getName() != null && m.getName().equals(id))
+            .filter(m -> Objects.equals(m.getName(), id))
             .findFirst()
             .orElse(null);
     }
 
     public Parent getModuleByClass(Class c) {
         return modules.stream()
-            .filter(m -> m.getClass().equals(c))
+            .filter(m -> Objects.equals(m.getClass(), c))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public Parent getModuleByKey(int keyCode) {
+        return modules.stream()
+            .filter(m -> Objects.equals(m.getKeybind(), keyCode))
             .findFirst()
             .orElse(null);
     }

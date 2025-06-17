@@ -1,10 +1,15 @@
 package purr.purr.modules.ui;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.resource.Resource;
+import net.minecraft.util.Identifier;
 import purr.purr.gui.ClickGui;
 import net.minecraft.client.gui.screen.TitleScreen;
 import purr.purr.modules.Parent;
 import purr.purr.modules.settings.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class Gui extends Parent {
@@ -38,6 +43,9 @@ public class Gui extends Parent {
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
     public final Setting<Boolean> clearGui = new Setting<>("clear data", false);
 
+    private float imageWidth = 0f;
+    private float imageHeight = 0f;
+
     public List<Map> lastValues = new LinkedList<>();
 
     public Gui() {
@@ -65,10 +73,54 @@ public class Gui extends Parent {
     }
 
     @Override
+    public void setEnable(boolean value) {
+        setEnable(value, false);
+    }
+
+    @Override
     public void setKeybind(int code) {
         if (code != -1) {
             config.set("keybind", code);
             keybindCode = code;
         }
+    }
+
+    @Override
+    public void onUpdate(Setting setting) {
+        if (setting.equals(image) || setting.equals(imgSize)) {
+            if (!Objects.equals(image.getValue(), "none")) {
+                updateImageSize(Identifier.of("purr", getImages().get(image.getValue())));
+            }
+        }
+    }
+
+    public void updateImageSize(Identifier texture) {
+        Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+        NativeImage nativeImage;
+        try {
+            nativeImage = NativeImage.read(resource.get().getInputStream());
+        } catch (IOException e) {
+            return;
+        }
+
+        float imageWidth = nativeImage.getWidth();
+        float imageHeight = nativeImage.getHeight();
+
+        nativeImage.close();
+
+        float screenMin = Math.min(client.getWindow().getWidth(), client.getWindow().getHeight());
+        float fixedSize = screenMin * imgSize.getValue();
+
+        float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
+
+        this.imageWidth = imageWidth * scale;
+        this.imageHeight = imageHeight * scale;
+    }
+
+    public List<Float> getImageSize(Identifier texture) {
+        if (imageWidth == 0f && imageHeight == 0f) {
+            updateImageSize(texture);
+        }
+        return new ArrayList<>(List.of(imageWidth, imageHeight));
     }
 }

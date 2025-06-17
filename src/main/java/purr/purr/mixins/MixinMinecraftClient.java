@@ -55,12 +55,12 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "tick", at = @At("HEAD"))
     void preTickHook(CallbackInfo ci) {
-        Purr.eventBus.post(new EventTick());
+        Purr.EVENT_BUS.post(new EventTick());
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
     void postTickHook(CallbackInfo ci) {
-        Purr.eventBus.post(new EventPostTick());
+        Purr.EVENT_BUS.post(new EventPostTick());
     }
 
     @Inject(method = "onResolutionChanged", at = @At("TAIL"))
@@ -85,7 +85,7 @@ public abstract class MixinMinecraftClient {
     public void setScreenHookPre(Screen screen, CallbackInfo ci) {
         // if (Module.fullNullCheck()) return;
         EventScreen event = new EventScreen(screen);
-        Purr.eventBus.post(event);
+        Purr.EVENT_BUS.post(event);
         if (event.isCancelled()) ci.cancel();
     }
 
@@ -152,7 +152,7 @@ public abstract class MixinMinecraftClient {
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
     private void doAttackHook(CallbackInfoReturnable<Boolean> cir) {
         final EventAttack event = new EventAttack(null, true);
-        Purr.eventBus.post(event);
+        Purr.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             cir.setReturnValue(false);
         }
@@ -161,7 +161,7 @@ public abstract class MixinMinecraftClient {
     @Inject(method = "handleBlockBreaking", at = @At("HEAD"), cancellable = true)
     private void handleBlockBreakingHook(boolean breaking, CallbackInfo ci) {
         EventHandleBlockBreaking event = new EventHandleBlockBreaking();
-        Purr.eventBus.post(event);
+        Purr.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             ci.cancel();
         }

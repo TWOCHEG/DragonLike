@@ -6,6 +6,7 @@ import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
 import purr.purr.modules.settings.Setting;
 import purr.purr.modules.ui.Gui;
+import purr.purr.utils.GetAnimDiff;
 import purr.purr.utils.KeyName;
 import purr.purr.utils.RGB;
 import purr.purr.modules.Parent;
@@ -156,32 +157,30 @@ public class ClickGui extends Screen {
         handleGuiImage(context, screenWidth, screenHeight);
 
         context.getMatrices().push();
-        {
-            int alphaTop = 200 * (int) animPercent / 100;
-            int alphaBottom = 50 * (int) animPercent / 100;
-            context.getMatrices().translate(0, 0, 1);
-            context.getMatrices().scale(1, 1, 1);
-            context.fillGradient(0, 0, width, height,
+        int alphaTop = 200 * (int) animPercent / 100;
+        int alphaBottom = 50 * (int) animPercent / 100;
+        context.getMatrices().translate(0, 0, 1);
+        context.getMatrices().scale(1, 1, 1);
+        context.fillGradient(0, 0, width, height,
                 RGB.getColor(0, 0, 0, alphaTop),
                 RGB.getColor(0, 0, 0, alphaBottom)
-            );
-        }
+        );
         context.getMatrices().pop();
 
         context.getMatrices().push();
-        {
-            String[] lines = hintsText.split("\n");
-            float hintsScale = 0.7f;
-            int alpha = 150 * (int) animPercent / 100;
-            int colorHints = RGB.getColor(255, 255, 255, alpha);
-            int xHints = 5;
-            float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
-            context.getMatrices().translate(xHints, yHints, 2);
-            context.getMatrices().scale(hintsScale, hintsScale, 2);
-            for (int i = 0; i < lines.length; i++) {
-                context.drawTextWithShadow(textRenderer, Text.literal(lines[i]), 0, i * (textRenderer.fontHeight + 2), colorHints);
-            }
+
+        String[] lines = hintsText.split("\n");
+        float hintsScale = 0.7f;
+        int alpha = 150 * (int) animPercent / 100;
+        int colorHints = RGB.getColor(255, 255, 255, alpha);
+        int xHints = 5;
+        float yHints = screenHeight - (textRenderer.fontHeight * lines.length);
+        context.getMatrices().translate(xHints, yHints, 2);
+        context.getMatrices().scale(hintsScale, hintsScale, 2);
+        for (int i = 0; i < lines.length; i++) {
+            context.drawTextWithShadow(textRenderer, Text.literal(lines[i]), 0, i * (textRenderer.fontHeight + 2), colorHints);
         }
+
         context.getMatrices().pop();
 
         context.getMatrices().push();
@@ -200,20 +199,18 @@ public class ClickGui extends Screen {
                 if (category == null) continue;
                 List<Parent> list = entry.getValue();
 
-                context.getMatrices().push();
-                {
-                    float categoryScale = 1.2f;
-                    context.getMatrices().translate(xColStart, yStart, 2);
-                    context.getMatrices().scale(categoryScale, categoryScale, 2);
-                    context.drawTextWithShadow(
-                        textRenderer,
-                        Text.literal(category).formatted(Formatting.BOLD),
-                        0,
-                        0,
-                        RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
-                    );
-                }
-                context.getMatrices().pop();
+                float categoryScale = 1.2f;
+                context.getMatrices().translate(xColStart, yStart, 2);
+                context.getMatrices().scale(categoryScale, categoryScale, 2);
+                context.drawTextWithShadow(
+                    textRenderer,
+                    Text.literal(category).formatted(Formatting.BOLD),
+                    0,
+                    0,
+                    RGB.getColor(255, 255, 255, 255 * (int) animPercent / 100)
+                );
+                context.getMatrices().scale(1f / categoryScale, 1f / categoryScale, 0.5f);
+                context.getMatrices().translate(-xColStart, -yStart, -2);
 
                 float yOffset = yStart + (baseTextHeight + spacing);
                 float maxWidth = 0;
@@ -221,8 +218,8 @@ public class ClickGui extends Screen {
                 for (Parent module : list) {
                     if (module.getName() == null) continue;
                     boolean hovered = !(
-                        (mouseX >= xColStart && mouseX <= xColStart + columnWidth && mouseY >= yOffset && mouseY <= yOffset + baseTextHeight) ||
-                        (setAnim.get(module) != null)
+                            (mouseX >= xColStart && mouseX <= xColStart + columnWidth && mouseY >= yOffset && mouseY <= yOffset + baseTextHeight) ||
+                            (setAnim.get(module) != null)
                     );
                     hoverAnimReverse.put(module, hovered);
                     if (!hoverAnim.containsKey(module)) {
@@ -270,20 +267,18 @@ public class ClickGui extends Screen {
                         xDifference = xDifference * percent / 100;
                     }
 
-                    context.getMatrices().push();
-                    {
-                        context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
-                        context.getMatrices().scale(scale, scale, 4);
-                        context.drawTextWithShadow(textRenderer, display, 0, 0, color);
-                    }
-                    context.getMatrices().pop();
+                    context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
+                    context.getMatrices().scale(scale, scale, 4);
+                    context.drawTextWithShadow(textRenderer, display, 0, 0, color);
+                    context.getMatrices().scale(1f / scale, 1f / scale, 0.25f);
+                    context.getMatrices().translate(-(xColStart + xDifference), -yOffset, -4);
 
                     moduleAreas.add(new ModuleArea(
-                        module,
-                        xColStart,
-                        yOffset,
-                        (textRenderer.getWidth(name) * scale),
-                        scaledHeight
+                            module,
+                            xColStart,
+                            yOffset,
+                            (textRenderer.getWidth(name) * scale),
+                            scaledHeight
                     ));
 
                     maxWidth = Math.max(maxWidth, textRenderer.getWidth(name) * scale);
@@ -331,7 +326,7 @@ public class ClickGui extends Screen {
                 set.setValue(set.getOptions().get(i));
                 return true;
             } else if (obj instanceof Parent module) {
-                module.setEnable(!module.getEnable());
+                module.toggle();
                 return true;
             }
         } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
@@ -514,7 +509,7 @@ public class ClickGui extends Screen {
         showKeybind = AnimHelper.handleAnimValue(!shiftDown, showKeybind);
 
         if (inputSet != null) {
-            inputAnim = AnimHelper.handleAnimValue(inputAnimReverse, inputAnim);
+            inputAnim = AnimHelper.handleAnimValue(inputAnimReverse, inputAnim, GetAnimDiff.get() / 3f, AnimHelper.AnimMode.Linear);
             if (inputAnim == 100f) {
                 inputAnimReverse = true;
             } else if (inputAnim == 0f) {
@@ -626,11 +621,11 @@ public class ClickGui extends Screen {
                 context.getMatrices().push();
                 context.getMatrices().translate(0, 0, zDepth);
                 context.fill(
-                        (int) (xStart + 1),
-                        (int) (ySetOffset),
-                        (int) (xStart),
-                        (int) (ySetOffset + textRenderer.fontHeight),
-                        RGB.getColor(175, 175, 175, (int) (200 * visAnimPercent / 100))
+                    (int) (xStart + 1),
+                    (int) (ySetOffset),
+                    (int) (xStart),
+                    (int) (ySetOffset + textRenderer.fontHeight),
+                    RGB.getColor(175, 175, 175, (int) (200 * visAnimPercent / 100))
                 );
                 context.getMatrices().pop();
             }
@@ -648,18 +643,12 @@ public class ClickGui extends Screen {
                     context.getMatrices().scale(textScale, textScale, zDepth);
                     int colorE = (int) (255 - (55 * exsPercent / 100));
                     context.drawTextWithShadow(
-                            textRenderer, hearderText, 0, 0,
-                            RGB.getColor(colorE, colorE, colorE, alphaColor)
+                        textRenderer, hearderText, 0, 0,
+                        RGB.getColor(colorE, colorE, colorE, alphaColor)
                     );
                     context.getMatrices().pop();
                     if (visAnimPercent == 100f) {
-                        moduleAreas.add(new ModuleArea(
-                                lst,
-                                drawX - spacing,
-                                headerY,
-                                textRenderer.getWidth(hearderText) * textScale,
-                                textRenderer.fontHeight
-                        ));
+                        moduleAreas.add(new ModuleArea(lst, drawX - spacing, headerY, textRenderer.getWidth(hearderText) * textScale, textRenderer.fontHeight));
                     }
                     maxWidth = Math.max(maxWidth, (textRenderer.getWidth(hearderText) * textScale) * exsPercent / 100);
                     float headerHeight = textRenderer.fontHeight * textScale;
@@ -682,14 +671,7 @@ public class ClickGui extends Screen {
                         context.getMatrices().pop();
 
                         if (exsPercent == 100f) {
-                            moduleAreas.add(new ListArea(
-                                    lst,
-                                    element,
-                                    drawX,
-                                    drawY,
-                                    width,
-                                    height
-                            ));
+                            moduleAreas.add(new ListArea(lst, element, drawX, drawY, width, height));
                         }
 
                         maxWidth = Math.max(maxWidth, width * exsPercent / 100);
@@ -738,13 +720,7 @@ public class ClickGui extends Screen {
             context.getMatrices().pop();
 
             if (visAnimPercent == 100f) {
-                moduleAreas.add(new ModuleArea(
-                        set,
-                        drawX,
-                        drawY,
-                        width,
-                        height
-                ));
+                moduleAreas.add(new ModuleArea(set, drawX, drawY, width, height));
             }
 
             drawY += textRenderer.fontHeight;
@@ -802,11 +778,11 @@ public class ClickGui extends Screen {
             context.getMatrices().push();
             context.getMatrices().translate(0, 0, zDepth);
             context.fill(
-                    (int) (xStart + maxWidth + spacing),
-                    (int) (ySetOffset + drawOffsetY),
-                    (int) (xStart - spacing),
-                    (int) (rectY + drawOffsetY),
-                    RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
+                (int) (xStart + maxWidth + spacing),
+                (int) (ySetOffset + drawOffsetY),
+                (int) (xStart - spacing),
+                (int) (rectY + drawOffsetY),
+                RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
             );
             context.getMatrices().pop();
         }
@@ -825,24 +801,12 @@ public class ClickGui extends Screen {
             String path = guiModule.getImages().get(guiModule.image.getValue());
             Identifier texture = Identifier.of("purr", path);
             try {
-                Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
-                NativeImage nativeImage = NativeImage.read(resource.get().getInputStream());
+                List<Float> size = guiModule.getImageSize(texture);
+                float width = size.getFirst();
+                float height = size.get(1);
 
-                float imageWidth = nativeImage.getWidth();
-                float imageHeight = nativeImage.getHeight();
-
-                nativeImage.close();
-
-                float screenMin = Math.min(screenWidth, screenHeight);
-                float fixedSize = screenMin * guiModule.imgSize.getValue();
-
-                float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
-
-                float scaledWidth = imageWidth * scale;
-                float scaledHeight = imageHeight * scale;
-
-                float x = screenWidth - (scaledWidth * animPercent / 100);
-                float y = (screenHeight - (scaledHeight * animPercent / 100)) + 1;
+                float x = screenWidth - (width * animPercent / 100);
+                float y = (screenHeight - (height * animPercent / 100)) + 1;
 
                 context.getMatrices().push();
                 context.getMatrices().translate(0, 0, 2);
@@ -852,10 +816,10 @@ public class ClickGui extends Screen {
                     (int) x,
                     (int) y,
                     0, 0,
-                    (int) scaledWidth,
-                    (int) scaledHeight,
-                    (int) scaledWidth,
-                    (int) scaledHeight
+                    (int) width,
+                    (int) height,
+                    (int) width,
+                    (int) height
                 );
                 context.getMatrices().pop();
             } catch (Exception ignored) {}

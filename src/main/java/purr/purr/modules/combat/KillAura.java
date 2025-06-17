@@ -1,6 +1,3 @@
-/*
-https://github.com/Pan4ur/ThunderHack-Recode/blob/main/src/main/java/thunder/hack/features/modules/combat/Aura.java
-*/
 package purr.purr.modules.combat;
 
 import net.minecraft.util.math.Vec3d;

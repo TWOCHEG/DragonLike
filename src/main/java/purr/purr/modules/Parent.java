@@ -26,7 +26,7 @@ public abstract class Parent {
         this.category = category;
     }
 
-    protected void onUpdate() {}
+    public void onUpdate(Setting setting) {}
 
     protected void onEnable() {}
 
@@ -44,13 +44,17 @@ public abstract class Parent {
         return keybindCode;
     }
 
-    public void setEnable(boolean value) {
+    public void toggle() {
+        setEnable(!getEnable());
+    }
+
+    public void setEnable(boolean value, boolean showNotify) {
         if (value) {
             onEnable();
         } else {
             onDisable();
         }
-        if (moduleManager != null) {
+        if (moduleManager != null && showNotify) {
             Notify notify = (Notify) moduleManager.getModuleByClass(Notify.class);
             if (notify != null) {
                 String text = value ? "enable" : "disable";
@@ -60,6 +64,10 @@ public abstract class Parent {
         config.set("enable", value);
         enable = value;
     }
+    public void setEnable(boolean value) {
+        setEnable(value, true);
+    }
+
 
     public boolean getEnable() {
         return enable;
@@ -71,7 +79,6 @@ public abstract class Parent {
     }
 
     public void setValue(String key, Object value) {
-        onUpdate();
         config.set(key, value);
     }
 

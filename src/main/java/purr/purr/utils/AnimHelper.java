@@ -15,7 +15,8 @@ public class AnimHelper {
     public enum AnimMode {
         EaseIn,
         EaseOut,
-        EaseInOut;
+        EaseInOut,
+        Linear;
 
         public float getDiff(float percent, float diff) {
             percent = Math.max(percent, 1);
@@ -33,12 +34,9 @@ public class AnimHelper {
                 return diff;
             }
         }
-        public float getDiff(float percent) {
-            return getDiff(percent, GetAnimDiff.get());
-        }
     }
 
-    public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
+    public static float handleAnimValue(boolean reverse, float percent, float diff, AnimMode mode) {
         if (percent == 100f && !reverse) return 100f;
         if (percent == 0f && reverse) return 0f;
 
@@ -49,14 +47,17 @@ public class AnimHelper {
             }
         }
 
-        float diff = Math.max(mode.getDiff(percent), 1);
+        float finalDiff = Math.max(mode.getDiff(percent, diff), 1);
 
-        percent = reverse ? percent - diff : percent + diff;
+        percent = reverse ? percent - finalDiff : percent + finalDiff;
 
         return Math.clamp(percent, 0f, 100f);
     }
+    public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
+        return handleAnimValue(reverse, percent, GetAnimDiff.get(), mode);
+    }
     public static float handleAnimValue(boolean reverse, float percent) {
-        return handleAnimValue(reverse, percent, AnimMode.EaseInOut);
+        return handleAnimValue(reverse, percent, GetAnimDiff.get(), AnimMode.EaseInOut);
     }
 
     public static void handleMapAnim(Map<Object, Float> animMap, Map<Object, Boolean> reverceMap, AnimMode mode, Boolean delete) {

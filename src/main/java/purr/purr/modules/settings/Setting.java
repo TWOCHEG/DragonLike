@@ -34,6 +34,7 @@ public class Setting<T> {
     }
     public void setValue(T value) {
         if (this.value != null) {
+            module.onUpdate(this);
             this.value = value;
             module.setValue(name, value);
         }

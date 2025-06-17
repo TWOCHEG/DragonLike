@@ -300,8 +300,6 @@ public class ConfigsGui extends Screen {
                 RGB.getColor(255, 255, 255, (int) (255 * animInput / 100))
             );
             context.getMatrices().pop();
-        } else {
-            renamePath = null;
         }
     }
 
@@ -348,7 +346,7 @@ public class ConfigsGui extends Screen {
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if (animInput > 10) {
+        if (animInput > 10 && renamePath != null) {
             inputText += chr;
             return true;
         }
@@ -469,8 +467,8 @@ public class ConfigsGui extends Screen {
         config.deleteConfig(path);
     }
 
-    private void onCreate() {
-        config.createConfig();
+    private Path onCreate() {
+        return config.createConfig();
     }
 
     private void onSetActive(Path path) {
@@ -478,6 +476,9 @@ public class ConfigsGui extends Screen {
     }
 
     private void onRename(Path path, String newNane) {
+        if (path == null) {
+            path = onCreate();
+        }
         config.renameConfig(path, newNane);
     }
 
@@ -495,6 +496,7 @@ public class ConfigsGui extends Screen {
     }
 
     private String getPathName(Path path) {
+        if (path == null) return "default";
         String name = path.getFileName().toString();
         int dotIndex = name.lastIndexOf('.');
         if (dotIndex > 0) {
