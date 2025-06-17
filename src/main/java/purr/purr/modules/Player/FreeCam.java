@@ -1,9 +1,9 @@
 package purr.purr.modules.Player;
 
 import meteordevelopment.orbit.EventHandler;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.input.Input;
-import net.minecraft.client.input.KeyboardInput;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.MathHelper;
@@ -19,18 +19,22 @@ import purr.purr.modules.settings.*;
 import purr.purr.utils.RotateUtils;
 
 public class FreeCam extends Parent {
-    public final Setting<Integer> verticalSpeed = new Setting<>("vertical speed", 10, 1, 100);
-    public final Setting<Integer> horizontalSpeed = new Setting<>("horizontal Speed", 10, 1, 100);
+    public final Setting<Integer> verticalSpeed = new Setting<>("vertical speed", 1, 1, 100);
+    public final Setting<Integer> horizontalSpeed = new Setting<>("horizontal Speed", 1, 1, 100);
 
     private final FreeCamData freeCamData = new FreeCamData();
 
+    private Input originalInput;
+
     public FreeCam() {
         super("freecam", "player");
+        enable = false;
     }
 
     @SuppressWarnings("DataFlowIssue")
     @Override
     public void onEnable() {
+        originalInput = client.player.input;
         freeCamData.reset();
         client.player.input = new FreecamKeyboardInput(client.options, freeCamData);
     }
@@ -38,7 +42,14 @@ public class FreeCam extends Parent {
     @SuppressWarnings("DataFlowIssue")
     @Override
     public void onDisable() {
-        client.player.input = new KeyboardInput(client.options);
+        client.player.input = originalInput;
+        client.gameRenderer.getCamera().update(client.world, client.player, false, false, 0);
+    }
+
+    @Override
+    public void setEnable(boolean value) {
+        if (client.world == null || client.player == null) return;
+        super.setEnable(value);
     }
 
     @EventHandler
@@ -64,7 +75,7 @@ public class FreeCam extends Parent {
     @EventHandler
     @SuppressWarnings("unused")
     public void onSetOpaqueCube(EventSetOpaqueCube e) {
-        e.cancel();
+        if (enable) e.cancel();
     }
 
     public static class FreecamKeyboardInput extends Input {
@@ -74,16 +85,19 @@ public class FreeCam extends Parent {
         public FreecamKeyboardInput(GameOptions options, FreeCamData freeCamData) {
             this.options = options;
             this.freeCamData = freeCamData;
+
+            WorldRenderEvents.START.register(context -> {
+                freeCam();
+            });
         }
 
-        @Override
-        public void tick() {
+        public void freeCam() {
             unset();
             FreeCam freeCam = (FreeCam) Purr.moduleManager.getModuleByClass(FreeCam.class);
             if (freeCam == null) return;
 
-            float hSpeed = freeCam.horizontalSpeed.getValue().floatValue() / 10f;
-            float vSpeed = freeCam.verticalSpeed.getValue().floatValue() / 10f;
+            float hSpeed = freeCam.horizontalSpeed.getValue().floatValue() / 20f;
+            float vSpeed = freeCam.verticalSpeed.getValue().floatValue() / 20f;
             float fakeMovementForward = getMovementMultiplier(options.forwardKey.isPressed(), options.backKey.isPressed());
             float fakeMovementSideways = getMovementMultiplier(options.leftKey.isPressed(), options.rightKey.isPressed());
             Vec2f dir = handleVanillaMotion(hSpeed, fakeMovementForward, fakeMovementSideways);
