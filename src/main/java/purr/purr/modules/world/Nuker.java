@@ -23,7 +23,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
 import purr.purr.utils.BlockHighlight;
-import purr.purr.utils.RotateUtils;
+import purr.purr.utils.Rotations;
 
 import java.util.*;
 
@@ -54,6 +54,10 @@ public class Nuker extends Parent {
         "break delay",
         20,
         0, 1000
+    );
+    private ListSetting<String> rotate = new ListSetting<>(
+        "rotate",
+        Arrays.asList("not normal", "normal", "packet")
     );
     private BlockSelected targetBlocks = new BlockSelected(this);
 
@@ -309,7 +313,13 @@ public class Nuker extends Parent {
         pitch = currentPitch + (pitch - currentPitch) * 0.4f;
         pitch = MathHelper.clamp(pitch, -90, 90);
 
-        RotateUtils.packetRotate(yaw, pitch);
+        if (rotate.getValue().equals("not normal")) {
+            Rotations.rotate(yaw, pitch);
+        } else if (rotate.getValue().equals("normal")) {
+            Rotations.normalRotate(yaw, pitch);
+        } else {
+            Rotations.packetRotate(yaw, pitch);
+        }
     }
 
     private void abortMining() {

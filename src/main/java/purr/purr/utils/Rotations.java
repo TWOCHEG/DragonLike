@@ -1,101 +1,225 @@
 package purr.purr.utils;
 
-import purr.purr.modules.Parent;
-
+import purr.purr.utils.math.NoRotateMathUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import purr.purr.modules.settings.*;
-import purr.purr.events.impl.*;
 
-import java.util.List;
+public final class Rotations {
+    private static final MinecraftClient mc = MinecraftClient.getInstance();
 
-public class Rotations extends Parent {
-    public Rotations() {
-        super("rotations", "ui");
-        enable = true;
+    public static void rotateToEntity(Entity target) {
+        rotate(rotations(target)[0], rotations(target)[1]);
     }
 
-    private final ListSetting<String> moveFix = new ListSetting<>("move fix", List.of("free", "off", "focused"));
-    public final Setting<Boolean> clientLook = new Setting<>("client look", false);
-
-    private enum MoveFix {
-        Off, Focused, Free
+    public static void rotate(float yaw, float pitch) {
+        rotate(yaw, pitch, mc.getRenderTickCounter().getDynamicDeltaTicks());
     }
 
-    public float fixRotation;
-    private float prevYaw, prevPitch;
+    @SuppressWarnings("DataFlowIssue")
+    public static void rotate(float yaw, float pitch, float delta) {
+        float oldYaw = mc.player.getYaw();
+        float oldPitch = mc.player.getPitch();
 
-    public void onJump(EventPlayerJump e) {
-        if (Float.isNaN(fixRotation) || moveFix.getValue().equals("off") || client.player.isRiding())
-            return;
-
-        if (e.isPre()) {
-            prevYaw = client.player.getYaw();
-            client.player.setYaw(fixRotation);
-        } else client.player.setYaw(prevYaw);
+        mc.player.setYaw(MathHelper.lerp(delta, oldYaw, yaw));
+        mc.player.setPitch(MathHelper.lerp(delta, oldPitch, pitch));
     }
 
-    public void onPlayerMove(EventFixVelocity event) {
-        if (moveFix.getValue().equals("free")) {
-            if (Float.isNaN(fixRotation) || client.player.isRiding())
-                return;
-            event.setVelocity(fix(fixRotation, event.getMovementInput(), event.getSpeed()));
-        }
+    @SuppressWarnings("DataFlowIssue")
+    public static void packetRotate(float yaw, float pitch) {
+        mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, pitch, mc.player.isOnGround(), mc.player.horizontalCollision));
+        mc.player.lastYaw = yaw;
+        mc.player.lastPitch = pitch;
+        mc.player.setOnGround(mc.player.isOnGround());
+    }
+    @SuppressWarnings("DataFlowIssue")
+    public static void normalRotate(float yaw, float pitch) {
+        mc.player.setYaw(yaw);
+        mc.player.setPitch(pitch);
     }
 
-    public void modifyVelocity(EventPlayerTravel e) {
-        if (ModuleManager.aura.isEnabled() && ModuleManager.aura.target != null && ModuleManager.aura.rotationMode.not(Aura.Mode.None)
-                && ModuleManager.aura.elytraTarget.getValue() && Managers.PLAYER.ticksElytraFlying > 5) {
-            if (e.isPre()) {
-                prevYaw = client.player.getYaw();
-                prevPitch = client.player.getPitch();
+    public static float[] rotations(Entity entity) {
+        return rotations(entity.getBoundingBox().getCenter());
+    }
 
-                client.player.setYaw(fixRotation);
-                client.player.setPitch(ModuleManager.aura.rotationPitch);
-            } else {
-                client.player.setYaw(prevYaw);
-                client.player.setPitch(prevPitch);
+    public static float[] rotations(BlockPos pos) {
+        return rotations(new Vec3d(pos.getX(), pos.getY(), pos.getZ()));
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public static float[] rotations(Vec3d vec3d) {
+        double x = vec3d.getX() - mc.player.getX();
+        double y = vec3d.getY() - mc.player.getEyeY();
+        double z = vec3d.getZ() - mc.player.getZ();
+
+        double u = MathHelper.sqrt((float)(x * x + z * z));
+
+        float u2 = (float) (MathHelper.atan2(z, x) * (180D / Math.PI) - 90.0F);
+        float u3 = (float) (-MathHelper.atan2(y, u) * (180D / Math.PI));
+
+        return new float[]{u2, u3};
+    }
+
+    public static byte[] getCordFactorFromDirection(Entity entity) {
+        return switch (getAbsDirection(entity)) {
+            case 45 -> new byte[]{-1, 1};
+            case 90 -> new byte[]{-1, 0};
+            case 135 -> new byte[]{-1, -1};
+            case 180 -> new byte[]{0, -1};
+            case 225 -> new byte[]{1, -1};
+            case 270 -> new byte[]{1, 0};
+            case 315 -> new byte[]{1, 1};
+            case 0 -> new byte[]{0, 1};
+            default -> new byte[]{0, 0};
+        };
+    }
+
+    public static byte[] getCordFactorFromDirection(int yaw) {
+        return switch (getAbsDirection(yaw)) {
+            case 45 -> new byte[]{-1, 1};
+            case 90 -> new byte[]{-1, 0};
+            case 135 -> new byte[]{-1, -1};
+            case 180 -> new byte[]{0, -1};
+            case 225 -> new byte[]{1, -1};
+            case 270 -> new byte[]{1, 0};
+            case 315 -> new byte[]{1, 1};
+            case 0 -> new byte[]{0, 1};
+            default -> new byte[]{0, 0};
+        };
+    }
+
+    public static String getDirection(Entity entity) {
+
+        return switch (NoRotateMathUtils.getNearestYawAxis(entity)) {
+            case 45, -315 -> "X- Z+";
+            case 90, -270 -> "X-";
+            case 135, -225 -> "X- Z-";
+            case 180, -180 -> "Z-";
+            case 225, -135 -> "X+ Z-";
+            case 270, -90 -> "X+";
+            case 315, -45 -> "X+ Z+";
+            case 0, 360, -360 -> "Z+";
+            default -> "ERROR!";
+        };
+    }
+
+    public static String getDirection(float yaw) {
+        return switch (NoRotateMathUtils.getNearestYawAxis((int) yaw)) {
+            case 45, -315 -> "X- Z+";
+            case 90, -270 -> "X-";
+            case 135, -225 -> "X- Z-";
+            case 180, -180 -> "Z-";
+            case 225, -135 -> "X+ Z-";
+            case 270, -90 -> "X+";
+            case 315, -45 -> "X+ Z+";
+            case 0, 360, -360 -> "Z+";
+            default -> "ERROR!";
+        };
+    }
+
+    public static short getAbsDirection(Entity entity) {
+        return switch (NoRotateMathUtils.getNearestYawAxis(entity)) {
+            case 45, -315 -> 45;
+            case 90, -270 -> 90;
+            case 135, -225 -> 135;
+            case 180, -180 -> 180;
+            case 225, -135 -> 225;
+            case 270, -90 -> 270;
+            case 315, -45 -> 315;
+            default -> 0;
+        };
+    }
+
+    public static short getAbsDirection(int yaw) {
+        return switch (NoRotateMathUtils.getNearestYawAxis(yaw)) {
+            case 45, -315 -> 45;
+            case 90, -270 -> 90;
+            case 135, -225 -> 135;
+            case 180, -180 -> 180;
+            case 225, -135 -> 225;
+            case 270, -90 -> 270;
+            case 315, -45 -> 315;
+            default -> 0;
+        };
+    }
+
+    public static Direction getInvertedFacing(float yaw, float pitch, boolean pitchAlso) {
+        if (pitchAlso) {
+            if (-45 > pitch) {
+                return Direction.DOWN;
             }
-            return;
-        }
-
-        if (moveFix.getValue().equals("focused") && !Float.isNaN(fixRotation) && !client.player.isRiding()) {
-            if (e.isPre()) {
-                prevYaw = client.player.getYaw();
-                client.player.setYaw(fixRotation);
-            } else {
-                client.player.setYaw(prevYaw);
+            if (45 < pitch) {
+                return Direction.UP;
             }
         }
+
+        return switch (Rotations.getDirection(yaw)) {
+            case "X- Z+", "X-" -> Direction.EAST;
+            case "X- Z-", "Z-" -> Direction.SOUTH;
+            case "X+ Z-", "X+" -> Direction.WEST;
+            default -> Direction.NORTH;
+        };
     }
 
-    public void onKeyInput(EventKeyboardInput e) {
-        if (moveFix.getValue().equals("free")) {
-            if (Float.isNaN(fixRotation) || client.player.isRiding())
-                return;
+    @SuppressWarnings("DataFlowIssue")
+    public static Direction getInvertedFacingEntity(Entity entity) {
+        float pitch = mc.player.getPitch();
+        if (-45 > pitch)
+            return Direction.DOWN;
+        if (45 < pitch)
+            return Direction.UP;
 
-            float mF = client.player.input.movementForward;
-            float mS = client.player.input.movementSideways;
-            float delta = (client.player.getYaw() - fixRotation) * MathHelper.RADIANS_PER_DEGREE;
-            float cos = MathHelper.cos(delta);
-            float sin = MathHelper.sin(delta);
-            client.player.input.movementSideways = Math.round(mS * cos - mF * sin);
-            client.player.input.movementForward = Math.round(mF * cos + mS * sin);
-        }
+        return switch (Rotations.getDirection(entity)) {
+            case "X- Z+", "X-" -> Direction.EAST;
+            case "X- Z-", "Z-" -> Direction.SOUTH;
+            case "X+ Z-", "X+" -> Direction.WEST;
+            default -> Direction.NORTH;
+        };
     }
 
-    private Vec3d fix(float yaw, Vec3d movementInput, float speed) {
-        double d = movementInput.lengthSquared();
-        if (d < 1.0E-7)
-            return Vec3d.ZERO;
-        Vec3d vec3d = (d > 1.0 ? movementInput.normalize() : movementInput).multiply(speed);
-        float f = MathHelper.sin(yaw * MathHelper.RADIANS_PER_DEGREE);
-        float g = MathHelper.cos(yaw * MathHelper.RADIANS_PER_DEGREE);
-        return new Vec3d(vec3d.x * (double) g - vec3d.z * (double) f, vec3d.y, vec3d.z * (double) g + vec3d.x * (double) f);
+    @SuppressWarnings("DataFlowIssue")
+    public static Vec3d getEyesPos() {
+        float eyeHeight = mc.player.getEyeHeight(mc.player.getPose());
+        return mc.player.getPos().add(0, eyeHeight, 0);
     }
 
-    @Override
-    public void setEnable(boolean value, boolean showNotify) {
-        return;
+    public static Vec3d getEyesPos(Entity entity) {
+        float eyeHeight = entity.getEyeHeight(entity.getPose());
+        return entity.getPos().add(0, eyeHeight, 0);
+    }
+
+    public static Vec3d getClientLookVec() {
+        float yaw = mc.gameRenderer.getCamera().getYaw();
+        float pitch = mc.gameRenderer.getCamera().getPitch();
+        return toLookVec(yaw, pitch);
+    }
+
+    public static Vec3d toLookVec(float yaw, float pitch) {
+        float radPerDeg = MathHelper.RADIANS_PER_DEGREE;
+        float pi = MathHelper.PI;
+
+        float adjustedYaw = -MathHelper.wrapDegrees(yaw) * radPerDeg - pi;
+        float cosYaw = MathHelper.cos(adjustedYaw);
+        float sinYaw = MathHelper.sin(adjustedYaw);
+
+        float adjustedPitch = -MathHelper.wrapDegrees(pitch) * radPerDeg;
+        float nCosPitch = -MathHelper.cos(adjustedPitch);
+        float sinPitch = MathHelper.sin(adjustedPitch);
+
+        return new Vec3d(sinYaw * nCosPitch, sinPitch, cosYaw * nCosPitch);
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public static float getCameraYaw() {
+        return mc.gameRenderer.getCamera().getYaw();
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public static float getCameraPitch() {
+        return mc.gameRenderer.getCamera().getPitch();
     }
 }
