@@ -3,17 +3,15 @@
   "package": "purr.purr.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "MixinClientPlayerEntity",
     "MixinMinecraftClient",
     "MixinKeyboard",
-    "MixinKeyboardInput",
-    "MixinCamera"
+    "MixinKeyboardInput"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-    "MixinLivingEntity",
-    "MixinEntity"
+    "MixinEntity",
+    "MixinPlayerEntity"
   ]
 }

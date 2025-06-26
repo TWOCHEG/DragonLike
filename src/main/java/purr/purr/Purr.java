@@ -8,7 +8,7 @@ import java.lang.invoke.MethodHandles;
 
 import purr.purr.modules.ModuleManager;
 
-import purr.purr.modules.Player.*;
+import purr.purr.modules.player.*;
 import purr.purr.modules.ui.*;
 import purr.purr.modules.combat.*;
 import purr.purr.modules.world.*;
