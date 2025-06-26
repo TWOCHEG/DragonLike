@@ -636,6 +636,7 @@ public class ClickGui extends Screen {
                     float drawX = xColStart + spacing;
                     float headerY = ySetOffset + drawOffsetY;
                     Text hearderText = Text.literal(set.getName() + ": " + AnimHelper.getAnimText((String) lst.getValue(), "", (int) exsPercent));
+                    maxWidth = Math.max(maxWidth, textRenderer.getWidth(hearderText));
                     context.getMatrices().push();
                     context.getMatrices().translate(drawX - spacing, headerY, zDepth);
                     context.getMatrices().scale(textScale, textScale, zDepth);
