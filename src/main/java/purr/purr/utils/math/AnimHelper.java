@@ -48,7 +48,10 @@ public class AnimHelper {
             }
         }
 
-        float finalDiff = Math.max(mode.getDiff(percent, diff), 1);
+        float finalDiff = diff;
+        if (mode != null) {
+            finalDiff = Math.max(mode.getDiff(percent, diff), 1);
+        }
 
         percent = reverse ? percent - finalDiff : percent + finalDiff;
 

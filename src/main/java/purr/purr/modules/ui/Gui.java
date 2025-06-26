@@ -39,7 +39,6 @@ public class Gui extends Parent {
     public final Setting<Float> settingsScale = new Setting<>("settings scale", 0.8f, 0.1f, 2f).visibleIf(m -> setBg.getValue());
     public final Group animations = new Group("animations");
     public final Setting<Boolean> animEnable = new Setting<>("enable animations", true).addToGroup(animations);
-    public final Setting<Boolean> runProcess = new Setting<>("run separate process", false).addToGroup(animations);
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
     public final Setting<Boolean> clearGui = new Setting<>("clear data", false);
 

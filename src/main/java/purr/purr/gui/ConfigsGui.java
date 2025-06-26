@@ -68,7 +68,7 @@ public class ConfigsGui extends Screen {
         }
         moduleAreas.clear();
 
-        animHandler(GetAnimDiff.get());
+        animHandler();
         if (animReverse && animPercent == 0) {
             configMenu.show = false;
             client.setScreen(null);
@@ -453,7 +453,7 @@ public class ConfigsGui extends Screen {
         animReverse = true;
     }
 
-    public void animHandler(int animDiff) {
+    public void animHandler() {
         animPercent = AnimHelper.handleAnimValue(animReverse, animPercent);
         animInput = AnimHelper.handleAnimValue(animInputReverse, animInput);
         if (animInput < 1) {

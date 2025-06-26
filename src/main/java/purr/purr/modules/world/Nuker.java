@@ -7,7 +7,6 @@ import purr.purr.modules.settings.BlockSelected;
 import purr.purr.modules.settings.Header;
 import purr.purr.modules.settings.ListSetting;
 import purr.purr.modules.settings.Setting;
-import purr.purr.utils.GetAnimDiff;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -15,7 +14,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.*;
@@ -24,6 +22,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
 import purr.purr.utils.BlockHighlight;
 import purr.purr.utils.Rotations;
+import purr.purr.utils.math.AnimHelper;
 
 import java.util.*;
 
@@ -68,7 +67,7 @@ public class Nuker extends Parent {
     private long miningTime = 0;
     private int miningStage = 0;
 
-    private float animPercent = 0;
+    private float anim = 0;
     private boolean animReverse = false;
 
     public Nuker() {
@@ -93,25 +92,21 @@ public class Nuker extends Parent {
             }
         });
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            if (!animReverse) {
-                animPercent += GetAnimDiff.get() / 10;
-            } else if (animReverse) {
-                animPercent -= GetAnimDiff.get() / 10;
-            }
-            animPercent = Math.clamp(animPercent, 0, 100);
-            if (animPercent == 100.0f) {
-                animReverse = true;
-            } else if (animPercent == 0.0f) {
-                animReverse = false;
-            }
             if (miningTarget != null && miningHit != null && enable && client.player != null && client.world != null) {
-                BlockHighlight.renderHighlight(context, miningTarget, 1.0f, 1.0f, 1.0f, 1.0f / 100 * animPercent);
+                BlockHighlight.renderHighlight(context, miningTarget, 1.0f, 1.0f, 1.0f, anim / 100);
             }
         });
     }
 
     @EventHandler
     private void onTick(EventPostTick e) {
+        anim = AnimHelper.handleAnimValue(animReverse, anim, null);
+        if (anim == 100) {
+            animReverse = true;
+        } else if (anim == 0) {
+            animReverse = false;
+        }
+
         if (client.player == null || client.world == null) return;
 
         if (miningTarget != null && miningHit != null) {

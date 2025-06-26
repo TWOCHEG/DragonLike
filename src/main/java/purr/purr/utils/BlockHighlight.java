@@ -10,6 +10,9 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
 public class BlockHighlight {
+    public static void renderHighlight(WorldRenderContext context, BlockPos pos, float r, float g, float b) {
+        renderHighlight(context, pos, r, g, b, 1.0f);
+    }
     public static void renderHighlight(WorldRenderContext context, BlockPos pos, float r, float g, float b, float a) {
         MatrixStack matrices = context.matrixStack();
         if (matrices == null) return;
