@@ -13,19 +13,18 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import purr.purr.Purr;
 import purr.purr.events.impl.EventPositionCamera;
 import purr.purr.events.impl.EventRotateCamera;
-import purr.purr.modules.render.ModifyCamera;
 
 @Mixin(Camera.class)
 public abstract class MixinCamera {
 
     @Shadow protected abstract float clipToSpace(float desiredCameraDistance);
 
-    @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;moveBy(FFF)V", ordinal = 0))
-    public void modifyArgsMoveBy(Args args) {
-        ModifyCamera modifyCamera = (ModifyCamera) Purr.moduleManager.getModuleByClass(ModifyCamera.class);
-        if (modifyCamera.getEnable() && modifyCamera.rewriteDistance.getValue())
-            args.set(0, -clipToSpace(modifyCamera.distance.getValue()));
-    }
+//    @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;moveBy(FFF)V", ordinal = 0))
+//    public void modifyArgsMoveBy(Args args) {
+//        ModifyCamera modifyCamera = (ModifyCamera) Purr.moduleManager.getModuleByClass(ModifyCamera.class);
+//        if (modifyCamera.getEnable() && modifyCamera.rewriteDistance.getValue())
+//            args.set(0, -clipToSpace(modifyCamera.distance.getValue()));
+//    }
 
 //    @Inject(method = "clipToSpace", at = @At(value = "HEAD"), cancellable = true)
 //    public void modifyClipToSpace(float defaultDistance, CallbackInfoReturnable<Float> cir) {

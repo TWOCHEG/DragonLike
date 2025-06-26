@@ -1,4 +1,4 @@
-package purr.purr.utils.travel;
+package purr.purr.managers.travel;
 
 import java.util.function.Supplier;
 

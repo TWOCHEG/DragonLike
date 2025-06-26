@@ -8,12 +8,11 @@ import java.lang.invoke.MethodHandles;
 
 import purr.purr.modules.ModuleManager;
 
-import purr.purr.modules.render.*;
+// import purr.purr.modules.render.*;
 import purr.purr.modules.ui.*;
 import purr.purr.modules.combat.*;
 import purr.purr.modules.world.*;
-import purr.purr.utils.*;
-import purr.purr.utils.travel.TravelChangeManager;
+import purr.purr.managers.travel.TravelChangeManager;
 
 public class Purr implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
@@ -35,8 +34,7 @@ public class Purr implements ModInitializer {
 			new ConfigMenu(),
 			new FakePlayer(),
 			new Nuker(),
-			new Notify(),
-			new ModifyCamera()
+			new Notify()
 		);
 	}
 }

@@ -1,8 +1,9 @@
-package purr.purr.utils.travel;
+package purr.purr.managers.travel;
 
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
@@ -142,12 +143,10 @@ public class TravelChangeManager {
             pitch = Rotations.getCameraPitch();
         }
 
-        public void changeLookDirection(double cursorDeltaX, double cursorDeltaY) {
-            float f = (float)cursorDeltaY * 0.15F;
-            float g = (float)cursorDeltaX * 0.15F;
-            this.pitch += f;
-            this.yaw += g;
-            this.pitch = Math.clamp(pitch, -90.0F, 90.0F);
+        public void changeLookDirection(double deltaX, double deltaY) {
+            this.yaw += (float) deltaX * 0.15f;
+            this.pitch += (float) deltaY * 0.15f;
+            this.pitch = MathHelper.clamp(pitch, -90f, 90f);
         }
     }
 }
