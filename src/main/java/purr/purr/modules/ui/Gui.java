@@ -34,9 +34,9 @@ public class Gui extends Parent {
         "image size",
         0.5f, 0.1f, 2.0f
     ).visibleIf(m -> !image.getValue().equals("none"));
-    public final Setting<Boolean> setBg = new Setting<>("settings bg", true);
-    public final Setting<Integer> setBgAlpha = new Setting<>("settings bg A", 150, 0, 255).visibleIf(m -> setBg.getValue());
-    public final Setting<Float> settingsScale = new Setting<>("settings scale", 0.8f, 0.1f, 2f).visibleIf(m -> setBg.getValue());
+    public final Setting<Boolean> moduleBg = new Setting<>("module bg", true);
+    public final Setting<Integer> moduleBgAlpha = new Setting<>("modules bg alpha", 150, 0, 255).visibleIf(m -> moduleBg.getValue());
+    public final Setting<Float> settingsScale = new Setting<>("settings scale", 0.8f, 0.1f, 2f).visibleIf(m -> moduleBg.getValue());
     public final Group animations = new Group("animations");
     public final Setting<Boolean> animEnable = new Setting<>("enable animations", true).addToGroup(animations);
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);

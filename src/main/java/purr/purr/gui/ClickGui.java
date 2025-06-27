@@ -1,6 +1,7 @@
 // местная зона отчуждения, просьба не заходить без подготовки (хотя бы моральной)
 package purr.purr.gui;
 
+import org.lwjgl.opengl.GL11;
 import purr.purr.modules.ModuleManager;
 import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
@@ -51,8 +52,7 @@ public class ClickGui extends Screen {
     private float xMove = 0;
     private float yMove = 0;
 
-    private double lastClickX = -1;
-    private double lastClickY = -1;
+    private Object lastModule = null;
 
     private final Screen previous;
 
@@ -156,8 +156,8 @@ public class ClickGui extends Screen {
         context.getMatrices().translate(0, 0, 1);
         context.getMatrices().scale(1, 1, 1);
         context.fillGradient(0, 0, width, height,
-                RGB.getColor(0, 0, 0, alphaTop),
-                RGB.getColor(0, 0, 0, alphaBottom)
+            RGB.getColor(0, 0, 0, alphaTop),
+            RGB.getColor(0, 0, 0, alphaBottom)
         );
         context.getMatrices().pop();
 
@@ -250,7 +250,7 @@ public class ClickGui extends Screen {
                     float xDifference = 0;
 
                     if (setAnim.containsKey(module) && !module.getSettings().isEmpty()) {
-                        List<Float> drawSettingsResult = drawSettings(module, settings.get(module), context, yOffset, xColStart, scale, baseTextHeight);
+                        List<Float> drawSettingsResult = drawSettings(module, settings.get(module), context, yOffset, xColStart, scale, spacing, baseTextHeight);
                         winHeight = drawSettingsResult.getFirst();
                         winWidth = drawSettingsResult.get(1);
                     } else if (module.getSettings().isEmpty() && setAnim.containsKey(module)) {
@@ -261,6 +261,20 @@ public class ClickGui extends Screen {
                         xDifference = xDifference * percent / 100;
                     }
 
+                    if (guiModule.moduleBg.getValue()) {
+                        float bgSpacing = 3f;
+                        context.getMatrices().push();
+                        context.getMatrices().translate(0, 0, 2);
+                        context.fill(
+                            (int) (xColStart - bgSpacing),
+                            (int) (yOffset - bgSpacing),
+                            (int) (xColStart + (Math.max((textRenderer.getWidth(display) * scale) + bgSpacing, winWidth + (spacing / 2f)))),
+                            (int) (yOffset + (Math.max((textRenderer.fontHeight * scale) + bgSpacing, ((textRenderer.fontHeight * scale) + winHeight + (spacing / 2f))))),
+                            RGB.getColor(0, 0, 0, (int) (guiModule.moduleBgAlpha.getValue() * openAnim / 100))
+                        );
+                        context.getMatrices().pop();
+                    }
+
                     context.getMatrices().translate(xColStart + xDifference, yOffset, 4);
                     context.getMatrices().scale(scale, scale, 4);
                     context.drawTextWithShadow(textRenderer, display, 0, 0, color);
@@ -268,11 +282,11 @@ public class ClickGui extends Screen {
                     context.getMatrices().translate(-(xColStart + xDifference), -yOffset, -4);
 
                     moduleAreas.add(new ModuleArea(
-                            module,
-                            xColStart,
-                            yOffset,
-                            (textRenderer.getWidth(name) * scale),
-                            scaledHeight
+                        module,
+                        xColStart,
+                        yOffset,
+                        (textRenderer.getWidth(name) * scale),
+                        scaledHeight
                     ));
 
                     maxWidth = Math.max(maxWidth, textRenderer.getWidth(name) * scale);
@@ -357,7 +371,7 @@ public class ClickGui extends Screen {
             }
         }
 
-        if (obj instanceof IntArea area) {
+        if (obj instanceof NumArea area) {
             float x = ((Double) mouseX).floatValue();
             area.set(x);
         }
@@ -381,12 +395,10 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (lastClickX == -1 && lastClickY == -1) {
-            lastClickX = mouseX;
-            lastClickY = mouseY;
+        if (lastModule == null) {
+            lastModule = getModuleUnderMouse(mouseX, mouseY);
         }
-        Object obj = getModuleUnderMouse(lastClickX, lastClickY);
-        if (obj instanceof IntArea area) {
+        if (lastModule instanceof NumArea area) {
             area.set((float) mouseX);
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
@@ -394,6 +406,17 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        Object obj = getModuleUnderMouse(mouseX, mouseY);
+        if (obj != null) {
+            if (obj instanceof NumArea area) {
+                if (scrollY > 0) {
+                    area.plus();
+                } else {
+                    area.minus();
+                }
+                return true;
+            }
+        }
         xMove += (float) scrollX * 4;
         yMove += (float) scrollY * 4;
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
@@ -401,9 +424,8 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (lastClickX != -1 || lastClickY != -1) {
-            lastClickX = -1;
-            lastClickY = -1;
+        if (lastModule != null) {
+            lastModule = null;
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
@@ -525,6 +547,7 @@ public class ClickGui extends Screen {
         float yOffset,
         float xStart,
         float scale,
+        float moduleSpacing,
         int baseTextHeight
     ) {
         // параметры
@@ -532,7 +555,7 @@ public class ClickGui extends Screen {
         float setAnimPercent = openAnim * setAnim.getOrDefault(module, 0f) / 100;
         int paddingBelowText = 5;
         int rectY = (int) (yOffset + baseTextHeight * scale + paddingBelowText);
-        int spacing = 5;
+        float spacing = moduleSpacing / 2;
         xStart += spacing;
         float drawOffsetY = 10 * (setAnimPercent - 100) / 100f;
 
@@ -759,7 +782,7 @@ public class ClickGui extends Screen {
                 context.getMatrices().pop();
 
                 if (visAnimPercent == 100f) {
-                    moduleAreas.add(new IntArea(set, xColStart, drawY, (float) totalWidth, 6));
+                    moduleAreas.add(new NumArea(set, xColStart, drawY, (float) totalWidth, 6));
                 }
                 height += 4;
             }
@@ -767,19 +790,6 @@ public class ClickGui extends Screen {
             maxWidth = Math.max(maxWidth, width * visAnimPercent / 100);
 
             ySetOffset += (height + spacing) * visAnimPercent / 100;
-        }
-
-        if (guiModule.setBg.getValue()) {
-            context.getMatrices().push();
-            context.getMatrices().translate(0, 0, zDepth);
-            context.fill(
-                (int) (xStart + maxWidth + spacing),
-                (int) (ySetOffset + drawOffsetY),
-                (int) (xStart - spacing),
-                (int) (rectY + drawOffsetY),
-                RGB.getColor(0, 0, 0, (int) (guiModule.setBgAlpha.getValue() * setAnimPercent / 100))
-            );
-            context.getMatrices().pop();
         }
 
         ySetOffset = (ySetOffset - rectY) * setAnimPercent / 100;
@@ -830,7 +840,7 @@ public class ClickGui extends Screen {
                         && mouseY <= area.y + area.height) {
                     return (
                         area instanceof ListArea ||
-                        area instanceof IntArea
+                        area instanceof NumArea
                     ) ? area : area.module;
                 }
             }
@@ -841,8 +851,8 @@ public class ClickGui extends Screen {
         return getModuleUnderMouse(((Double) mouseX).floatValue(), ((Double) mouseY).floatValue());
     }
 
-    private static class IntArea extends ModuleArea {
-        public IntArea(Setting set, float x, float y, float width, float height) {
+    private static class NumArea extends ModuleArea {
+        public NumArea(Setting set, float x, float y, float width, float height) {
             super(set, x, y - 2, width, height + 2);
         }
 
@@ -866,6 +876,29 @@ public class ClickGui extends Screen {
                     set.setValue(
                         Math.clamp((float) (Math.round(calculatedValue * 10.0) / 10.0), (float) set.min, (float) set.max)
                     );
+                }
+            }
+        }
+
+        public void plus() {
+            if (module instanceof Setting set) {
+                if (set.getValue() instanceof Integer v) {
+                    set.setValue(Math.clamp(v + 1, (int) set.min, (int) set.max));
+                } else if (set.getValue() instanceof Float v) {
+                    float newValue = (float) Math.round((v + 0.1f) * 10) / 10f;
+                    newValue = Math.clamp(newValue, (float) set.min, (float) set.max);
+                    set.setValue(newValue);
+                }
+            }
+        }
+        public void minus() {
+            if (module instanceof Setting set) {
+                if (set.getValue() instanceof Integer v) {
+                    set.setValue(Math.clamp(v - 1, (int) set.min, (int) set.max));
+                } else if (set.getValue() instanceof Float v) {
+                    float newValue = (float) Math.round((v - 0.1f) * 10) / 10f;
+                    newValue = Math.clamp(newValue, (float) set.min, (float) set.max);
+                    set.setValue(newValue);
                 }
             }
         }
