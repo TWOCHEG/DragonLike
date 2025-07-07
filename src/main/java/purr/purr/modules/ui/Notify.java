@@ -72,11 +72,10 @@ public class Notify extends Parent {
             float screenWidth = context.getScaledWindowWidth();
             float screenHeight = context.getScaledWindowHeight();
 
-            context.getMatrices().push();
+            context.getMatrices().pushMatrix();
             context.getMatrices().translate(
                     (screenWidth / 2) - ((float) textRenderer.getWidth(renderText) / 2),
-                    y * animPercent / 100,
-                    1
+                    y * animPercent / 100
             );
             context.drawTextWithShadow(
                     textRenderer,
@@ -85,7 +84,7 @@ public class Notify extends Parent {
                     0,
                     RGB.getColor(255, 255, 255, (int) (255 * animPercent / 100))
             );
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
 
             y += textRenderer.fontHeight + 5;
 

@@ -3,9 +3,11 @@
 	"id": "purr",
 	"version": "${version}",
 	"name": "Purr",
+	"description": "...",
 	"authors": [
 		"TWOCHEG"
 	],
+	"license": "CC0-1.0",
 	"icon": "assets/purr/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -13,18 +15,16 @@
 			"purr.purr.Purr"
 		]
 	},
-	"access_widener": "purr.accesswidener",
+	"mixins": [
+		"purr.mixins.json"
+	],
 	"depends": {
-		"fabricloader": ">=0.16.10",
-		"minecraft": "~1.21.5",
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.7",
 		"java": ">=21",
-		"fabric-api": "*",
-		"fabric-key-binding-api-v1": "*"
+		"fabric-api": "*"
 	},
 	"suggests": {
 		"another-mod": "*"
-	},
-	"mixins": [
-		"purr.mixins.json"
-	]
+	}
 }
