@@ -64,7 +64,7 @@ public class AnimHelper {
         return handleAnimValue(reverse, percent, GetAnimDiff.get(), AnimMode.EaseInOut);
     }
 
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, AnimMode mode, Boolean delete) {
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, float diff, AnimMode mode, Boolean delete) {
         if (!animMap.isEmpty()) {
             Iterator<K> it = animMap.keySet().iterator();
             while (it.hasNext()) {
@@ -72,7 +72,7 @@ public class AnimHelper {
                 float percent = animMap.get(key);
                 boolean reverse = reverseMap.getOrDefault(key, false);
 
-                float newPercent = handleAnimValue(reverse, percent, mode);
+                float newPercent = handleAnimValue(reverse, percent, diff, mode);
                 if (newPercent == percent) continue;
                 animMap.put(key, newPercent);
 
@@ -83,14 +83,20 @@ public class AnimHelper {
             }
         }
     }
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, float diff, AnimMode mode) {
+        handleMapAnim(animMap, reverseMap, diff, mode, true);
+    }
+    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, float diff) {
+        handleMapAnim(animMap, reverseMap, diff, AnimMode.EaseInOut, true);
+    }
     public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, AnimMode mode) {
-        handleMapAnim(animMap, reverseMap, mode, true);
+        handleMapAnim(animMap, reverseMap, GetAnimDiff.get(), mode, true);
     }
     public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap) {
         handleMapAnim(animMap, reverseMap, AnimMode.EaseInOut);
     }
     public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, Boolean delete) {
-        handleMapAnim(animMap, reverseMap, AnimMode.EaseInOut, delete);
+        handleMapAnim(animMap, reverseMap, GetAnimDiff.get(), AnimMode.EaseInOut, delete);
     }
 
     public static String getAnimText(String startText, String endText, int percent) {

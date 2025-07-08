@@ -131,7 +131,6 @@ public class KillAura extends Parent {
     private Timer pauseTimer = new Timer();
 
     public Box resolvedBox;
-    static boolean wasTargeted = false;
 
     public KillAura() {
         super("kill aura", "combat");
@@ -139,14 +138,16 @@ public class KillAura extends Parent {
 
     @Override
     public void onEnable() {
-        target = null;
-        lookingAtHitbox = false;
-        rotationPoint = Vec3d.ZERO;
-        rotationMotion = Vec3d.ZERO;
-        rotationYaw = client.player.getYaw();
-        rotationPitch = client.player.getPitch();
-        delayTimer = null;
-        delayTimer = new Timer();
+        if (client.player != null) {
+            target = null;
+            lookingAtHitbox = false;
+            rotationPoint = Vec3d.ZERO;
+            rotationMotion = Vec3d.ZERO;
+            rotationYaw = client.player.getYaw();
+            rotationPitch = client.player.getPitch();
+            delayTimer = null;
+            delayTimer = new Timer();
+        }
     }
 
     @Override
