@@ -2,6 +2,11 @@
 package purr.purr.gui;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
+import org.joml.Matrix4f;
 import purr.purr.modules.ModuleManager;
 import purr.purr.modules.settings.Group;
 import purr.purr.modules.settings.ListSetting;
@@ -797,7 +802,6 @@ public class ClickGui extends Screen {
     }
 
     private void handleGuiImage(DrawContext context, float screenWidth, float screenHeight) {
-        return;
 //        if (
 //            guiModule != null &&
 //            guiModule.image.getValue() != null &&
@@ -816,7 +820,7 @@ public class ClickGui extends Screen {
 //                context.getMatrices().pushMatrix();
 //                context.getMatrices().translate(0, 0);
 //                context.drawTexture(
-//                    RenderPipeline.,
+//                    RenderLayer::getGuiTextured,
 //                    texture,
 //                    (int) x,
 //                    (int) y,

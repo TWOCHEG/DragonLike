@@ -127,4 +127,13 @@ public abstract class Parent {
     public void setModuleManager(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
     }
+
+    public void notify(String text, Notify.NotifyType notifyType) {
+        if (moduleManager != null) {
+            Parent notify = moduleManager.getModuleByClass(Notify.class);
+            if (notify instanceof Notify)  {
+                ((Notify) notify).add(text, notifyType);
+            }
+        }
+    }
 }

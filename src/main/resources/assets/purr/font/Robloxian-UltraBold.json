@@ -1,0 +1,15 @@
+{
+  "providers": [
+    {
+      "type": "file",
+      "file": "purr:font/Robloxian-UltraBold.ttf",
+      "size": 16,
+      "shift": {
+        "x": 0,
+        "y": 0
+      },
+      "ascent": 12,
+      "height": 16
+    }
+  ]
+}
