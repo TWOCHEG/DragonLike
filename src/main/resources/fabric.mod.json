@@ -12,7 +12,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"purr.purr.Purr"
+			"pon.purr.Purr"
 		]
 	},
 	"mixins": [

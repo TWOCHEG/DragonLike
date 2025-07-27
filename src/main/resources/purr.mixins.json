@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "purr.purr.mixins",
+  "package": "pon.purr.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
     "MixinMinecraftClient",
