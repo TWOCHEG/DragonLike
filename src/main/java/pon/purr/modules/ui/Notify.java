@@ -160,6 +160,7 @@ public class Notify extends Parent {
     }
 
     public void add(NotifyData n) {
+        if (!enable) return;
         Purr.EVENT_BUS.subscribe(n);
         notifications.add(n);
     }

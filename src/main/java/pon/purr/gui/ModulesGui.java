@@ -3,28 +3,30 @@ package pon.purr.gui;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-import org.joml.Matrix3x2fStack;
+import org.lwjgl.glfw.GLFW;
 import pon.purr.gui.components.Category;
+import pon.purr.gui.components.RenderArea;
 import pon.purr.modules.ModuleManager;
 import pon.purr.modules.Parent;
 import pon.purr.modules.ui.Gui;
-import pon.purr.utils.math.AnimHelper;
+import pon.purr.utils.GetAnimDiff;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class ModulesGui extends Screen {
+    private int categoriesAnim = 0;
     private final Gui guiModule;
     private final Screen previous;
     private final LinkedList<Category> categories;
 
-    private float visiblePercent = 0f;
-    private boolean visibleReverse = false;
+    private boolean open = true;
 
     private final int categoryWidth = 130;
     private final int categoryPadding = 20;
     private final int startY = 40;
+    private final int categoriesShow = 200;
 
     public ModulesGui(Screen previous, ModuleManager moduleManager, Gui guiModule) {
         super(Text.literal("ModulesGui"));
@@ -41,26 +43,64 @@ public class ModulesGui extends Screen {
         }
     }
     public void closeGui() {
-        visibleReverse = true;
+        open = false;
+        categoriesAnim = 0;
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (categoriesAnim < categoriesShow) {
+            categoriesAnim++;
+        }
         animHandler();
 
-        if (visiblePercent == 0) client.setScreen(null);
         if (previous != null) previous.render(context, mouseX, mouseY, delta);
 
-        int startX = (context.getScaledWindowWidth() / 2) - (((categoryWidth + categoryPadding) * categories.toArray().length) / 2);
+        int startX = (context.getScaledWindowWidth() / 2) - (((categoryWidth + categoryPadding) * categories.size()) / 2);
 
-        for (Category c : categories) {
-            c.onRender(context, startX, startY, categoryWidth, 0, visiblePercent, mouseX, mouseY);
+        int closeCount = 0;
+        for (int i = 0; i < categories.size(); i++) {
+            Category c = categories.get(i);
+            if (categoriesAnim > ((categoriesShow / GetAnimDiff.get()) / categories.size() * i)) {
+                c.visibleReverse = !open;
+            }
+
+            if (c.visiblePercent == 0) closeCount++;
+
+            c.render(context, startX, startY, categoryWidth, 0, mouseX, mouseY);
 
             startX += categoryWidth + categoryPadding;
         }
+        if (closeCount == categories.size() && !open) {
+            client.setScreen(null);
+        }
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            closeGui();
+            return true;
+        }
+        return false;
     }
 
     private void animHandler() {
-        visiblePercent = AnimHelper.handleAnimValue(visibleReverse, visiblePercent * 100) / 100;
+
+    }
+
+    @Override
+    public boolean shouldPause() {
+        return false;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (Category c : categories) {
+            if (RenderArea.checkHovered(c, mouseX, mouseY)) {
+                return c.mouseClicked(mouseX, mouseY, button);
+            }
+        }
+        return false;
     }
 }

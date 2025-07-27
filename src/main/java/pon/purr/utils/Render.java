@@ -2,40 +2,103 @@ package pon.purr.utils;
 
 import net.minecraft.client.gui.DrawContext;
 
-import java.util.stream.IntStream;
-
 public class Render {
     public enum CurveType {
-        rounded,
-        linear,
+        rounded, linear;
+
+        public int getValue(int i, int r, int steps) {
+            if (this.equals(linear)) {
+                return (r * i) / steps;
+            } else if (this.equals(rounded)) {
+                // залупа не работает le le le
+                float x = (float) i / steps * r;
+                float y = (float) Math.sqrt(r * r - x * x);
+                return r - Math.round(y);
+            }
+            return 0;
+        }
     }
 
     public static void fill(
         DrawContext context,
-        int x1, int y1, int x2, int y2, int color,
-        int radius,
-        int steps // это покачто в разработке
+        int x1, int y1, int x2, int y2, int c,
+        int r,
+        int s
     ) {
-        context.fill(
-            x1 + radius,
-            y1,
-            x2 - radius,
-            y1 + radius,
-            color
+        fill(
+            context,
+            x1, y1, x2, y2, c,
+            r, s,
+            CurveType.linear
         );
+    }
+    public static void fill(
+        DrawContext context,
+        int x1, int y1, int x2, int y2, int c,
+        int r,
+        int s,
+        CurveType t
+    ) {
+        int stepSize = r / s;
+
+        for (int i = 0; i < s; i++) {
+            int offset = t.getValue(i, r, s);
+            context.fill(
+                x1 + offset,
+                (y1 + r) - offset,
+                x2 - offset,
+                (y1 + r) - (offset + stepSize),
+                c
+            );
+        }
         context.fill(
             x1,
-            y1 + radius,
+            y1 + r,
             x2,
-            y2 - radius,
-            color
+            y2 - r,
+            c
         );
-        context.fill(
-            x1 + radius,
-            y2 - radius,
-            x2 - radius,
-            y2,
-            color
+        for (int i = 0; i < s; i++) {
+            int offset = t.getValue(i, r, s);
+            context.fill(
+                x1 + offset,
+                (y2 - r) + offset,
+                x2 - offset,
+                (y2 - r) + (offset + stepSize),
+                c
+            );
+        }
+    }
+
+    public static void fill1(
+        DrawContext context,
+        int x1, int y1, int x2, int y2, int c,
+        int s
+    ) {
+        fill1(
+            context,
+            x1, y1, x2, y2, c,
+            s,
+            CurveType.linear
         );
+    }
+    public static void fill1(
+        DrawContext context,
+        int x1, int y1, int x2, int y2, int c,
+        int s,
+        CurveType t
+    ) {
+        int radius = y2 - y1;
+        int stepSize = radius / s;
+        for (int i = 0; i < s; i++) {
+            int offset = t.getValue(i, y2 - y1, s);
+            context.fill(
+                x1 + offset,
+                (y1 + radius) - offset,
+                x2 - offset,
+                (y1 + radius) - (offset + stepSize),
+                c
+            );
+        }
     }
 }

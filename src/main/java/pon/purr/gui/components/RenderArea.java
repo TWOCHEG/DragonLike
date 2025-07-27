@@ -3,7 +3,6 @@ package pon.purr.gui.components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import org.joml.Matrix3x2fStack;
 import pon.purr.utils.math.Hover;
 
 public abstract class RenderArea {
@@ -17,7 +16,7 @@ public abstract class RenderArea {
 
     public RenderArea() {}
 
-    public void onRender(DrawContext context, int startX, int startY, int width, int height, float visiblePercent, double mouseX, double mouseY) {
+    public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
         this.x = startX;
         this.y = startY;
         this.width = width;
@@ -30,5 +29,16 @@ public abstract class RenderArea {
         return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
     }
 
+    public static boolean checkHovered(int x, int y, int width, int height, double mouseX, double mouseY) {
+        return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
+    }
+    public static boolean checkHovered(RenderArea ra, double mouseX, double mouseY) {
+        return Hover.hoverCheck(ra.x, ra.y, ra.width, ra.height, mouseX, mouseY);
+    }
+
     public void animHandler() {}
+
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return false;
+    }
 }

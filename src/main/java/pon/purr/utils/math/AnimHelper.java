@@ -99,15 +99,14 @@ public class AnimHelper {
         handleMapAnim(animMap, reverseMap, GetAnimDiff.get(), AnimMode.EaseInOut, delete);
     }
 
-    public static String getAnimText(String startText, String endText, int percent) {
-        percent = Math.max(0, Math.min(100, percent));
-        float pct = percent / 100f;
-        if (pct <= 0.5f) {
-            float keepRatio = 1 - pct * 2;
+    public static String getAnimText(String startText, String endText, float percent) {
+        percent = Math.max(0, Math.min(1, percent));
+        if (percent <= 0.5f) {
+            float keepRatio = 1 - percent * 2;
             int keepChars = Math.round(startText.length() * keepRatio);
             return startText.substring(0, keepChars);
         } else {
-            float drawRatio = (pct - 0.5f) * 2;
+            float drawRatio = (percent - 0.5f) * 2;
             int drawChars = Math.round(endText.length() * drawRatio);
             return endText.substring(0, drawChars);
         }

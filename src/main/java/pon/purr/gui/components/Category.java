@@ -15,40 +15,39 @@ public class Category extends RenderArea {
     private float hoverPercent = 0f;
     private boolean hovered = false;
 
+    public float visiblePercent = 0f;
+    public boolean visibleReverse = true;
+
     public Category(LinkedList<Parent> modules, String name) {
         super();
         LinkedList<Module> areas = new LinkedList<>();
         modules.forEach(m -> {
-            areas.add(new Module(m));
+            areas.add(new Module(m, this));
         });
         this.modules = areas;
         this.name = name;
     }
 
     @Override
-    public void onRender(DrawContext context, int startX, int startY, int width, int height, float visiblePercent, double mouseX, double mouseY) {
+    public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
         Float offset = 100 * (1 - visiblePercent);
+
+        startY -= offset;
 
         int modulesStartY = startY + 26;
         int modulePadding = 2;
 
-        context.getMatrices().pushMatrix();
-        context.getMatrices().translate(0, 0 - offset);
-
-        context.drawHorizontalLine(startX + 10, startX + width - 10, (modulesStartY - 5), RGB.getColor(255, 255, 255, 180 * visiblePercent));
-
+        context.drawHorizontalLine(startX + 20, startX + width - 20, (modulesStartY - 5), RGB.getColor(255, 255, 255, 180 * visiblePercent));
+        // моджанги дети шлюх le le le le нахуй надо было убирать слои
         for (Module m : modules) {
-            m.onRender(context, startX + modulePadding, modulesStartY, width - (modulePadding * 2), 0, visiblePercent, mouseX, mouseY);
-            modulesStartY += m.height + modulePadding;
+            height += m.height + modulePadding;
         }
+        height += modulesStartY - startY;
 
-        int alpha = (int) ((150 + (20 * (1 - hoverPercent))) * visiblePercent);
-
-        height = modulesStartY - startY + modulePadding;
-
+        int alpha = (int) ((150 + (10 * (1 - hoverPercent))) * visiblePercent);
         hovered = checkHovered(mouseX, mouseY);
-
         int radius = width / 20;
+
         Render.fill(
             context,
             startX,
@@ -59,12 +58,14 @@ public class Category extends RenderArea {
             width / 20,
             3
         );
-        context.fill(
-            startX + radius,
+        Render.fill1(
+            context,
+            startX,
             startY,
-            startX + width - radius,
+            startX + width,
             startY + radius,
-            RGB.getColor(0, 0, 0, 50 * visiblePercent)
+            RGB.getColor(0, 0, 0, 50 * visiblePercent),
+            3
         );
         context.fillGradient(
             startX,
@@ -94,13 +95,31 @@ public class Category extends RenderArea {
             RGB.getColor(255, 255, 255, 180 * visiblePercent)
         );
 
-        context.getMatrices().popMatrix();
+        for (Module m : modules) {
+            m.render(context, startX + modulePadding * 2, modulesStartY, width - (modulePadding * 4), 0, mouseX, mouseY);
+            modulesStartY += m.height + modulePadding;
+        }
 
-        super.onRender(context, startX, startY, width, height, visiblePercent, mouseX, mouseY);
+        super.render(context, startX, startY, width, height, mouseX, mouseY);
     }
 
     @Override
     public void animHandler() {
-        hoverPercent = AnimHelper.handleAnimValue(hovered, hoverPercent * 100) / 100;
+        hoverPercent = AnimHelper.handleAnimValue(!hovered, hoverPercent * 100) / 100;
+        visiblePercent = AnimHelper.handleAnimValue(
+            visibleReverse,
+            visiblePercent * 100,
+            AnimHelper.AnimMode.EaseOut
+        ) / 100;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (Module m : modules) {
+            if (checkHovered(m, mouseX, mouseY)) {
+                return m.mouseClicked(mouseX, mouseY, button);
+            }
+        }
+        return false;
     }
 }
