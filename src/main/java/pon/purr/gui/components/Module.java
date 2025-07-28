@@ -1,12 +1,16 @@
 package pon.purr.gui.components;
 
+import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
+import pon.purr.events.impl.EventKeyPress;
 import pon.purr.modules.Parent;
 import pon.purr.utils.KeyName;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
+
+import java.util.List;
 
 public class Module extends RenderArea {
     private final Parent module;
@@ -21,6 +25,15 @@ public class Module extends RenderArea {
 
     private float enablePercent = 0f;
 
+    private boolean binding = false;
+    private float bindingPercent = 0f;
+    private int pressKey = -1;
+
+    private List<Integer> cancelButtons = List.of(
+        GLFW.GLFW_KEY_ESCAPE,
+        GLFW.GLFW_KEY_DELETE
+    );
+
     public Module(Parent module, Category category) {
         super();
         this.module = module;
@@ -31,7 +44,7 @@ public class Module extends RenderArea {
     public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
         hovered = checkHovered(mouseX, mouseY);
 
-        int c = (int) (0 + (100 * enablePercent));
+        int c = (int) (50 + (50 * enablePercent));
 
         Render.fill(
             context,
@@ -43,9 +56,16 @@ public class Module extends RenderArea {
             width / 30,
             2
         );
-        String name = showKeysPercent > 0 && module.getKeybind() != -1 ?
-        AnimHelper.getAnimText(module.getName(), KeyName.get(module.getKeybind()), showKeysPercent) :
-        module.getName();
+        String name;
+        if (bindingPercent > 0) {
+            name = AnimHelper.getAnimText(module.getName(), pressKey == -1 ? "..." : KeyName.get(pressKey), bindingPercent);
+        } else {
+            name = showKeysPercent > 0 && module.getKeybind() != -1 ?
+                AnimHelper.getAnimText(module.getName(), KeyName.get(module.getKeybind()), showKeysPercent) :
+                module.getName();
+        }
+        if (bindingPercent == 0 && pressKey != -1) pressKey = -1;
+
         context.drawCenteredTextWithShadow(
             textRenderer,
             name,
@@ -58,7 +78,7 @@ public class Module extends RenderArea {
                 (int) (startX + (width / 2) - (textRenderer.getWidth(name) / 2) * enablePercent),
                 (int) (startX + (width / 2) + (textRenderer.getWidth(name) / 2) * enablePercent),
                 startY + textRenderer.fontHeight + textPadding,
-                RGB.getColor(255, 255, 255, 200 * category.visiblePercent)
+                RGB.getColor(255, 255, 255, 200 * category.visiblePercent * enablePercent)
             );
         }
         height = textRenderer.fontHeight + (textPadding * 2);
@@ -77,15 +97,45 @@ public class Module extends RenderArea {
             !module.getEnable(),
             enablePercent * 100
         ) / 100;
+        bindingPercent = AnimHelper.handleAnimValue(
+            !binding,
+            bindingPercent * 100
+        ) / 100;
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean areaMouseClicked(double mouseX, double mouseY, int button) {
         if (y + (textRenderer.fontHeight + textPadding * 2) > mouseY) {
-            if (button == 0) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                 module.toggle();
-                return true;
+            } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
+                pressKey = -1;
+                binding = true;
             }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void mouseClicked(double mouseX, double mouseY, int button) {
+        if (binding) {
+            binding = false;
+        }
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (binding) {
+            if (cancelButtons.contains(keyCode)) {
+                module.setKeybind(-1);
+                binding = false;
+            } else {
+                module.setKeybind(keyCode);
+                pressKey = keyCode;
+                binding = false;
+            }
+            return true;
         }
         return false;
     }

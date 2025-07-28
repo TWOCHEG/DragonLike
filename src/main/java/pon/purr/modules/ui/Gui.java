@@ -5,11 +5,10 @@ import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
+import pon.purr.Purr;
 import pon.purr.gui.ModulesGui;
+import pon.purr.gui.components.Category;
 import pon.purr.modules.Parent;
-import pon.purr.modules.settings.Group;
-import pon.purr.modules.settings.ListSetting;
-import pon.purr.modules.settings.Setting;
 import pon.purr.modules.settings.*;
 
 import java.io.IOException;
@@ -37,19 +36,22 @@ public class Gui extends Parent {
         "image size",
         0.5f, 0.1f, 2.0f
     ).visibleIf(m -> !image.getValue().equals("none"));
-    public final Setting<Boolean> moduleBg = new Setting<>("module bg", true);
-    public final Setting<Integer> moduleBgAlpha = new Setting<>("modules bg alpha", 150, 0, 255).visibleIf(m -> moduleBg.getValue());
-    public final Setting<Float> settingsScale = new Setting<>("settings scale", 0.8f, 0.1f, 2f).visibleIf(m -> moduleBg.getValue());
-    public final Group animations = new Group("animations");
-    public final Setting<Boolean> animEnable = new Setting<>("enable animations", true).addToGroup(animations);
-    public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue()).addToGroup(animations);
-    public final Setting<Boolean> clearGui = new Setting<>("clear data", false);
+
+    public final Setting<Boolean> animEnable = new Setting<>("enable animations", true);
+    public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue());
+    public final Group animations = new Group(
+        "animations",
+        animEnable,
+        animSpeed
+    );
 
     private float imageWidth = 0f;
     private float imageHeight = 0f;
 
+    public LinkedList<Category> categories = null;
+
     public Gui() {
-        super("click gui", "ui");
+        super("click gui", Purr.Categories.ui);
         getConfig().set("keybind", getConfig().get("keybind", 344));
         enable = false;
     }
@@ -61,7 +63,15 @@ public class Gui extends Parent {
     @Override
     public void onEnable() {
         if (client.currentScreen instanceof TitleScreen || client.currentScreen == null) {
-            client.setScreen(new ModulesGui(client.currentScreen, moduleManager, this));
+            if (categories == null) {
+                Map<Purr.Categories, List<Parent>> modules = Purr.moduleManager.getModules();
+                categories = new LinkedList<>();
+                for (Map.Entry<Purr.Categories, List<Parent>> entry : modules.entrySet()) {
+                    LinkedList<Parent> moduleList = new LinkedList<>(entry.getValue());
+                    categories.add(new Category(moduleList, entry.getKey()));
+                }
+            }
+            client.setScreen(new ModulesGui(client.currentScreen, this));
         }
     }
 

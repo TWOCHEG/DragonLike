@@ -6,19 +6,20 @@ import net.fabricmc.api.ModInitializer;
 import java.lang.invoke.MethodHandles;
 import pon.purr.modules.ModuleManager;
 
-// import purr.purr.modules.render.*;
-import pon.purr.modules.combat.KillAura;
 import pon.purr.modules.ui.*;
-import pon.purr.modules.world.FakePlayer;
-import pon.purr.modules.world.Nuker;
-import pon.purr.modules.ui.*;
-import pon.purr.modules.combat.*;
 import pon.purr.modules.world.*;
 import pon.purr.managers.travel.TravelChangeManager;
 
 public class Purr implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
 	public static ModuleManager moduleManager = null;
+
+	public enum Categories {
+		combat,
+		ui,
+		world,
+		example
+	}
 
 	@Override
 	public void onInitialize() {
@@ -32,7 +33,6 @@ public class Purr implements ModInitializer {
 		moduleManager = new ModuleManager(
 			new Gui(),
 			new Keybinds(),
-			new KillAura(),
 			new FakePlayer(),
 			new Nuker(),
 			new Notify(),

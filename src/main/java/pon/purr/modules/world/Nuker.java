@@ -1,6 +1,7 @@
 package pon.purr.modules.world;
 
 import meteordevelopment.orbit.*;
+import pon.purr.Purr;
 import pon.purr.events.impl.EventPostTick;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.BlockSelected;
@@ -71,7 +72,7 @@ public class Nuker extends Parent {
     private boolean animReverse = false;
 
     public Nuker() {
-        super("nuker", "world");
+        super("nuker", Purr.Categories.world);
 
         WorldRenderEvents.START.register(context -> {
             if (client.player != null && enable && client.world != null) {

@@ -1,6 +1,7 @@
 package pon.purr.modules.ui;
 
 import meteordevelopment.orbit.EventHandler;
+import pon.purr.Purr;
 import pon.purr.config.ConfigManager;
 import pon.purr.events.impl.EventKeyPress;
 import pon.purr.modules.Parent;
@@ -18,8 +19,8 @@ public class Keybinds extends Parent {
 
     @EventHandler
     private void keyPress(EventKeyPress e) {
-        if (moduleManager == null) return;
-        Parent module = moduleManager.getModuleByKey(e.getKey());
+        if (Purr.moduleManager == null) return;
+        Parent module = Purr.moduleManager.getModuleByKey(e.getKey());
         if (module == null) return;
 
         module.toggle();

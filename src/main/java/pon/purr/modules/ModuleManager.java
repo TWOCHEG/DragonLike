@@ -12,16 +12,15 @@ public class ModuleManager {
         this.modules = List.of(modules);
 
         this.modules.forEach(m -> {
-            m.setModuleManager(this);
             Purr.EVENT_BUS.subscribe(m);
         });
     }
 
-    public Map<String, List<Parent>> getModules() {
-        Map<String, List<Parent>> grouped = new TreeMap<>();
+    public Map<Purr.Categories, List<Parent>> getModules() {
+        Map<Purr.Categories, List<Parent>> grouped = new TreeMap<>();
 
         modules.forEach(m -> {
-            String category = m.getCategory();
+            Purr.Categories category = m.getCategory();
             if (category != null) {
                 grouped
                 .computeIfAbsent(category, k -> new ArrayList<>())

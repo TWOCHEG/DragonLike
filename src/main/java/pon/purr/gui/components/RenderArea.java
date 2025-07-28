@@ -5,11 +5,15 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.utils.math.Hover;
 
+import java.util.LinkedList;
+
 public abstract class RenderArea {
     public int x = 0;
     public int y = 0;
     public int width = 0;
     public int height = 0;
+
+    public LinkedList<RenderArea> areas = new LinkedList<>();
 
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public final TextRenderer textRenderer = mc.textRenderer;
@@ -38,7 +42,23 @@ public abstract class RenderArea {
 
     public void animHandler() {}
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean areaMouseClicked(double mouseX, double mouseY, int button) {
+        for (RenderArea a : areas) {
+            if (checkHovered(a, mouseX, mouseY)) {
+                return a.areaMouseClicked(mouseX, mouseY, button);
+            }
+        }
+        return false;
+    }
+    public void mouseClicked(double mouseX, double mouseY, int button) {
+        for (RenderArea a : areas) {
+            a.mouseClicked(mouseX, mouseY, button);
+        }
+    }
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        for (RenderArea a : areas) {
+            if (a.keyPressed(keyCode, scanCode, modifiers)) return true;
+        }
         return false;
     }
 }

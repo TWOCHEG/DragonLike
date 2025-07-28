@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import meteordevelopment.orbit.EventHandler;
+import pon.purr.Purr;
 import pon.purr.events.impl.EventTick;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.*;
@@ -40,10 +41,16 @@ public class AutoResponser extends Parent {
     public Setting<Boolean> autoOutputMentions = new Setting<>("auto mentions output", true);
     public Setting<Integer> sendDelay = new Setting<>("send delay", 4, 1, 6);
     public Setting<Integer> maxTokens = new Setting<>("max tokens", 3000, 100, 10000);
-    public Group constants = new Group("constants");
-    public Setting<String> modelId = new Setting<>("model id", "meta-llama/llama-3.3-70b-instruct").addToGroup(constants);
-    public Setting<String> token = new Setting<>("token", "sk-...").addToGroup(constants);
-    public Setting<String> mentions = new Setting<>("mentions", "").addToGroup(constants);
+
+    public Setting<String> modelId = new Setting<>("model id", "meta-llama/llama-3.3-70b-instruct");
+    public Setting<String> token = new Setting<>("token", "sk-...");
+    public Setting<String> mentions = new Setting<>("mentions", "");
+    public Group constants = new Group(
+        "constants",
+        modelId,
+        token,
+        mentions
+    );
 
     private static final Map<String, Deque<JsonObject>> chatHistories = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -51,7 +58,7 @@ public class AutoResponser extends Parent {
     private boolean cancelTask = false;
 
     public AutoResponser() {
-        super("auto responser", "ui");
+        super("auto responser", Purr.Categories.ui);
         // обычные сообщения
         ClientReceiveMessageEvents.CHAT.register(
             (Text message, SignedMessage signedMsg, GameProfile sender, Parameters params, Instant timestamp) -> {

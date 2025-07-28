@@ -9,7 +9,7 @@ public class Setting<T> {
     private T value = null;
     public T min, max;
     private Parent module;
-    private Group group = null;
+    public Group group = null;
 
     private Predicate<T> visibility;
 
@@ -43,11 +43,6 @@ public class Setting<T> {
         this.value = (T) module.getValue(name, defaultValue);
     }
 
-    public Setting<T> addToGroup(Group group) {
-        this.group = group;
-        return this;
-    }
-
     public Setting<T> visibleIf(Predicate<T> visibility) {
         this.visibility = visibility;
         return this;
@@ -58,10 +53,6 @@ public class Setting<T> {
             return true;
 
         return visibility.test(getValue());
-    }
-
-    public Group getGroup() {
-        return group;
     }
 }
 

@@ -39,7 +39,7 @@ public class Notify extends Parent {
     }
 
     public Notify() {
-        super("notify", "ui");
+        super("notify", Purr.Categories.ui);
         enable = config.get("enable", true);
 
         HudRenderCallback.EVENT.register((context, tickDelta) -> {

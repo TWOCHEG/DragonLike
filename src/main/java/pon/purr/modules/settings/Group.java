@@ -1,27 +1,17 @@
 package pon.purr.modules.settings;
 
+import java.util.*;
+
 public class Group {
-    private boolean open;
-    private final String name;
+    public boolean open;
+    public final String name;
+    public LinkedList<Setting> settings = new LinkedList<>();
 
-    public Group(String name, boolean open) {
-        this.open = open;
+    public Group(String name, Setting... settings) {
         this.name = name;
-    }
-    public Group(String name) {
-        this.open = false;
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isOpen() {
-        return open;
-    }
-
-    public void setOpen(boolean open) {
-        this.open = open;
+        for (Setting s : settings) {
+            s.group = this;
+            this.settings.add(s);
+        }
     }
 }

@@ -1,6 +1,7 @@
 // пример модуля для создания
 package pon.purr.modules.example;
 
+import pon.purr.Purr;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.*;
 
@@ -15,17 +16,21 @@ public class Example extends Parent {
         "list",
         Arrays.asList("1", "2", "3") // первый элемент используется как стандартный
     );
-    public Group group = new Group("group/category");
-    public Header header2 = (Header) new Header("настойки типо").addToGroup(group);
+    public Header header2 = (Header) new Header("настойки типо");
     public ListSetting<String> list2 = (ListSetting<String>) new ListSetting<>(
-            "list",
-            Arrays.asList("1", "2", "3") // первый элемент используется как стандартный
-    ).addToGroup(group);
+        "list",
+        Arrays.asList("1", "2", "3") // первый элемент используется как стандартный
+    );
+    public Group group = new Group(
+        "group/category",
+        header2,
+        list2
+    );
 
     public Setting<Boolean> visible = new Setting<>("visible", false);
     public Header header3 = (Header) new Header("ты видишь меня").visibleIf(m -> visible.getValue());
 
     public Example() {
-        super("example", "example");
+        super("example", Purr.Categories.example);
     }
 }

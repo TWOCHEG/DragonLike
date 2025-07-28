@@ -1,5 +1,7 @@
 package pon.purr.modules;
 
+import pon.purr.Purr;
+import pon.purr.Purr.Categories;
 import pon.purr.config.ConfigManager;
 import pon.purr.modules.settings.Setting;
 import pon.purr.modules.ui.Notify;
@@ -10,14 +12,13 @@ import java.util.*;
 
 public abstract class Parent {
     private final String name;
-    private final String category;
+    private final Categories category;
     protected final ConfigManager config;
-    protected ModuleManager moduleManager = null;
     protected boolean enable;
     protected int keybindCode;
     protected MinecraftClient client = MinecraftClient.getInstance();
 
-    public Parent(String name, String category) {
+    public Parent(String name, Categories category) {
         this.name = name;
         this.config = new ConfigManager(name);
         this.enable = (boolean) getValue("enable", false);
@@ -35,7 +36,7 @@ public abstract class Parent {
         return name;
     }
 
-    public String getCategory() {
+    public Categories getCategory() {
         return category;
     }
 
@@ -124,13 +125,9 @@ public abstract class Parent {
         return config;
     }
 
-    public void setModuleManager(ModuleManager moduleManager) {
-        this.moduleManager = moduleManager;
-    }
-
     public void notify(Notify.NotifyData n) {
-        if (moduleManager != null) {
-            Parent notify = moduleManager.getModuleByClass(Notify.class);
+        if (Purr.moduleManager != null) {
+            Parent notify = Purr.moduleManager.getModuleByClass(Notify.class);
             if (notify instanceof Notify no)  {
                 no.add(n);
             }
@@ -138,8 +135,8 @@ public abstract class Parent {
     }
 
     public int getNotifyLiveTime() {
-        if (moduleManager != null) {
-            Parent notify = moduleManager.getModuleByClass(Notify.class);
+        if (Purr.moduleManager != null) {
+            Parent notify = Purr.moduleManager.getModuleByClass(Notify.class);
             if (notify instanceof Notify no)  {
                 return no.liveTimeSet.getValue();
             }

@@ -1,6 +1,7 @@
 package pon.purr.modules.world;
 
 import com.mojang.authlib.GameProfile;
+import pon.purr.Purr;
 import pon.purr.events.impl.EventMove;
 import pon.purr.modules.Parent;
 
@@ -29,7 +30,7 @@ public class FakePlayer extends Parent {
     private final Setting<Float> moveSpeed = new Setting<>("move speed", 3f, 0.1f, 6f).visibleIf(m -> move.getValue());
 
     public FakePlayer() {
-        super("fake player", "world");
+        super("fake player", Purr.Categories.world);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
