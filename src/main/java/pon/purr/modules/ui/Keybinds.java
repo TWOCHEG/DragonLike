@@ -1,6 +1,7 @@
 package pon.purr.modules.ui;
 
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.gui.screen.TitleScreen;
 import pon.purr.Purr;
 import pon.purr.config.ConfigManager;
 import pon.purr.events.impl.EventKeyPress;
@@ -19,6 +20,11 @@ public class Keybinds extends Parent {
 
     @EventHandler
     private void keyPress(EventKeyPress e) {
+        if (
+            mc.currentScreen != null &&
+            !(mc.currentScreen instanceof TitleScreen) &&
+            e.getKey() != Purr.moduleManager.getModuleByClass(Gui.class).getKeybind()
+        ) return;
         if (Purr.moduleManager == null) return;
         Parent module = Purr.moduleManager.getModuleByKey(e.getKey());
         if (module == null) return;

@@ -55,10 +55,6 @@ public class Nuker extends Parent {
         20,
         0, 1000
     );
-    private ListSetting<String> rotate = new ListSetting<>(
-        "rotate",
-        Arrays.asList("not normal", "normal", "packet")
-    );
     private BlockSelected targetBlocks = new BlockSelected(this);
 
     private BlockPos miningTarget = null;
@@ -75,15 +71,15 @@ public class Nuker extends Parent {
         super("nuker", Purr.Categories.world);
 
         WorldRenderEvents.START.register(context -> {
-            if (client.player != null && enable && client.world != null) {
+            if (mc.player != null && enable && mc.world != null) {
                 boolean isPlayerMining = (
                     net.fabricmc.api.EnvType.CLIENT == null ?
                         false :
-                        org.lwjgl.glfw.GLFW.glfwGetMouseButton(client.getWindow().getHandle(), client.options.attackKey.getDefaultKey().getCode()) == org.lwjgl.glfw.GLFW.GLFW_PRESS
+                        org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().getHandle(), mc.options.attackKey.getDefaultKey().getCode()) == org.lwjgl.glfw.GLFW.GLFW_PRESS
                 );
                 boolean move = false;
                 if (movePause.getValue()) {
-                    Vec3d speed = client.player.getVelocity();
+                    Vec3d speed = mc.player.getVelocity();
                     move = (speed.x > 0.0f || speed.z > 0.0f || speed.y > 0.0f);
                 }
 
@@ -93,7 +89,7 @@ public class Nuker extends Parent {
             }
         });
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            if (miningTarget != null && miningHit != null && enable && client.player != null && client.world != null) {
+            if (miningTarget != null && miningHit != null && enable && mc.player != null && mc.world != null) {
                 BlockHighlight.renderHighlight(context, miningTarget, 1.0f, 1.0f, 1.0f, anim / 100);
             }
         });
@@ -108,11 +104,11 @@ public class Nuker extends Parent {
             animReverse = false;
         }
 
-        if (client.player == null || client.world == null) return;
+        if (mc.player == null || mc.world == null) return;
 
         if (miningTarget != null && miningHit != null) {
-            ClientPlayerEntity player = client.player;
-            BlockState state = client.world.getBlockState(miningTarget);
+            ClientPlayerEntity player = mc.player;
+            BlockState state = mc.world.getBlockState(miningTarget);
             if (state.isAir() || !canReach(miningTarget)) {
                 abortMining();
                 return;
@@ -137,7 +133,7 @@ public class Nuker extends Parent {
 
                 // Начало разрушения
                 look(miningTarget);
-                client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
+                mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
                         PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, miningTarget, miningHit.getSide()
                 ));
                 return;
@@ -150,14 +146,14 @@ public class Nuker extends Parent {
                     miningStage = 2;
                 } else {
                     float progress = (float) elapsed / miningTime;
-                    client.interactionManager.updateBlockBreakingProgress(miningTarget, miningHit.getSide());
+                    mc.interactionManager.updateBlockBreakingProgress(miningTarget, miningHit.getSide());
                     return;
                 }
             }
 
             // Завершение разрушения
             if (miningStage == 2) {
-                client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
+                mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
                         PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, miningTarget, miningHit.getSide()
                 ));
                 player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
@@ -167,8 +163,8 @@ public class Nuker extends Parent {
     }
 
     private void process() {
-        if (client.player == null || client.world == null) return;
-        ClientPlayerEntity player = client.player;
+        if (mc.player == null || mc.world == null) return;
+        ClientPlayerEntity player = mc.player;
 
         if (miningTarget != null) return;
 
@@ -202,7 +198,7 @@ public class Nuker extends Parent {
                     double distSq = player.getPos().squaredDistanceTo(centerX, centerY, centerZ);
                     if (distSq > breakRange.getValue() * breakRange.getValue()) continue;
 
-                    BlockState state = client.world.getBlockState(pos);
+                    BlockState state = mc.world.getBlockState(pos);
                     if (state.isAir()) continue;
                     FluidState fluid = state.getFluidState();
                     if (!fluid.isEmpty()) continue;
@@ -218,7 +214,7 @@ public class Nuker extends Parent {
                         bestDistSq = distSq;
                         bestPos = pos;
                         Vec3d targetCenter = new Vec3d(centerX, centerY, centerZ);
-                        bestHit = client.world.raycast(new RaycastContext(
+                        bestHit = mc.world.raycast(new RaycastContext(
                                 eyePos,
                                 targetCenter,
                                 RaycastContext.ShapeType.OUTLINE,
@@ -238,7 +234,7 @@ public class Nuker extends Parent {
     }
 
     private boolean canReach(BlockPos pos) {
-        ClientPlayerEntity player = client.player;
+        ClientPlayerEntity player = mc.player;
         Vec3d eyePos = player.getCameraPosVec(1.0f);
 
         double effectiveRange = breakRange.getValue();
@@ -252,7 +248,7 @@ public class Nuker extends Parent {
         }
 
         Vec3d targetCenter = new Vec3d(centerX, centerY, centerZ);
-        BlockHitResult ray = client.world.raycast(new RaycastContext(
+        BlockHitResult ray = mc.world.raycast(new RaycastContext(
             eyePos,
             targetCenter,
             RaycastContext.ShapeType.OUTLINE,
@@ -263,7 +259,7 @@ public class Nuker extends Parent {
         return (
             ray.getType() == HitResult.Type.BLOCK &&
             ray.getBlockPos().equals(pos) &&
-            client.world.getBlockState(pos).getBlock().getHardness() != -1
+            mc.world.getBlockState(pos).getBlock().getHardness() != -1
         );
     }
 
@@ -271,13 +267,13 @@ public class Nuker extends Parent {
         if (avoidLava.getValue()) {
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = pos.offset(dir);
-                BlockState neighborState = client.world.getBlockState(neighborPos);
+                BlockState neighborState = mc.world.getBlockState(neighborPos);
                 if (neighborState.isOf(Blocks.LAVA) || neighborState.isOf(Blocks.LAVA_CAULDRON)) {
                     return true;
                 }
                 if (avoidGravel.getValue() && dir.equals(Direction.UP)) {
                     neighborPos = pos.offset(dir);
-                    neighborState = client.world.getBlockState(neighborPos);
+                    neighborState = mc.world.getBlockState(neighborPos);
                     if (neighborState.isOf(Blocks.GRAVEL)) {
                         return true;
                     }
@@ -288,9 +284,9 @@ public class Nuker extends Parent {
     }
 
     private void look(BlockPos pos) {
-        if (client.player == null || client.getNetworkHandler() == null) return;
+        if (mc.player == null || mc.getNetworkHandler() == null) return;
 
-        Vec3d eyesPos = client.player.getCameraPosVec(1.0f);
+        Vec3d eyesPos = mc.player.getCameraPosVec(1.0f);
         Vec3d target = pos.toCenterPos();
         Vec3d diff = target.subtract(eyesPos);
 
@@ -302,25 +298,19 @@ public class Nuker extends Parent {
         float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
         float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
 
-        float currentYaw = client.player.getYaw();
-        float currentPitch = client.player.getPitch();
+        float currentYaw = mc.player.getYaw();
+        float currentPitch = mc.player.getPitch();
 
         yaw = currentYaw + MathHelper.wrapDegrees(yaw - currentYaw) * 0.4f;
         pitch = currentPitch + (pitch - currentPitch) * 0.4f;
         pitch = MathHelper.clamp(pitch, -90, 90);
 
-        if (rotate.getValue().equals("not normal")) {
-            Rotations.rotate(yaw, pitch);
-        } else if (rotate.getValue().equals("normal")) {
-            Rotations.normalRotate(yaw, pitch);
-        } else {
-            Rotations.packetRotate(yaw, pitch);
-        }
+        Rotations.rotate(yaw, pitch);
     }
 
     private void abortMining() {
         if (miningTarget != null && miningHit != null) {
-            client.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
+            mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
                 PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK,
                 miningTarget,
                 miningHit.getSide()

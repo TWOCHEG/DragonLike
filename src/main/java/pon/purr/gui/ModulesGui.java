@@ -4,8 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
-import pon.purr.gui.components.Category;
-import pon.purr.gui.components.RenderArea;
+import pon.purr.gui.components.*;
 import pon.purr.modules.ui.Gui;
 import pon.purr.utils.GetAnimDiff;
 import pon.purr.utils.RGB;
@@ -18,29 +17,37 @@ public class ModulesGui extends Screen {
     private final Gui guiModule;
     private final Screen previous;
 
-    private int moveDiff = 5;
+    private boolean mouseDown = false;
+    private int mouseDownCounter = 0;
+    private float mouseDownPercent = 0f;
+    private boolean mouseUp = false;
+    private int mouseUpCounter = 0;
+    private float mouseUpPercent = 0f;
+
     private float upPercent = 0f;
-    private int upCounter = 0;
-    private boolean upMove = false;
     private float downPercent = 0f;
-    private int downCounter = 0;
-    private boolean downMove = false;
     private float leftPercent = 0f;
     private float rightPercent = 0f;
 
     private boolean open = true;
-    private float openPercent = 0f;
+    public float openPercent = 0f;
 
     private final int categoryWidth = 130;
     private final int categoryPadding = 20;
     private float startY = 40;
     private float startX = 0;
-    private final int categoriesShow = 200;
+    private final int categoriesShow;
+
+    private final Hints hints = new Hints(
+        "RIGHT SHIFT - show keybinds\nMOUSE MIDDLE - bind module\n ⬅ ⬆ ⬇ ⮕ - move gui",
+        this
+    );
 
     public ModulesGui(Screen previous, Gui guiModule) {
         super(Text.literal("ModulesGui"));
         this.guiModule = guiModule;
         this.previous = previous;
+        this.categoriesShow = 100 * guiModule.categories.size();
     }
     public void closeGui() {
         open = false;
@@ -52,7 +59,6 @@ public class ModulesGui extends Screen {
         frameCounter++;
 
         animHandler();
-
         if (previous != null) previous.render(context, mouseX, mouseY, delta);
 
         LinkedList<Category> categories = guiModule.categories;
@@ -69,7 +75,7 @@ public class ModulesGui extends Screen {
         int closeCount = 0;
         for (int i = 0; i < categories.size(); i++) {
             Category c = categories.get(i);
-            if (frameCounter > ((categoriesShow / GetAnimDiff.get()) / categories.size() * i)) {
+            if (frameCounter > (categoriesShow / GetAnimDiff.get100X() / categories.size()) * i) {
                 c.visibleReverse = !open;
             }
 
@@ -79,9 +85,11 @@ public class ModulesGui extends Screen {
 
             startX += categoryWidth + categoryPadding;
         }
+
         if (closeCount == categories.size() && !open) {
             client.setScreen(null);
         }
+        hints.render(context, 5,  context.getScaledWindowHeight() - 5, 0, 0, mouseX, mouseY);
     }
 
     @Override
@@ -97,45 +105,66 @@ public class ModulesGui extends Screen {
     }
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (scrollY > 0) {
-            downMove = true;
-            downCounter = frameCounter;
+        if (scrollY < 0) {
+            mouseUp = true;
+            mouseUpCounter = frameCounter;
         } else {
-            upMove = true;
-            upCounter = frameCounter;
+            mouseDown = true;
+            mouseDownCounter = frameCounter;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private void animHandler() {
-        openPercent = AnimHelper.handleAnimValue(!open, openPercent * 100) / 100;
+        openPercent = AnimHelper.handleAnimValue(!open, openPercent);
 
-        if (downMove && frameCounter > downCounter + 10) {
-            downMove = false;
+        float moveDiff = GetAnimDiff.get() * 10;
+        float moveAnimDiff = GetAnimDiff.get() * 10;
+        float mouseDiff = GetAnimDiff.get() * 10;
+        float mouseAnimDiff = GetAnimDiff.get() * 10;
+
+        if (frameCounter > mouseUpCounter + GetAnimDiff.get100X() / 3 && mouseUp) {
+            mouseUp = false;
         }
-        if (upMove && frameCounter > upCounter + 10) {
-            upMove = false;
+        if (frameCounter > mouseDownCounter + GetAnimDiff.get100X() / 3 && mouseDown) {
+            mouseDown = false;
         }
+        mouseDownPercent = AnimHelper.handleAnimValue(
+            !mouseDown,
+            mouseDownPercent,
+            mouseAnimDiff
+        );
+        startY += mouseDiff * mouseDownPercent;
+        mouseUpPercent = AnimHelper.handleAnimValue(
+            !mouseUp,
+            mouseUpPercent,
+            mouseAnimDiff
+        );
+        startY -= mouseDiff * mouseUpPercent;
 
         upPercent = AnimHelper.handleAnimValue(
-            !(GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS || downMove),
-            upPercent * 100
-        ) / 100;
+            !(GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS),
+            upPercent,
+            moveAnimDiff
+        );
         startY -= moveDiff * upPercent;
         downPercent = AnimHelper.handleAnimValue(
-            !(GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS || upMove),
-            downPercent * 100
-        ) / 100;
+            !(GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS),
+            downPercent,
+            moveAnimDiff
+        );
         startY += moveDiff * downPercent;
         leftPercent = AnimHelper.handleAnimValue(
             GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_RELEASE,
-            leftPercent * 100
-        ) / 100;
+            leftPercent,
+            moveAnimDiff
+        );
         startX -= moveDiff * leftPercent;
         rightPercent = AnimHelper.handleAnimValue(
             GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_RELEASE,
-            rightPercent * 100
-        ) / 100;
+            rightPercent,
+            moveAnimDiff
+        );
         startX += moveDiff * rightPercent;
     }
 
@@ -147,11 +176,9 @@ public class ModulesGui extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (Category c : guiModule.categories) {
-            c.mouseClicked(mouseX, mouseY, button);
-            if (RenderArea.checkHovered(c, mouseX, mouseY)) {
-                return c.areaMouseClicked(mouseX, mouseY, button);
-            }
+            if (c.mouseClicked(mouseX, mouseY, button)) return true;
         }
+        if (hints.mouseClicked(mouseX, mouseY, button)) return true;
         return false;
     }
 }

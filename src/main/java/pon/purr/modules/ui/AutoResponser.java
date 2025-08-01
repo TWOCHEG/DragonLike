@@ -89,8 +89,8 @@ public class AutoResponser extends Parent {
 
     @EventHandler
     private void onTick(EventTick e) {
-        if (client.player == null || scheduledTask == null || scheduledTask.isDone()) return;
-        if (client.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen || !enable) {
+        if (mc.player == null || scheduledTask == null || scheduledTask.isDone()) return;
+        if (mc.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen || !enable) {
             cancelTask = true;
             scheduledTask.cancel(false);
             resetFlags();

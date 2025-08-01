@@ -16,7 +16,7 @@ public abstract class Parent {
     protected final ConfigManager config;
     protected boolean enable;
     protected int keybindCode;
-    protected MinecraftClient client = MinecraftClient.getInstance();
+    public static MinecraftClient mc = MinecraftClient.getInstance();
 
     public Parent(String name, Categories category) {
         this.name = name;
@@ -142,5 +142,9 @@ public abstract class Parent {
             }
         }
         return 50;
+    }
+
+    public static boolean fullNullCheck() {
+        return mc.player == null || mc.world == null;
     }
 }

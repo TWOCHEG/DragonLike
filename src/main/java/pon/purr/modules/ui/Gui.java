@@ -62,7 +62,7 @@ public class Gui extends Parent {
 
     @Override
     public void onEnable() {
-        if (client.currentScreen instanceof TitleScreen || client.currentScreen == null) {
+        if (mc.currentScreen instanceof TitleScreen || mc.currentScreen == null) {
             if (categories == null) {
                 Map<Purr.Categories, List<Parent>> modules = Purr.moduleManager.getModules();
                 categories = new LinkedList<>();
@@ -71,13 +71,13 @@ public class Gui extends Parent {
                     categories.add(new Category(moduleList, entry.getKey()));
                 }
             }
-            client.setScreen(new ModulesGui(client.currentScreen, this));
+            mc.setScreen(new ModulesGui(mc.currentScreen, this));
         }
     }
 
     @Override
     public void onDisable() {
-        if (client.currentScreen instanceof ModulesGui modulesGui) {
+        if (mc.currentScreen instanceof ModulesGui modulesGui) {
             modulesGui.closeGui();
         }
     }
@@ -118,7 +118,7 @@ public class Gui extends Parent {
 
         nativeImage.close();
 
-        float screenMin = Math.min(client.getWindow().getWidth(), client.getWindow().getHeight());
+        float screenMin = Math.min(mc.getWindow().getWidth(), mc.getWindow().getHeight());
         float fixedSize = screenMin * imgSize.getValue();
 
         float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
@@ -128,7 +128,7 @@ public class Gui extends Parent {
     }
 
     public List<Float> getImageSize(Identifier texture) {
-        if (imageWidth == 0f && imageHeight == 0f) {
+        if (imageWidth == 0 && imageHeight == 0) {
             updateImageSize(texture);
         }
         return new ArrayList<>(List.of(imageWidth, imageHeight));

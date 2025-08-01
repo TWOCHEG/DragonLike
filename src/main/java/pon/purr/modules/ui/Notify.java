@@ -50,7 +50,7 @@ public class Notify extends Parent {
     }
 
     private void renderImportant(DrawContext context) {
-        TextRenderer textRenderer = client.textRenderer;
+        TextRenderer textRenderer = mc.textRenderer;
 
         float y = 10;
 
@@ -77,7 +77,7 @@ public class Notify extends Parent {
         }
     }
     private void renderSystem(DrawContext context) {
-        TextRenderer textRenderer = client.textRenderer;
+        TextRenderer textRenderer = mc.textRenderer;
         float y = context.getScaledWindowHeight() - 5 - textRenderer.fontHeight;
         int padding = 2;
         int textPadding = 5;
@@ -117,7 +117,7 @@ public class Notify extends Parent {
         }
     }
     private void renderModule(DrawContext context) {
-        TextRenderer textRenderer = client.textRenderer;
+        TextRenderer textRenderer = mc.textRenderer;
         float y = (context.getScaledWindowHeight() / 2f) + 10;
         int padding = 2;
 

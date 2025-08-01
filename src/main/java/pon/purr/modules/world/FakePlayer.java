@@ -41,6 +41,7 @@ public class FakePlayer extends Parent {
             updateLook();
         }
         if (move.getValue()) {
+            System.out.println("двигатся включено");
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastMoveTime >= (long)(moveSpeed.getValue() * 1000f)) {
                 randomMove();

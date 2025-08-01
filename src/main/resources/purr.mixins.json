@@ -6,7 +6,8 @@
     "MixinMinecraftClient",
     "MixinKeyboard",
     "MixinKeyboardInput",
-    "MixinCamera"
+    "MixinCamera",
+    "MixinClientPlayerEntity"
   ],
   "injectors": {
     "defaultRequire": 1

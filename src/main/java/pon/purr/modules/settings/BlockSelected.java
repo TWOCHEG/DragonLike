@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 
 import java.util.*;
 
-public class BlockSelected{
+public class BlockSelected {
     private ConfigManager config;
     private String moduleName;
     private String key;

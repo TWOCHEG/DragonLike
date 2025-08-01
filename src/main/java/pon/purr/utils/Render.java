@@ -70,35 +70,51 @@ public class Render {
         }
     }
 
-    public static void fill1(
-        DrawContext context,
-        int x1, int y1, int x2, int y2, int c,
-        int s
-    ) {
-        fill1(
-            context,
-            x1, y1, x2, y2, c,
-            s,
-            CurveType.linear
-        );
-    }
-    public static void fill1(
+    public static void fillPart(
         DrawContext context,
         int x1, int y1, int x2, int y2, int c,
         int s,
+        boolean up
+    ) {
+        fillPart(
+            context,
+            x1, y1, x2, y2, c,
+            s,
+            up,
+            CurveType.linear
+        );
+    }
+    public static void fillPart(
+        DrawContext context,
+        int x1, int y1, int x2, int y2, int c,
+        int s,
+        boolean up,
         CurveType t
     ) {
         int radius = y2 - y1;
         int stepSize = radius / s;
-        for (int i = 0; i < s; i++) {
-            int offset = t.getValue(i, y2 - y1, s);
-            context.fill(
-                x1 + offset,
-                (y1 + radius) - offset,
-                x2 - offset,
-                (y1 + radius) - (offset + stepSize),
-                c
-            );
+        if (up) {
+            for (int i = 0; i < s; i++) {
+                int offset = t.getValue(i, radius, s);
+                context.fill(
+                    x1 + offset,
+                    (y1 + radius) - offset,
+                    x2 - offset,
+                    (y1 + radius) - (offset + stepSize),
+                    c
+                );
+            }
+        } else {
+            for (int i = 0; i < s; i++) {
+                int offset = t.getValue(i, radius, s);
+                context.fill(
+                    x1 + offset,
+                    (y2 - radius) + offset,
+                    x2 - offset,
+                    (y2 - radius) + (offset + stepSize),
+                    c
+                );
+            }
         }
     }
 }

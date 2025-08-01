@@ -3,6 +3,7 @@ package pon.purr.gui.components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import pon.purr.utils.RGB;
 import pon.purr.utils.math.Hover;
 
 import java.util.LinkedList;
@@ -29,6 +30,16 @@ public abstract class RenderArea {
         this.animHandler();
     }
 
+    public void lightArea(DrawContext context) {
+        context.fill(
+            x,
+            y,
+            x + width,
+            y + height,
+            RGB.getColor(255, 0, 0, 100)
+        );
+    }
+
     public boolean checkHovered(double mouseX, double mouseY) {
         return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
     }
@@ -42,18 +53,11 @@ public abstract class RenderArea {
 
     public void animHandler() {}
 
-    public boolean areaMouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (RenderArea a : areas) {
-            if (checkHovered(a, mouseX, mouseY)) {
-                return a.areaMouseClicked(mouseX, mouseY, button);
-            }
+            if (a.mouseClicked(mouseX, mouseY, button)) return true;
         }
         return false;
-    }
-    public void mouseClicked(double mouseX, double mouseY, int button) {
-        for (RenderArea a : areas) {
-            a.mouseClicked(mouseX, mouseY, button);
-        }
     }
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         for (RenderArea a : areas) {

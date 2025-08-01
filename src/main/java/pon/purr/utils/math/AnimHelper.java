@@ -20,16 +20,15 @@ public class AnimHelper {
         Linear;
 
         public float getDiff(float percent, float diff) {
-            percent = Math.max(percent, 1);
             if (this.equals(EaseIn)) {
-                return diff * percent / 100;
+                return diff * percent;
             } else if (this.equals(EaseOut)) {
-                return diff * (100 - percent) / 100;
+                return diff * (1 - percent);
             } else if (this.equals(EaseInOut)) {
-                if (percent < 50f) {
-                    return diff * percent / 100;
+                if (percent < 0.5f) {
+                    return diff * percent;
                 } else {
-                    return diff * (100 - percent) / 100;
+                    return diff * (1 - percent);
                 }
             } else {
                 return diff;
@@ -38,65 +37,24 @@ public class AnimHelper {
     }
 
     public static float handleAnimValue(boolean reverse, float percent, float diff, AnimMode mode) {
-        if (percent == 100f && !reverse) return 100f;
-        if (percent == 0f && reverse) return 0f;
-
-        if (Purr.moduleManager != null) {
-            Gui guiModule = (Gui) Purr.moduleManager.getModuleByClass(Gui.class);
-            if (guiModule != null && !guiModule.animEnable.getValue()) {
-                return reverse ? 0f : 100f;
-            }
-        }
-
+        if (percent == 1 && !reverse) return 1;
+        if (percent == 0 && reverse) return 0;
         float finalDiff = diff;
         if (mode != null) {
-            finalDiff = Math.max(mode.getDiff(percent, diff), 1);
+            finalDiff = Math.max(mode.getDiff(percent, finalDiff), 0.01f);
         }
 
         percent = reverse ? percent - finalDiff : percent + finalDiff;
-
-        return Math.clamp(percent, 0f, 100f);
+        return Math.clamp(percent, 0, 1);
+    }
+    public static float handleAnimValue(boolean reverse, float percent, float diff) {
+        return handleAnimValue(reverse, percent, diff, AnimMode.EaseInOut);
     }
     public static float handleAnimValue(boolean reverse, float percent, AnimMode mode) {
         return handleAnimValue(reverse, percent, GetAnimDiff.get(), mode);
     }
     public static float handleAnimValue(boolean reverse, float percent) {
         return handleAnimValue(reverse, percent, GetAnimDiff.get(), AnimMode.EaseInOut);
-    }
-
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, float diff, AnimMode mode, Boolean delete) {
-        if (!animMap.isEmpty()) {
-            Iterator<K> it = animMap.keySet().iterator();
-            while (it.hasNext()) {
-                K key = it.next();
-                float percent = animMap.get(key);
-                boolean reverse = reverseMap.getOrDefault(key, false);
-
-                float newPercent = handleAnimValue(reverse, percent, diff, mode);
-                if (newPercent == percent) continue;
-                animMap.put(key, newPercent);
-
-                if ((reverse && newPercent <= 1) && delete) {
-                    it.remove();
-                    reverseMap.remove(key);
-                }
-            }
-        }
-    }
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, float diff, AnimMode mode) {
-        handleMapAnim(animMap, reverseMap, diff, mode, true);
-    }
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, float diff) {
-        handleMapAnim(animMap, reverseMap, diff, AnimMode.EaseInOut, true);
-    }
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, AnimMode mode) {
-        handleMapAnim(animMap, reverseMap, GetAnimDiff.get(), mode, true);
-    }
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap) {
-        handleMapAnim(animMap, reverseMap, AnimMode.EaseInOut);
-    }
-    public static <K> void handleMapAnim(Map<K, Float> animMap, Map<K, Boolean> reverseMap, Boolean delete) {
-        handleMapAnim(animMap, reverseMap, GetAnimDiff.get(), AnimMode.EaseInOut, delete);
     }
 
     public static String getAnimText(String startText, String endText, float percent) {

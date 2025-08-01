@@ -1,7 +1,6 @@
 package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
-import org.lwjgl.glfw.GLFW;
 import pon.purr.Purr;
 import pon.purr.modules.Parent;
 import pon.purr.utils.RGB;
@@ -36,7 +35,6 @@ public class Category extends RenderArea {
         int modulesStartY = startY + 26;
         int modulePadding = 2;
 
-        context.drawHorizontalLine(startX + 20, startX + width - 20, (modulesStartY - 5), RGB.getColor(255, 255, 255, 180 * visiblePercent));
         // моджанги дети шлюх le le le le нахуй надо было убирать слои
         for (RenderArea m : areas) {
             height += m.height + modulePadding;
@@ -57,14 +55,14 @@ public class Category extends RenderArea {
             width / 20,
             3
         );
-        Render.fill1(
+        Render.fillPart(
             context,
             startX,
             startY,
             startX + width,
             startY + radius,
             RGB.getColor(0, 0, 0, 50 * visiblePercent),
-            3
+            3, true
         );
         context.fillGradient(
             startX,
@@ -86,13 +84,15 @@ public class Category extends RenderArea {
             width / 30,
             3
         );
-        context.drawCenteredTextWithShadow(
+        context.drawText(
             textRenderer,
             name.name(),
-            startX + (width / 2),
+            startX + (width / 2 - textRenderer.getWidth(name.name()) / 2),
             nameStartY,
-            RGB.getColor(255, 255, 255, 180 * visiblePercent)
+            RGB.getColor(255, 255, 255, 180 * visiblePercent),
+            false
         );
+        context.drawHorizontalLine(startX + nameContainerPadding + 12, startX + width - 20, (modulesStartY - 5), RGB.getColor(255, 255, 255, 50 * visiblePercent));
 
         for (RenderArea m : areas) {
             m.render(context, startX + modulePadding * 2, modulesStartY, width - (modulePadding * 4), 0, mouseX, mouseY);
@@ -104,11 +104,7 @@ public class Category extends RenderArea {
 
     @Override
     public void animHandler() {
-        hoverPercent = AnimHelper.handleAnimValue(!hovered, hoverPercent * 100) / 100;
-        visiblePercent = AnimHelper.handleAnimValue(
-            visibleReverse,
-            visiblePercent * 100,
-            AnimHelper.AnimMode.EaseOut
-        ) / 100;
+        hoverPercent = AnimHelper.handleAnimValue(!hovered, hoverPercent);
+        visiblePercent = AnimHelper.handleAnimValue(visibleReverse, visiblePercent, AnimHelper.AnimMode.EaseOut);
     }
 }

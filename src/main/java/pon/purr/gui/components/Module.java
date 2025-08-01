@@ -1,10 +1,9 @@
 package pon.purr.gui.components;
 
-import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
-import pon.purr.events.impl.EventKeyPress;
 import pon.purr.modules.Parent;
+import pon.purr.modules.settings.Setting;
 import pon.purr.utils.KeyName;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
@@ -14,7 +13,7 @@ import java.util.List;
 
 public class Module extends RenderArea {
     private final Parent module;
-    private final Category category;
+    public final Category category;
 
     private int textPadding = 2;
 
@@ -25,9 +24,14 @@ public class Module extends RenderArea {
 
     private float enablePercent = 0f;
 
+    public float openPercent = 0f;
+    private boolean open = false;
+
     private boolean binding = false;
     private float bindingPercent = 0f;
     private int pressKey = -1;
+
+    private final int settingsPadding = 5;
 
     private List<Integer> cancelButtons = List.of(
         GLFW.GLFW_KEY_ESCAPE,
@@ -38,24 +42,66 @@ public class Module extends RenderArea {
         super();
         this.module = module;
         this.category = category;
+
+        for (Setting set : module.getSettings()) {
+            if (set.getValue() instanceof Boolean) {
+                areas.add(new BooleanSet(set, this));
+            }
+        }
     }
 
     @Override
     public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
         hovered = checkHovered(mouseX, mouseY);
+        int r = width / 30;
+        int settingsHeight = 0;
+        for (RenderArea area : areas) {
+            settingsHeight += area.height + settingsPadding;
+        }
+        height = (int) (textRenderer.fontHeight + (textPadding * 2) + (settingsHeight * openPercent));
 
-        int c = (int) (50 + (50 * enablePercent));
+        int c = (int) (50 + ((50 * enablePercent) * (1 - openPercent)));
 
-        Render.fill(
-            context,
-            startX,
-            startY,
-            startX + width,
-            startY + textRenderer.fontHeight + (textPadding * 2),
-            RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
-            width / 30,
-            2
-        );
+        if (openPercent > 0) {
+            Render.fillPart(
+                context,
+                startX,
+                startY,
+                startX + width,
+                startY + r,
+                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
+                2,
+                true
+            );
+            context.fill(
+                startX,
+                startY + r,
+                startX + width,
+                startY + height - r,
+                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent)
+            );
+            Render.fillPart(
+                context,
+                startX,
+                startY + height - r,
+                startX + width,
+                startY + height,
+                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
+                2,
+                false
+            );
+        } else {
+            Render.fill(
+                context,
+                startX,
+                startY,
+                startX + width,
+                startY + textRenderer.fontHeight + (textPadding * 2),
+                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
+                r,
+                2
+            );
+        }
         String name;
         if (bindingPercent > 0) {
             name = AnimHelper.getAnimText(module.getName(), pressKey == -1 ? "..." : KeyName.get(pressKey), bindingPercent);
@@ -66,12 +112,13 @@ public class Module extends RenderArea {
         }
         if (bindingPercent == 0 && pressKey != -1) pressKey = -1;
 
-        context.drawCenteredTextWithShadow(
+        context.drawText(
             textRenderer,
             name,
-            startX + width / 2,
+            startX + (width / 2 - textRenderer.getWidth(name) / 2),
             startY + textPadding,
-            RGB.getColor(255, 255, 255, 200 * category.visiblePercent)
+            RGB.getColor(255, 255, 255, 200 * category.visiblePercent),
+            false
         );
         if (enablePercent > 0) {
             context.drawHorizontalLine(
@@ -81,47 +128,63 @@ public class Module extends RenderArea {
                 RGB.getColor(255, 255, 255, 200 * category.visiblePercent * enablePercent)
             );
         }
-        height = textRenderer.fontHeight + (textPadding * 2);
+
+        int settingsStartY = startY + textRenderer.fontHeight + textPadding + settingsPadding;
+        if (openPercent != 0) {
+            for (RenderArea area : areas) {
+                area.render(
+                    context,
+                    startX + 2,
+                    settingsStartY,
+                    width - 4,
+                    0,
+                    mouseX, mouseY
+                );
+                settingsStartY += area.height + settingsPadding;
+            }
+        }
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);
     }
 
     @Override
     public void animHandler() {
-        hoverPercent = AnimHelper.handleAnimValue(!hovered, hoverPercent * 100) / 100;
+        hoverPercent = AnimHelper.handleAnimValue(!hovered, hoverPercent);
         showKeysPercent = AnimHelper.handleAnimValue(
             GLFW.glfwGetKey(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) != GLFW.GLFW_PRESS,
-            showKeysPercent * 100
-        ) / 100;
+            showKeysPercent
+        );
         enablePercent = AnimHelper.handleAnimValue(
             !module.getEnable(),
-            enablePercent * 100
-        ) / 100;
+            enablePercent
+        );
         bindingPercent = AnimHelper.handleAnimValue(
             !binding,
-            bindingPercent * 100
-        ) / 100;
+            bindingPercent
+        );
+        openPercent = AnimHelper.handleAnimValue(
+            !open,
+            openPercent
+        );
     }
 
     @Override
-    public boolean areaMouseClicked(double mouseX, double mouseY, int button) {
-        if (y + (textRenderer.fontHeight + textPadding * 2) > mouseY) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (binding) {
+            binding = false;
+        }
+        if (checkHovered(x, y, width, textRenderer.fontHeight + textPadding * 2, mouseX, mouseY)) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                 module.toggle();
             } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
                 pressKey = -1;
                 binding = true;
+            } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && !areas.isEmpty()) {
+                open = !open;
             }
             return true;
         }
-        return false;
-    }
-
-    @Override
-    public void mouseClicked(double mouseX, double mouseY, int button) {
-        if (binding) {
-            binding = false;
-        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
