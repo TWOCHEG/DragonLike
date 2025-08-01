@@ -47,7 +47,7 @@ public class ModulesGui extends Screen {
         super(Text.literal("ModulesGui"));
         this.guiModule = guiModule;
         this.previous = previous;
-        this.categoriesShow = 100 * guiModule.categories.size();
+        this.categoriesShow = 130 * guiModule.categories.size();
     }
     public void closeGui() {
         open = false;

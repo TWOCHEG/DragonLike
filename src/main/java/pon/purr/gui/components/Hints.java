@@ -30,7 +30,7 @@ public class Hints extends RenderArea {
 
     @Override
     public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
-        int alpha = (int) (200 * gui.openPercent);
+        int textAlpha = (int) (200 * gui.openPercent);
 
         String longestText;
         longestText = hints.get(0);
@@ -49,13 +49,15 @@ public class Hints extends RenderArea {
         width = (int) (closeWidth + (openWidth - closeWidth) * openPercent);
         height = (int) (closeHeight + (openHeight - closeHeight) * openPercent);
 
+        open = checkHovered(mouseX, mouseY);
+
         Render.fill(
             context,
             startX,
             startY - height,
             startX + width,
             startY,
-            RGB.getColor(0, 0, 0, 150 * gui.openPercent),
+            RGB.getColor(0, 0, 0, 100 * gui.openPercent),
             2,
             2
         );
@@ -64,7 +66,7 @@ public class Hints extends RenderArea {
             closeText,
             startX + textPadding,
             startY - (textRenderer.fontHeight + textPadding),
-            RGB.getColor(255, 255, 255, alpha * (1 - openPercent)),
+            RGB.getColor(255, 255, 255, textAlpha * (1 - openPercent)),
             false
         );
         if (openPercent > 0) {
@@ -76,24 +78,14 @@ public class Hints extends RenderArea {
                     s,
                     startX + textPadding,
                     (int) (text0 + offSet * openPercent),
-                    RGB.getColor(255, 255, 255, alpha * openPercent),
+                    RGB.getColor(255, 255, 255, textAlpha * openPercent),
                     false
                 );
                 offSet += textRenderer.fontHeight + textPadding;
             }
         }
 
-
-        super.render(context, startX, startY - height, width, height, mouseX, mouseY);
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (checkHovered(mouseX, mouseY)) {
-            open = !open;
-            return true;
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
+        super.render(context, startX, startY - closeHeight, closeWidth, closeHeight, mouseX, mouseY);
     }
 
     @Override

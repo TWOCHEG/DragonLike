@@ -3,16 +3,20 @@ package pon.purr.gui.components;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.Parent;
+import pon.purr.modules.settings.Group;
 import pon.purr.modules.settings.Setting;
+import pon.purr.modules.ui.Gui;
 import pon.purr.utils.KeyName;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class Module extends RenderArea {
-    private final Parent module;
+    public final Parent module;
+
     public final Category category;
 
     private int textPadding = 2;
@@ -43,11 +47,31 @@ public class Module extends RenderArea {
         this.module = module;
         this.category = category;
 
-        for (Setting set : module.getSettings()) {
-            if (set.getValue() instanceof Boolean) {
-                areas.add(new BooleanSet(set, this));
+        this.areas = getAreas(module.getSettings(), this);
+    }
+
+    public static List<RenderArea> getAreas(List<Setting> sets, Module module) {
+        List<RenderArea> areas = new LinkedList<>();
+        for (Setting set : sets) {
+            if (set.group != null) continue;
+            if (set instanceof Group g) {
+                areas.add(new GroupArea(g, module));
+            } else if (set.getValue() instanceof Boolean) {
+                System.out.println(set.getName());
+                areas.add(new BooleanSet(set, module));
             }
         }
+        return areas;
+    }
+    public static List<RenderArea> getAreas(List<Setting> sets, GroupArea group) {
+        List<RenderArea> areas = new LinkedList<>();
+        for (Setting set : sets) {
+            if (set.getValue() instanceof Boolean) {
+                System.out.println(set.getName());
+                areas.add(new BooleanSet(set, group));
+            }
+        }
+        return areas;
     }
 
     @Override

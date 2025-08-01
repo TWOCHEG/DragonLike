@@ -1,6 +1,7 @@
 package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
+import pon.purr.modules.settings.Group;
 import pon.purr.modules.settings.Setting;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
@@ -12,7 +13,8 @@ import java.util.LinkedList;
 public class BooleanSet extends RenderArea {
     private final Setting<Boolean> set;
 
-    private final Module module;
+    private Module module = null;
+    private GroupArea group = null;
 
     private float enablePercent = 0f;
     private final int textPadding = 2;
@@ -20,10 +22,17 @@ public class BooleanSet extends RenderArea {
     private final int buttonWidth = 15;
     private final int buttonHeight = textRenderer.fontHeight + textPadding;
 
+    private float showPercent = 0f;
+
     public BooleanSet(Setting<Boolean> set, Module module) {
         super();
         this.set = set;
         this.module = module;
+    }
+    public BooleanSet(Setting<Boolean> set, GroupArea group) {
+        super();
+        this.set = set;
+        this.group = group;
     }
 
     @Override
@@ -33,7 +42,7 @@ public class BooleanSet extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showPercent = module.openPercent * module.category.visiblePercent;
+        showPercent = module != null ? module.openPercent * module.category.visiblePercent : group.openPercent;
 
         LinkedList<String> toDrawText = Text.splitForRender(set.getName(), width - buttonWidth - textPadding, textRenderer);
         int textY = startY;
@@ -76,7 +85,7 @@ public class BooleanSet extends RenderArea {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (checkHovered(mouseX, mouseY) && module.openPercent > 0.9f) {
+        if (checkHovered(mouseX, mouseY) && showPercent > 0.9f) {
             set.setValue(!set.getValue());
             return true;
         }

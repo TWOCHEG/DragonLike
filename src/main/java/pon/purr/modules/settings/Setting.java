@@ -8,7 +8,7 @@ public class Setting<T> {
     private final String name;
     private T value = null;
     public T min, max;
-    private Parent module;
+    public Parent module;
     public Group group = null;
 
     private Predicate<T> visibility;
@@ -34,7 +34,6 @@ public class Setting<T> {
         if (this.value != null) {
             module.onUpdate(this);
             this.value = value;
-            System.out.println(this.value);
             module.setValue(name, value);
         }
     }

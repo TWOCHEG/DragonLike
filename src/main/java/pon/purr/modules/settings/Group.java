@@ -2,16 +2,15 @@ package pon.purr.modules.settings;
 
 import java.util.*;
 
-public class Group {
+public class Group<Settings> extends ListSetting<Settings> {
     public boolean open;
-    public final String name;
-    public LinkedList<Setting> settings = new LinkedList<>();
 
     public Group(String name, Setting... settings) {
-        this.name = name;
+        super(name, (List<Settings>) Arrays.stream(settings).toList());
+        List<Settings> list = new LinkedList<>();
         for (Setting s : settings) {
+            list.add((Settings) s);
             s.group = this;
-            this.settings.add(s);
         }
     }
 }

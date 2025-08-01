@@ -98,8 +98,8 @@ public abstract class Parent {
         return getValue(name, null);
     }
 
-    public List<Setting<?>> getSettings() {
-        ArrayList<Setting<?>> settingList = new ArrayList<>();
+    public List<Setting> getSettings() {
+        List<Setting> settingList = new LinkedList<>();
         Class<?> currentSuperclass = getClass();
 
         while (currentSuperclass != null) {
@@ -109,7 +109,7 @@ public abstract class Parent {
 
                 try {
                     field.setAccessible(true);
-                    settingList.add((Setting<?>) field.get(this));
+                    settingList.add((Setting) field.get(this));
                 } catch (IllegalAccessException ignored) {}
             }
 

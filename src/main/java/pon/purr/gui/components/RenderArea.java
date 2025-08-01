@@ -7,6 +7,7 @@ import pon.purr.utils.RGB;
 import pon.purr.utils.math.Hover;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public abstract class RenderArea {
     public int x = 0;
@@ -14,7 +15,7 @@ public abstract class RenderArea {
     public int width = 0;
     public int height = 0;
 
-    public LinkedList<RenderArea> areas = new LinkedList<>();
+    public List<RenderArea> areas = new LinkedList<>();
 
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public final TextRenderer textRenderer = mc.textRenderer;
