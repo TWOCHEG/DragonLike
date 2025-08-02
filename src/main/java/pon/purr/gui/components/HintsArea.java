@@ -9,8 +9,8 @@ import pon.purr.utils.math.AnimHelper;
 
 import java.util.*;
 
-public class Hints extends RenderArea {
-    private final LinkedList<String> hints = new LinkedList<>();
+public class HintsArea extends RenderArea {
+    private final List<String> hints;
     private final ModulesGui gui;
 
     private boolean open = false;
@@ -20,12 +20,10 @@ public class Hints extends RenderArea {
 
     private final String closeText = "hints";
 
-    public Hints(String text, ModulesGui gui) {
+    public HintsArea(String text, ModulesGui gui) {
         super();
         this.gui = gui;
-        for (String s : text.split("\n")) {
-            hints.add(s);
-        }
+        this.hints = text.lines().toList();
     }
 
     @Override

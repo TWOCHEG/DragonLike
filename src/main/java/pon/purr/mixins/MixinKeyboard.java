@@ -24,12 +24,12 @@ public class MixinKeyboard {
 
         switch (action) {
             case 0 -> {
-                EventKeyRelease event = new EventKeyRelease(key, scanCode);
+                EventKeyRelease event = new EventKeyRelease(key, scanCode, modifiers);
                 Purr.EVENT_BUS.post(event);
                 if (event.isCancelled()) ci.cancel();
             }
             case 1 -> {
-                EventKeyPress event = new EventKeyPress(key, scanCode);
+                EventKeyPress event = new EventKeyPress(key, scanCode, modifiers);
                 Purr.EVENT_BUS.post(event);
                 if (event.isCancelled()) ci.cancel();
             }

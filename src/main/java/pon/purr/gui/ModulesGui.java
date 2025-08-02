@@ -38,7 +38,7 @@ public class ModulesGui extends Screen {
     private float startX = 0;
     private final int categoriesShow;
 
-    private final Hints hints = new Hints(
+    private final HintsArea hints = new HintsArea(
         "RIGHT SHIFT - show keybinds\nMOUSE MIDDLE - bind module\n ⬅ ⬆ ⬇ ⮕ - move gui",
         this
     );
@@ -61,7 +61,7 @@ public class ModulesGui extends Screen {
         animHandler();
         if (previous != null) previous.render(context, mouseX, mouseY, delta);
 
-        LinkedList<Category> categories = guiModule.categories;
+        LinkedList<CategoryArea> categories = guiModule.categories;
 
         int startX = (int) (((context.getScaledWindowWidth() / 2) - (((categoryWidth + categoryPadding) * categories.size()) / 2)) + this.startX);
 
@@ -74,7 +74,7 @@ public class ModulesGui extends Screen {
 
         int closeCount = 0;
         for (int i = 0; i < categories.size(); i++) {
-            Category c = categories.get(i);
+            CategoryArea c = categories.get(i);
             if (frameCounter > (categoriesShow / GetAnimDiff.get100X() / categories.size()) * i) {
                 c.visibleReverse = !open;
             }
@@ -94,14 +94,14 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        for (Category c : guiModule.categories) {
+        for (CategoryArea c : guiModule.categories) {
             if (c.keyPressed(keyCode, scanCode, modifiers)) return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             closeGui();
             return true;
         }
-        return false;
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
@@ -175,10 +175,18 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (Category c : guiModule.categories) {
+        for (CategoryArea c : guiModule.categories) {
             if (c.mouseClicked(mouseX, mouseY, button)) return true;
         }
         if (hints.mouseClicked(mouseX, mouseY, button)) return true;
-        return false;
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        for (CategoryArea c : guiModule.categories) {
+            if (c.charTyped(chr, modifiers)) return true;
+        }
+        return super.charTyped(chr, modifiers);
     }
 }

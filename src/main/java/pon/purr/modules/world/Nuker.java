@@ -21,7 +21,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
-import pon.purr.utils.BlockHighlight;
+import pon.purr.utils.Render;
 import pon.purr.utils.Rotations;
 import pon.purr.utils.math.AnimHelper;
 
@@ -90,7 +90,7 @@ public class Nuker extends Parent {
         });
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             if (miningTarget != null && miningHit != null && enable && mc.player != null && mc.world != null) {
-                BlockHighlight.renderHighlight(context, miningTarget, 1.0f, 1.0f, 1.0f, anim / 100);
+                Render.highlightBlock(context, miningTarget, 1.0f, 1.0f, 1.0f, anim / 100);
             }
         });
     }

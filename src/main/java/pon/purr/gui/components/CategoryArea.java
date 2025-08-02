@@ -9,7 +9,7 @@ import pon.purr.utils.math.AnimHelper;
 
 import java.util.*;
 
-public class Category extends RenderArea {
+public class CategoryArea extends RenderArea {
     private final Purr.Categories name;
 
     private float hoverPercent = 0f;
@@ -18,10 +18,10 @@ public class Category extends RenderArea {
     public float visiblePercent = 0f;
     public boolean visibleReverse = true;
 
-    public Category(LinkedList<Parent> modules, Purr.Categories name) {
+    public CategoryArea(LinkedList<Parent> modules, Purr.Categories name) {
         super();
         modules.forEach(m -> {
-            areas.add(new Module(m, this));
+            areas.add(new ModuleArea(m, this));
         });
         this.name = name;
     }
@@ -43,7 +43,7 @@ public class Category extends RenderArea {
 
         int alpha = (int) ((150 + (10 * hoverPercent)) * visiblePercent);
         hovered = checkHovered(mouseX, mouseY);
-        int radius = width / 20;
+        int radius = 7;
 
         Render.fill(
             context,
@@ -52,7 +52,7 @@ public class Category extends RenderArea {
             startX + width,
             (startY + height),
             RGB.getColor(0, 0, 0, alpha),
-            width / 20,
+            radius,
             3
         );
         Render.fillPart(
@@ -81,8 +81,8 @@ public class Category extends RenderArea {
             startX + nameContainerPadding + (width / 2 + textRenderer.getWidth(name.name()) / 2),
             nameStartY + textRenderer.fontHeight + nameContainerPadding,
             RGB.getColor(0, 0, 0, 120 * visiblePercent),
-            width / 30,
-            3
+            5,
+            2
         );
         context.drawText(
             textRenderer,

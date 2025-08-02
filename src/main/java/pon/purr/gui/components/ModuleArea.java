@@ -3,9 +3,9 @@ package pon.purr.gui.components;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.Parent;
-import pon.purr.modules.settings.Group;
+import pon.purr.modules.settings.Header;
+import pon.purr.modules.settings.SettingsGroup;
 import pon.purr.modules.settings.Setting;
-import pon.purr.modules.ui.Gui;
 import pon.purr.utils.KeyName;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
@@ -14,10 +14,10 @@ import pon.purr.utils.math.AnimHelper;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Module extends RenderArea {
+public class ModuleArea extends RenderArea {
     public final Parent module;
 
-    public final Category category;
+    public final CategoryArea category;
 
     private int textPadding = 2;
 
@@ -37,12 +37,12 @@ public class Module extends RenderArea {
 
     private final int settingsPadding = 5;
 
-    private List<Integer> cancelButtons = List.of(
+    public List<Integer> cancelButtons = List.of(
         GLFW.GLFW_KEY_ESCAPE,
         GLFW.GLFW_KEY_DELETE
     );
 
-    public Module(Parent module, Category category) {
+    public ModuleArea(Parent module, CategoryArea category) {
         super();
         this.module = module;
         this.category = category;
@@ -50,28 +50,36 @@ public class Module extends RenderArea {
         this.areas = getAreas(module.getSettings(), this);
     }
 
-    public static List<RenderArea> getAreas(List<Setting> sets, Module module) {
+    public static List<RenderArea> getAreas(List<Setting> sets, ModuleArea module, SettingsGroupArea group) {
         List<RenderArea> areas = new LinkedList<>();
         for (Setting set : sets) {
-            if (set.group != null) continue;
-            if (set instanceof Group g) {
-                areas.add(new GroupArea(g, module));
+            if (set.group != null && group == null) continue;
+            if (set instanceof SettingsGroup g) {
+                areas.add(new SettingsGroupArea(g, module));
+            } else if (set instanceof Header) {
+                if (group == null) {
+                    areas.add(new SettingsHeaderArea(set, module));
+                } else {
+                    areas.add(new SettingsHeaderArea(set, group));
+                }
             } else if (set.getValue() instanceof Boolean) {
-                System.out.println(set.getName());
-                areas.add(new BooleanSet(set, module));
+                if (group == null) {
+                    areas.add(new BooleanSettingsArea(set, module));
+                } else {
+                    areas.add(new BooleanSettingsArea(set, group));
+                }
+            } else if (set.getValue() instanceof String) {
+                if (group == null) {
+                    areas.add(new StringSettingsArea(set, module));
+                } else {
+                    areas.add(new StringSettingsArea(set, group));
+                }
             }
         }
         return areas;
     }
-    public static List<RenderArea> getAreas(List<Setting> sets, GroupArea group) {
-        List<RenderArea> areas = new LinkedList<>();
-        for (Setting set : sets) {
-            if (set.getValue() instanceof Boolean) {
-                System.out.println(set.getName());
-                areas.add(new BooleanSet(set, group));
-            }
-        }
-        return areas;
+    public static List<RenderArea> getAreas(List<Setting> sets, ModuleArea module) {
+        return getAreas(sets, module, null);
     }
 
     @Override
@@ -83,6 +91,13 @@ public class Module extends RenderArea {
             settingsHeight += area.height + settingsPadding;
         }
         height = (int) (textRenderer.fontHeight + (textPadding * 2) + (settingsHeight * openPercent));
+
+        context.enableScissor(
+            startX,
+            startY,
+            startX + width,
+            startY + height
+        );
 
         int c = (int) (50 + ((50 * enablePercent) * (1 - openPercent)));
 
@@ -168,6 +183,8 @@ public class Module extends RenderArea {
             }
         }
 
+        context.disableScissor();
+
         super.render(context, startX, startY, width, height, mouseX, mouseY);
     }
 
@@ -224,6 +241,6 @@ public class Module extends RenderArea {
             }
             return true;
         }
-        return false;
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }

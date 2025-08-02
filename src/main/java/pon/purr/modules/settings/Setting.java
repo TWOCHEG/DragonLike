@@ -9,11 +9,11 @@ public class Setting<T> {
     private T value = null;
     public T min, max;
     public Parent module;
-    public Group group = null;
+    public SettingsGroup group = null;
 
     private Predicate<T> visibility;
 
-    private T defaultValue;
+    public T defaultValue;
 
     public Setting(String name, T defaultValue) {
         this.name = name;

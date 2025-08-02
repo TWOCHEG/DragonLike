@@ -45,7 +45,7 @@ public class AutoResponser extends Parent {
     public Setting<String> modelId = new Setting<>("model id", "meta-llama/llama-3.3-70b-instruct");
     public Setting<String> token = new Setting<>("token", "sk-...");
     public Setting<String> mentions = new Setting<>("mentions", "");
-    public Group constants = new Group(
+    public SettingsGroup constants = new SettingsGroup(
         "constants",
         modelId,
         token,

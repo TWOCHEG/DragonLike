@@ -25,6 +25,8 @@ public class Keybinds extends Parent {
             !(mc.currentScreen instanceof TitleScreen) &&
             e.getKey() != Purr.moduleManager.getModuleByClass(Gui.class).getKeybind()
         ) return;
+        if (e.getModifiers() == 5) return;  // смена языка
+
         if (Purr.moduleManager == null) return;
         Parent module = Purr.moduleManager.getModuleByKey(e.getKey());
         if (module == null) return;

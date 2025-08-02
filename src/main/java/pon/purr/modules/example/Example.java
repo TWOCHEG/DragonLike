@@ -21,7 +21,7 @@ public class Example extends Parent {
         "list",
         Arrays.asList("1", "2", "3") // первый элемент используется как стандартный
     );
-    public Group group = new Group(
+    public SettingsGroup group = new SettingsGroup(
         "group/category",
         header2,
         list2

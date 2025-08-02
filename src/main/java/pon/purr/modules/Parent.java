@@ -144,6 +144,12 @@ public abstract class Parent {
         return 50;
     }
 
+    public void resetSettings() {
+        for (Setting s : getSettings()) {
+            s.setValue(s.defaultValue);
+        }
+    }
+
     public static boolean fullNullCheck() {
         return mc.player == null || mc.world == null;
     }

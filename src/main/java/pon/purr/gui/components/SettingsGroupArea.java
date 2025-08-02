@@ -1,27 +1,27 @@
 package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
-import pon.purr.modules.settings.Group;
+import pon.purr.modules.settings.SettingsGroup;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
 
-public class GroupArea extends RenderArea {
-    private final Group group;
-    private final Module module;
+public class SettingsGroupArea extends RenderArea {
+    private final SettingsGroup group;
+    public final ModuleArea module;
 
     public float openPercent = 0f;
 
     private final int padding = 2;
     private final int titleHeight = textRenderer.fontHeight + padding * 2;
 
-    public GroupArea(Group group, Module module) {
+    public SettingsGroupArea(SettingsGroup group, ModuleArea module) {
         super();
         this.group = group;
         this.module = module;
 
-        this.areas = Module.getAreas(group.getOptions(), this);
+        this.areas = ModuleArea.getAreas(group.getOptions(), module, this);
     }
 
     @Override
@@ -38,6 +38,13 @@ public class GroupArea extends RenderArea {
         }
         height = (int) (titleHeight + height * openPercent);
 
+        context.enableScissor(
+            startX,
+            startY,
+            startX + width,
+            startY + height
+        );
+
         Render.fill(
             context,
             startX,
@@ -50,26 +57,20 @@ public class GroupArea extends RenderArea {
         int titleX = startX + (width / 2 - textRenderer.getWidth(group.getName()) / 2);
         context.drawText(
             textRenderer,
-            group.getName(),
+            group.getName() + " " + (group.open ? "+" : "-"),
             titleX,
             startY + padding,
             RGB.getColor(200, 200, 200, 200 * alphaPercent),
             false
         );
-        if (openPercent > 0) {
-            context.drawHorizontalLine(
-                (int) (startX + (width / 2) - (textRenderer.getWidth(group.getName()) / 2) * openPercent),
-                (int) (startX + (width / 2) + (textRenderer.getWidth(group.getName()) / 2) * openPercent),
-                startY + titleHeight - padding,
-                RGB.getColor(200, 200, 200, 200 * openPercent)
-            );
-        }
 
         int settingsY = startY + titleHeight + padding;
         for (RenderArea area : areas) {
             area.render(context, startX + padding, settingsY, width - padding * 2, 0, mouseX, mouseY);
             settingsY += area.height + padding;
         }
+
+        context.disableScissor();
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);
     }

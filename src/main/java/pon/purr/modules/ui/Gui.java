@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
 import pon.purr.Purr;
 import pon.purr.gui.ModulesGui;
-import pon.purr.gui.components.Category;
+import pon.purr.gui.components.CategoryArea;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.*;
 
@@ -39,7 +39,7 @@ public class Gui extends Parent {
 
     public final Setting<Boolean> animEnable = new Setting<>("enable animations", true);
     public final Setting<Integer> animSpeed = new Setting<>("animations speed", 30, 1, 100).visibleIf(m -> animEnable.getValue());
-    public final Group animations = new Group(
+    public final SettingsGroup animations = new SettingsGroup(
         "animations",
         animEnable,
         animSpeed
@@ -48,7 +48,7 @@ public class Gui extends Parent {
     private float imageWidth = 0f;
     private float imageHeight = 0f;
 
-    public LinkedList<Category> categories = null;
+    public LinkedList<CategoryArea> categories = null;
 
     public Gui() {
         super("click gui", Purr.Categories.ui);
@@ -68,7 +68,7 @@ public class Gui extends Parent {
                 categories = new LinkedList<>();
                 for (Map.Entry<Purr.Categories, List<Parent>> entry : modules.entrySet()) {
                     LinkedList<Parent> moduleList = new LinkedList<>(entry.getValue());
-                    categories.add(new Category(moduleList, entry.getKey()));
+                    categories.add(new CategoryArea(moduleList, entry.getKey()));
                 }
             }
             mc.setScreen(new ModulesGui(mc.currentScreen, this));

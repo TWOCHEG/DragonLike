@@ -5,6 +5,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.utils.RGB;
 import pon.purr.utils.math.Hover;
+import pon.purr.utils.math.MathUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +20,13 @@ public abstract class RenderArea {
 
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public final TextRenderer textRenderer = mc.textRenderer;
+
+    private final int lightColor = RGB.getColor(
+        MathUtils.randomInt(0, 255),
+        MathUtils.randomInt(0, 255),
+        MathUtils.randomInt(0, 255),
+        100
+    );
 
     public RenderArea() {}
 
@@ -37,7 +45,7 @@ public abstract class RenderArea {
             y,
             x + width,
             y + height,
-            RGB.getColor(255, 0, 0, 100)
+            lightColor
         );
     }
 
@@ -62,7 +70,15 @@ public abstract class RenderArea {
     }
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         for (RenderArea a : areas) {
-            if (a.keyPressed(keyCode, scanCode, modifiers)) return true;
+            if (a.keyPressed(keyCode, scanCode, modifiers)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean charTyped(char chr, int modifiers) {
+        for (RenderArea area : areas) {
+            if (area.charTyped(chr, modifiers)) return true;
         }
         return false;
     }

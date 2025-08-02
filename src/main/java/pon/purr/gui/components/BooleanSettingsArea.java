@@ -1,7 +1,6 @@
 package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
-import pon.purr.modules.settings.Group;
 import pon.purr.modules.settings.Setting;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
@@ -10,11 +9,11 @@ import pon.purr.utils.math.AnimHelper;
 
 import java.util.LinkedList;
 
-public class BooleanSet extends RenderArea {
+public class BooleanSettingsArea extends RenderArea {
     private final Setting<Boolean> set;
 
-    private Module module = null;
-    private GroupArea group = null;
+    private ModuleArea module = null;
+    private SettingsGroupArea group = null;
 
     private float enablePercent = 0f;
     private final int textPadding = 2;
@@ -24,12 +23,12 @@ public class BooleanSet extends RenderArea {
 
     private float showPercent = 0f;
 
-    public BooleanSet(Setting<Boolean> set, Module module) {
+    public BooleanSettingsArea(Setting<Boolean> set, ModuleArea module) {
         super();
         this.set = set;
         this.module = module;
     }
-    public BooleanSet(Setting<Boolean> set, GroupArea group) {
+    public BooleanSettingsArea(Setting<Boolean> set, SettingsGroupArea group) {
         super();
         this.set = set;
         this.group = group;
@@ -42,8 +41,6 @@ public class BooleanSet extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        showPercent = module != null ? module.openPercent * module.category.visiblePercent : group.openPercent;
-
         LinkedList<String> toDrawText = Text.splitForRender(set.getName(), width - buttonWidth - textPadding, textRenderer);
         int textY = startY;
         for (String t : toDrawText) {
@@ -78,9 +75,8 @@ public class BooleanSet extends RenderArea {
             RGB.getColor(200, 200, 200, 200 * showPercent),
             3, 2
         );
-        height *= showPercent;
 
-        super.render(context, startX, startY, width, height, mouseX, mouseY);
+        super.render(context, startX, startY, width, (int) (height * showPercent), mouseX, mouseY);
     }
 
     @Override
@@ -95,5 +91,6 @@ public class BooleanSet extends RenderArea {
     @Override
     public void animHandler() {
         enablePercent = AnimHelper.handleAnimValue(!set.getValue(), enablePercent);
+        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), module != null ? module.openPercent * module.category.visiblePercent : group.openPercent);
     }
 }
