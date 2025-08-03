@@ -28,6 +28,10 @@ public abstract class RenderArea {
         100
     );
 
+    public final int padding = 2;
+    public final int bigPadding = 5;
+    public final int vertexRadius = 4;
+
     public RenderArea() {}
 
     public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {

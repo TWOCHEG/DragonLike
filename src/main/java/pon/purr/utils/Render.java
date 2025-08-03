@@ -1,6 +1,7 @@
 package pon.purr.utils;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -9,6 +10,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
+
+import java.util.LinkedList;
 
 public class Render {
     /**
@@ -184,5 +187,30 @@ public class Render {
         vertexConsumer.vertex(matrix, x2, y2, z2)
             .color(r, g, b, Math.max(a, 0.2f))
             .normal(0, 1, 0);
+    }
+
+    public static int drawTextWithTransfer(
+        String text, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, int padding, int color,
+        boolean centered
+    ) {
+        LinkedList<String> toDrawText = Text.splitForRender(text, maxWidth, s -> textRenderer.getWidth(s));
+        int textY = y;
+        for (String t : toDrawText) {
+            context.drawText(
+                textRenderer,
+                t.strip(),
+                centered ? x + (maxWidth / 2 - textRenderer.getWidth(t.strip()) / 2) : x,
+                textY,
+                color,
+                false
+            );
+            textY += textRenderer.fontHeight + padding;
+        }
+        return textY - y;
+    }
+    public static int drawTextWithTransfer(
+        String text, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, int padding, int color
+    ) {
+        return drawTextWithTransfer(text, context, textRenderer, x, y, maxWidth, padding, color, false);
     }
 }

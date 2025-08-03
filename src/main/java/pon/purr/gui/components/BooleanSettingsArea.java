@@ -16,22 +16,19 @@ public class BooleanSettingsArea extends RenderArea {
     private SettingsGroupArea group = null;
 
     private float enablePercent = 0f;
-    private final int textPadding = 2;
-
     private final int buttonWidth = 15;
-    private final int buttonHeight = textRenderer.fontHeight + textPadding;
+    private final int buttonHeight = textRenderer.fontHeight + padding;
 
     private float showPercent = 0f;
 
-    public BooleanSettingsArea(Setting<Boolean> set, ModuleArea module) {
+    public BooleanSettingsArea(Setting<Boolean> set, Object o) {
         super();
         this.set = set;
-        this.module = module;
-    }
-    public BooleanSettingsArea(Setting<Boolean> set, SettingsGroupArea group) {
-        super();
-        this.set = set;
-        this.group = group;
+        if (o instanceof ModuleArea m) {
+            this.module = m;
+        } else if (o instanceof SettingsGroupArea g) {
+            this.group = g;
+        }
     }
 
     @Override
@@ -41,27 +38,23 @@ public class BooleanSettingsArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        LinkedList<String> toDrawText = Text.splitForRender(set.getName(), width - buttonWidth - textPadding, textRenderer);
-        int textY = startY;
-        for (String t : toDrawText) {
-            context.drawText(
-                textRenderer,
-                t.strip(),
-                startX,
-                textY,
-                RGB.getColor(255, 255, 255, 200 * showPercent),
-                false
-            );
-            textY += textRenderer.fontHeight + textPadding;
-            height += textRenderer.fontHeight + textPadding;
-        }
+        height += Render.drawTextWithTransfer(
+            set.getName(),
+            context,
+            textRenderer,
+            startX,
+            startY,
+            width - buttonWidth - padding * 2,
+            padding,
+            RGB.getColor(255, 255, 255, 200 * showPercent)
+        );
 
         Render.fill(
             context,
             startX + width - buttonWidth,
-            startY + (height / 2 - buttonHeight / 2),
+            startY + ((height - padding) / 2 - buttonHeight / 2),
             startX + width,
-            startY + (height / 2 - buttonHeight / 2) + buttonHeight,
+            startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight,
             RGB.getColor(100, 100, (int) (100 + (200 * enablePercent)), 200 * showPercent),
             3, 2
         );
@@ -69,9 +62,9 @@ public class BooleanSettingsArea extends RenderArea {
         Render.fill(
             context,
             buttonX,
-            startY + (height / 2 - buttonHeight / 2) + 1,
+            startY + ((height - padding) / 2 - buttonHeight / 2) + 1,
             (buttonX + buttonWidth / 2) - 1,
-            startY + (height / 2 - buttonHeight / 2) + buttonHeight - 1,
+            startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight - 1,
             RGB.getColor(200, 200, 200, 200 * showPercent),
             3, 2
         );
@@ -81,7 +74,7 @@ public class BooleanSettingsArea extends RenderArea {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (checkHovered(mouseX, mouseY) && showPercent > 0.9f) {
+        if (checkHovered(mouseX, mouseY)) {
             set.setValue(!set.getValue());
             return true;
         }

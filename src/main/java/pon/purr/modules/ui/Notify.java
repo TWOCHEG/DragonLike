@@ -43,15 +43,14 @@ public class Notify extends Parent {
         enable = config.get("enable", true);
 
         HudRenderCallback.EVENT.register((context, tickDelta) -> {
-            renderImportant(context);
-            renderSystem(context);
-            renderModule(context);
+            TextRenderer textRenderer = mc.textRenderer;
+            renderImportant(context, textRenderer);
+            renderSystem(context, textRenderer);
+            renderModule(context, textRenderer);
         });
     }
 
-    private void renderImportant(DrawContext context) {
-        TextRenderer textRenderer = mc.textRenderer;
-
+    private void renderImportant(DrawContext context, TextRenderer textRenderer) {
         float y = 10;
 
         for (NotifyData c : notifications) {
@@ -59,7 +58,7 @@ public class Notify extends Parent {
 
             Text renderText = Text.literal(c.notifyText);
             float screenWidth = context.getScaledWindowWidth();
-            float animPercent = c.visiblePercent / 100;
+            float animPercent = c.visiblePercent;
 
             context.drawCenteredTextWithShadow(
                 textRenderer,
@@ -76,8 +75,7 @@ public class Notify extends Parent {
             }
         }
     }
-    private void renderSystem(DrawContext context) {
-        TextRenderer textRenderer = mc.textRenderer;
+    private void renderSystem(DrawContext context, TextRenderer textRenderer) {
         float y = context.getScaledWindowHeight() - 5 - textRenderer.fontHeight;
         int padding = 2;
         int textPadding = 5;
@@ -87,7 +85,7 @@ public class Notify extends Parent {
             if (!c.notifyType.equals(NotifyType.System)) continue;
 
             Text renderText = Text.literal(c.notifyText);
-            float animPercent = c.visiblePercent / 100;
+            float animPercent = c.visiblePercent;
             float screenWidth = context.getScaledWindowWidth();
 
             Render.fill(
@@ -116,19 +114,16 @@ public class Notify extends Parent {
             }
         }
     }
-    private void renderModule(DrawContext context) {
-        TextRenderer textRenderer = mc.textRenderer;
+    private void renderModule(DrawContext context, TextRenderer textRenderer) {
         float y = (context.getScaledWindowHeight() / 2f) + 10;
         int padding = 2;
 
         for (int i = notifications.size() - 1; i >= 0; i--) {
             NotifyData c = notifications.get(i);
             if (!c.notifyType.equals(NotifyType.Module)) continue;
-
             Text renderText = Text.literal(c.notifyText);
-            float animPercent = c.visiblePercent / 100;
+            float animPercent = c.visiblePercent;
             float screenWidth = context.getScaledWindowWidth();
-
             float offset = c.reverseAnim ?
             (-textRenderer.getWidth(renderText) / 2f) * (1 - animPercent) :
             (textRenderer.getWidth(renderText) / 2f) * (1 - animPercent);
@@ -136,19 +131,20 @@ public class Notify extends Parent {
             Render.fill(
                 context,
                 (int) (((screenWidth / 2 - textRenderer.getWidth(renderText) / 2f) - padding) + offset),
-                (int) (y - padding),
+                (int) (y - padding * 2),
                 (int) (((screenWidth / 2 + textRenderer.getWidth(renderText) / 2f) + padding) + offset),
                 (int) (y + textRenderer.fontHeight + padding),
                 RGB.getColor(0, 0, 0, (int) (100 * animPercent)),
-                textRenderer.getWidth(renderText) / 20,
-                3
+                5,
+                2
             );
-            context.drawCenteredTextWithShadow(
+            context.drawText(
                 textRenderer,
                 renderText,
-                (int) ((screenWidth / 2) - offset),
+                (int) ((screenWidth / 2) - (textRenderer.getWidth(renderText) / 2) - offset),
                 (int) (y),
-                RGB.getColor(255, 255, 255, (int) (255 * animPercent))
+                RGB.getColor(255, 255, 255, (int) (255 * animPercent)),
+                false
             );
 
             y += (textRenderer.fontHeight + 5) * animPercent;
@@ -160,7 +156,7 @@ public class Notify extends Parent {
     }
 
     public void add(NotifyData n) {
-        if (!enable) return;
+        if (!enable || mc.currentScreen != null) return;
         Purr.EVENT_BUS.subscribe(n);
         notifications.add(n);
     }

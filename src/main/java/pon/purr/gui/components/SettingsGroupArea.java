@@ -13,7 +13,6 @@ public class SettingsGroupArea extends RenderArea {
 
     public float openPercent = 0f;
 
-    private final int padding = 2;
     private final int titleHeight = textRenderer.fontHeight + padding * 2;
 
     public SettingsGroupArea(SettingsGroup group, ModuleArea module) {
@@ -86,6 +85,9 @@ public class SettingsGroupArea extends RenderArea {
             group.open = !group.open;
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        if (openPercent > 0.9f) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+        return false;
     }
 }

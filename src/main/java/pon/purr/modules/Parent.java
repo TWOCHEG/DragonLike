@@ -18,6 +18,8 @@ public abstract class Parent {
     protected int keybindCode;
     public static MinecraftClient mc = MinecraftClient.getInstance();
 
+    public List<Setting> settings = new LinkedList();
+
     public Parent(String name, Categories category) {
         this.name = name;
         this.config = new ConfigManager(name);
@@ -99,6 +101,9 @@ public abstract class Parent {
     }
 
     public List<Setting> getSettings() {
+        if (!settings.isEmpty()) {
+            return settings;
+        }
         List<Setting> settingList = new LinkedList<>();
         Class<?> currentSuperclass = getClass();
 
@@ -118,6 +123,7 @@ public abstract class Parent {
 
         settingList.forEach(s -> s.setModule(this));
 
+        settings = settingList;
         return settingList;
     }
 

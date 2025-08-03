@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.Header;
+import pon.purr.modules.settings.ListSetting;
 import pon.purr.modules.settings.SettingsGroup;
 import pon.purr.modules.settings.Setting;
 import pon.purr.utils.KeyName;
@@ -19,8 +20,6 @@ public class ModuleArea extends RenderArea {
 
     public final CategoryArea category;
 
-    private int textPadding = 2;
-
     private float hoverPercent = 0f;
     private boolean hovered = false;
 
@@ -34,8 +33,6 @@ public class ModuleArea extends RenderArea {
     private boolean binding = false;
     private float bindingPercent = 0f;
     private int pressKey = -1;
-
-    private final int settingsPadding = 5;
 
     public List<Integer> cancelButtons = List.of(
         GLFW.GLFW_KEY_ESCAPE,
@@ -54,26 +51,17 @@ public class ModuleArea extends RenderArea {
         List<RenderArea> areas = new LinkedList<>();
         for (Setting set : sets) {
             if (set.group != null && group == null) continue;
+            Object o = group == null ? module : group;
             if (set instanceof SettingsGroup g) {
                 areas.add(new SettingsGroupArea(g, module));
+            } else if (set instanceof ListSetting l) {
+                areas.add(new ListSettingsArea(l, o));
             } else if (set instanceof Header) {
-                if (group == null) {
-                    areas.add(new SettingsHeaderArea(set, module));
-                } else {
-                    areas.add(new SettingsHeaderArea(set, group));
-                }
+                areas.add(new SettingsHeaderArea(set, o));
             } else if (set.getValue() instanceof Boolean) {
-                if (group == null) {
-                    areas.add(new BooleanSettingsArea(set, module));
-                } else {
-                    areas.add(new BooleanSettingsArea(set, group));
-                }
+                areas.add(new BooleanSettingsArea(set, o));
             } else if (set.getValue() instanceof String) {
-                if (group == null) {
-                    areas.add(new StringSettingsArea(set, module));
-                } else {
-                    areas.add(new StringSettingsArea(set, group));
-                }
+                areas.add(new StringSettingsArea(set, o));
             }
         }
         return areas;
@@ -85,12 +73,11 @@ public class ModuleArea extends RenderArea {
     @Override
     public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
         hovered = checkHovered(mouseX, mouseY);
-        int r = width / 30;
         int settingsHeight = 0;
         for (RenderArea area : areas) {
-            settingsHeight += area.height + settingsPadding;
+            settingsHeight += area.height + bigPadding;
         }
-        height = (int) (textRenderer.fontHeight + (textPadding * 2) + (settingsHeight * openPercent));
+        height = (int) (textRenderer.fontHeight + (padding * 2) + (settingsHeight * openPercent));
 
         context.enableScissor(
             startX,
@@ -107,22 +94,22 @@ public class ModuleArea extends RenderArea {
                 startX,
                 startY,
                 startX + width,
-                startY + r,
+                startY + vertexRadius,
                 RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
                 2,
                 true
             );
             context.fill(
                 startX,
-                startY + r,
+                startY + vertexRadius,
                 startX + width,
-                startY + height - r,
+                startY + height - vertexRadius,
                 RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent)
             );
             Render.fillPart(
                 context,
                 startX,
-                startY + height - r,
+                startY + height - vertexRadius,
                 startX + width,
                 startY + height,
                 RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
@@ -135,9 +122,9 @@ public class ModuleArea extends RenderArea {
                 startX,
                 startY,
                 startX + width,
-                startY + textRenderer.fontHeight + (textPadding * 2),
+                startY + textRenderer.fontHeight + (padding * 2),
                 RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
-                r,
+                vertexRadius,
                 2
             );
         }
@@ -155,7 +142,7 @@ public class ModuleArea extends RenderArea {
             textRenderer,
             name,
             startX + (width / 2 - textRenderer.getWidth(name) / 2),
-            startY + textPadding,
+            startY + padding,
             RGB.getColor(255, 255, 255, 200 * category.visiblePercent),
             false
         );
@@ -163,12 +150,12 @@ public class ModuleArea extends RenderArea {
             context.drawHorizontalLine(
                 (int) (startX + (width / 2) - (textRenderer.getWidth(name) / 2) * enablePercent),
                 (int) (startX + (width / 2) + (textRenderer.getWidth(name) / 2) * enablePercent),
-                startY + textRenderer.fontHeight + textPadding,
+                startY + textRenderer.fontHeight + padding,
                 RGB.getColor(255, 255, 255, 200 * category.visiblePercent * enablePercent)
             );
         }
 
-        int settingsStartY = startY + textRenderer.fontHeight + textPadding + settingsPadding;
+        int settingsStartY = startY + textRenderer.fontHeight + padding + bigPadding;
         if (openPercent != 0) {
             for (RenderArea area : areas) {
                 area.render(
@@ -179,7 +166,7 @@ public class ModuleArea extends RenderArea {
                     0,
                     mouseX, mouseY
                 );
-                settingsStartY += area.height + settingsPadding;
+                settingsStartY += area.height + bigPadding;
             }
         }
 
@@ -214,7 +201,7 @@ public class ModuleArea extends RenderArea {
         if (binding) {
             binding = false;
         }
-        if (checkHovered(x, y, width, textRenderer.fontHeight + textPadding * 2, mouseX, mouseY)) {
+        if (checkHovered(x, y, width, textRenderer.fontHeight + padding * 2, mouseX, mouseY)) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                 module.toggle();
             } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
@@ -225,7 +212,10 @@ public class ModuleArea extends RenderArea {
             }
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        if (openPercent > 0.9f) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+        return false;
     }
 
     @Override

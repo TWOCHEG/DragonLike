@@ -15,19 +15,16 @@ public class SettingsHeaderArea extends RenderArea {
     private ModuleArea module = null;
     private SettingsGroupArea group = null;
 
-    private final int textPadding = 2;
-
     private float showPercent = 0f;
 
-    public SettingsHeaderArea(Setting<Void> set, ModuleArea module) {
+    public SettingsHeaderArea(Setting<Void> set, Object o) {
         super();
         this.set = set;
-        this.module = module;
-    }
-    public SettingsHeaderArea(Setting<Void> set, SettingsGroupArea group) {
-        super();
-        this.set = set;
-        this.group = group;
+        if (o instanceof ModuleArea m) {
+            this.module = m;
+        } else if (o instanceof SettingsGroupArea g) {
+            this.group = g;
+        }
     }
 
     @Override
@@ -37,18 +34,17 @@ public class SettingsHeaderArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        LinkedList<String> toDrawText = Text.splitForRender(set.getName(), width, textRenderer);
-        for (String t : toDrawText) {
-            context.drawText(
-                textRenderer,
-                t,
-                startX + (width / 2 - textRenderer.getWidth(t) / 2),
-                startY + height,
-                RGB.getColor(200, 200, 200, 200 * showPercent),
-                false
-            );
-            height += textRenderer.fontHeight + textPadding;
-        }
+        height += Render.drawTextWithTransfer(
+            set.getName(),
+            context,
+            textRenderer,
+            startX,
+            startY,
+            width,
+            padding,
+            RGB.getColor(200, 200, 200, 200 * showPercent),
+            true
+        );
 
         super.render(context, startX, startY, width, (int) (height * showPercent), mouseX, mouseY);
     }

@@ -3,39 +3,52 @@ package pon.purr.utils;
 import net.minecraft.client.font.TextRenderer;
 
 import java.util.LinkedList;
+import java.util.function.Function;
 
 public class Text {
-    public static LinkedList<String> splitForRender(String t, int maxWidth, TextRenderer textRenderer, String splitRegex, float scale) {
-        LinkedList<String> f = new LinkedList<>();
-        StringBuilder s = new StringBuilder();
-        if (t.contains(splitRegex)) {
-            for (String w : t.strip().split(splitRegex)) {
-                if (textRenderer.getWidth(s + splitRegex + w) * scale > maxWidth) {
-                    f.add(s.toString());
-                    s = new StringBuilder().append(w);
-                } else {
-                    s.append(splitRegex).append(w);
-                }
+    public static LinkedList<String> splitForRender(String text, int maxWidth, Function<String, Integer> widthCalculator, String splitRegex) {
+        LinkedList<String> lines = new LinkedList<>();
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String word : text.strip().split(splitRegex)) {
+            boolean fits;
+            if (currentLine.isEmpty()) {
+                fits = widthCalculator.apply(word) <= maxWidth;
+            } else {
+                fits = widthCalculator.apply(currentLine + splitRegex + word) <= maxWidth;
             }
-        } else {
-            for (char l : t.strip().toCharArray()) {
-                if (textRenderer.getWidth(s + splitRegex + l) > maxWidth) {
-                    f.add(s.toString());
-                    s = new StringBuilder().append(l);
-                } else {
-                    s.append(l);
+
+            if (!fits) {
+                if (!currentLine.isEmpty()) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
                 }
+                if (widthCalculator.apply(word) > maxWidth) {
+                    for (char c : word.toCharArray()) {
+                        String charStr = String.valueOf(c);
+                        if (widthCalculator.apply(currentLine + charStr) > maxWidth && !currentLine.isEmpty()) {
+                            lines.add(currentLine.toString());
+                            currentLine = new StringBuilder();
+                        }
+                        currentLine.append(c);
+                    }
+                } else {
+                    currentLine.append(word);
+                }
+            } else {
+                if (!currentLine.isEmpty()) {
+                    currentLine.append(splitRegex);
+                }
+                currentLine.append(word);
             }
         }
-        if (!s.isEmpty()) {
-            f.add(s.toString());
+        if (!currentLine.isEmpty()) {
+            lines.add(currentLine.toString());
         }
-        return f;
+
+        return lines;
     }
-    public static LinkedList<String> splitForRender(String t, int maxWidth, TextRenderer r) {
-        return splitForRender(t, maxWidth, r, " ", 1);
-    }
-    public static LinkedList<String> splitForRender(String t, int maxWidth, TextRenderer r, float scale) {
-        return splitForRender(t, maxWidth, r, " ", scale);
+    public static LinkedList<String> splitForRender(String t, int maxWidth, Function<String, Integer> widthCalculator) {
+        return splitForRender(t, maxWidth, widthCalculator, " ");
     }
 }

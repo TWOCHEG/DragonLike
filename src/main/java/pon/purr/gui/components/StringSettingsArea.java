@@ -17,11 +17,7 @@ public class StringSettingsArea extends RenderArea {
     private ModuleArea module = null;
     private SettingsGroupArea group = null;
 
-    private final int textPadding = 2;
-
     private float showPercent = 0f;
-
-    private final int vertexRadius = 4;
 
     private boolean activate = false;
     private String inputText = "";
@@ -29,15 +25,14 @@ public class StringSettingsArea extends RenderArea {
     private float lightPercent = 0f;
     private boolean light = false;
 
-    public StringSettingsArea(Setting<String> set, ModuleArea module) {
+    public StringSettingsArea(Setting<String> set, Object o) {
         super();
         this.set = set;
-        this.module = module;
-    }
-    public StringSettingsArea(Setting<String> set, SettingsGroupArea group) {
-        super();
-        this.set = set;
-        this.group = group;
+        if (o instanceof ModuleArea m) {
+            this.module = m;
+        } else if (o instanceof SettingsGroupArea g) {
+            this.group = g;
+        }
     }
 
     @Override
@@ -47,53 +42,56 @@ public class StringSettingsArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        LinkedList<String> name = Text.splitForRender(set.getName(), width, textRenderer);
         String strValue = activate ? inputText + (lightPercent > 0.5f ? "|" : "") : set.getValue();
-        LinkedList<String> value = Text.splitForRender(strValue.isEmpty() ? "..." : strValue, width - textPadding * 2, textRenderer);
+        strValue = strValue.isEmpty() ? "..." : strValue;
+        LinkedList<String> value = Text.splitForRender(strValue, width - padding * 2, s -> textRenderer.getWidth(s));
 
-        int textY = startY;
-        for (String s : name) {
-            context.drawText(
-                textRenderer,
-                s.strip(),
-                startX,
-                textY,
-                RGB.getColor(255, 255, 255, 255 * showPercent),
-                false
-            );
-            textY += textRenderer.fontHeight + textPadding;
-            height += textRenderer.fontHeight + textPadding;
-        }
-        textY += textPadding;
-        height += textPadding;
+        height += padding + Render.drawTextWithTransfer(
+            set.getName(),
+            context,
+            textRenderer,
+            startX,
+            startY,
+            width,
+            padding,
+            RGB.getColor(255, 255, 255, 200 * showPercent)
+        );
 
         int vHeight = 0;
         for (String s : value) {
-            vHeight += textRenderer.fontHeight + textPadding;
+            vHeight += textRenderer.fontHeight + padding;
         }
+
         int color = (int) (0 + (20 * lightPercent));
         Render.fill(
             context,
             startX,
-            startY + height - textPadding,
+            startY + height - padding,
             startX + width,
             startY + height + vHeight,
             RGB.getColor(color, color, color, 70 * showPercent),
             vertexRadius, 2
         );
 
-        for (String s : value) {
-            context.drawText(
-                textRenderer,
-                s.strip(),
-                startX + textPadding,
-                textY,
-                RGB.getColor(255, 255, 255, 255 * showPercent),
-                false
-            );
-            textY += textRenderer.fontHeight + textPadding;
-            height += textRenderer.fontHeight + textPadding;
-        }
+        context.enableScissor(
+            startX,
+            startY + height - padding,
+            startX + width - padding,
+            startY + height + vHeight
+        );
+        height += Render.drawTextWithTransfer(
+            strValue,
+            context,
+            textRenderer,
+            startX + padding,
+            startY + height,
+            width - padding * 2,
+            padding,
+            RGB.getColor(255, 255, 255, 255 * showPercent)
+        );
+        context.disableScissor();
+
+        height += padding;
 
         super.render(context, startX, startY, width, (int) (height * showPercent), mouseX, mouseY);
     }

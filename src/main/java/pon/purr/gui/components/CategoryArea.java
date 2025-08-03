@@ -95,7 +95,7 @@ public class CategoryArea extends RenderArea {
         context.drawHorizontalLine(startX + nameContainerPadding + 12, startX + width - 20, (modulesStartY - 5), RGB.getColor(255, 255, 255, 50 * visiblePercent));
 
         for (RenderArea m : areas) {
-            m.render(context, startX + modulePadding * 2, modulesStartY, width - (modulePadding * 4), 0, mouseX, mouseY);
+            m.render(context, startX + modulePadding, modulesStartY, width - (modulePadding * 2), 0, mouseX, mouseY);
             modulesStartY += m.height + modulePadding;
         }
 
