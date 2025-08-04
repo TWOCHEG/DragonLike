@@ -38,6 +38,11 @@ public class BooleanSettingsArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
+        float alphaPercent = showPercent * (
+                module != null ?
+                        module.openPercent * module.category.visiblePercent :
+                        group.openPercent * group.module.category.visiblePercent
+        );
         height += Render.drawTextWithTransfer(
             set.getName(),
             context,
@@ -46,7 +51,7 @@ public class BooleanSettingsArea extends RenderArea {
             startY,
             width - buttonWidth - padding * 2,
             padding,
-            RGB.getColor(255, 255, 255, 200 * showPercent)
+            RGB.getColor(255, 255, 255, 200 * alphaPercent)
         );
 
         Render.fill(
@@ -55,7 +60,7 @@ public class BooleanSettingsArea extends RenderArea {
             startY + ((height - padding) / 2 - buttonHeight / 2),
             startX + width,
             startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight,
-            RGB.getColor(100, 100, (int) (100 + (200 * enablePercent)), 200 * showPercent),
+            RGB.getColor(100, 100, (int) (100 + (200 * enablePercent)), 200 * alphaPercent),
             3, 2
         );
         int buttonX = (int) (startX + width - buttonWidth + 1 + (buttonWidth / 2 * enablePercent));
@@ -65,7 +70,7 @@ public class BooleanSettingsArea extends RenderArea {
             startY + ((height - padding) / 2 - buttonHeight / 2) + 1,
             (buttonX + buttonWidth / 2) - 1,
             startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight - 1,
-            RGB.getColor(200, 200, 200, 200 * showPercent),
+            RGB.getColor(200, 200, 200, 200 * alphaPercent),
             3, 2
         );
 
@@ -84,6 +89,6 @@ public class BooleanSettingsArea extends RenderArea {
     @Override
     public void animHandler() {
         enablePercent = AnimHelper.handleAnimValue(!set.getValue(), enablePercent);
-        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), module != null ? module.openPercent * module.category.visiblePercent : group.openPercent);
+        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), showPercent);
     }
 }

@@ -105,6 +105,10 @@ public class ModulesGui extends Screen {
     }
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        for (RenderArea area : guiModule.categories) {
+            if (area.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
+        }
+
         if (scrollY < 0) {
             mouseUp = true;
             mouseUpCounter = frameCounter;
@@ -188,5 +192,21 @@ public class ModulesGui extends Screen {
             if (c.charTyped(chr, modifiers)) return true;
         }
         return super.charTyped(chr, modifiers);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        for (RenderArea area : guiModule.categories) {
+            if (area.mouseReleased(mouseX, mouseY, button)) return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        for (RenderArea area : guiModule.categories) {
+            if (area.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 }

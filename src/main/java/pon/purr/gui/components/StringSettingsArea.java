@@ -42,6 +42,12 @@ public class StringSettingsArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
+        float alphaPercent = showPercent * (
+                module != null ?
+                        module.openPercent * module.category.visiblePercent :
+                        group.openPercent * group.module.category.visiblePercent
+        );
+
         String strValue = activate ? inputText + (lightPercent > 0.5f ? "|" : "") : set.getValue();
         strValue = strValue.isEmpty() ? "..." : strValue;
         LinkedList<String> value = Text.splitForRender(strValue, width - padding * 2, s -> textRenderer.getWidth(s));
@@ -54,7 +60,7 @@ public class StringSettingsArea extends RenderArea {
             startY,
             width,
             padding,
-            RGB.getColor(255, 255, 255, 200 * showPercent)
+            RGB.getColor(255, 255, 255, 200 * alphaPercent)
         );
 
         int vHeight = 0;
@@ -69,7 +75,7 @@ public class StringSettingsArea extends RenderArea {
             startY + height - padding,
             startX + width,
             startY + height + vHeight,
-            RGB.getColor(color, color, color, 70 * showPercent),
+            RGB.getColor(color, color, color, 70 * alphaPercent),
             vertexRadius, 2
         );
 
@@ -150,7 +156,7 @@ public class StringSettingsArea extends RenderArea {
             light = false;
         }
         lightPercent = AnimHelper.handleAnimValue(!light, lightPercent);
-        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), module != null ? module.openPercent * module.category.visiblePercent : group.openPercent);
+        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), showPercent);
     }
 }
 

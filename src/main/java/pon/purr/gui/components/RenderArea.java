@@ -86,4 +86,25 @@ public abstract class RenderArea {
         }
         return false;
     }
+
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        for (RenderArea area : areas) {
+            if (area.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
+        }
+        return true;
+    }
+
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        for (RenderArea area : areas) {
+            if (area.mouseReleased(mouseX, mouseY, button)) return true;
+        }
+        return false;
+    }
+
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        for (RenderArea area : areas) {
+            if (area.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
+        }
+        return false;
+    }
 }

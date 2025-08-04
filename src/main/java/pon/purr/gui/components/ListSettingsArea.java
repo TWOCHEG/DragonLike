@@ -29,6 +29,8 @@ public class ListSettingsArea extends RenderArea {
 
     private ListValue oldValue;
 
+    private float alphaPercent = 0f;
+
     public ListSettingsArea(ListSetting set, Object o) {
         super();
         this.set = set;
@@ -55,6 +57,12 @@ public class ListSettingsArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
+        alphaPercent = showPercent * (
+                module != null ?
+                        module.openPercent * module.category.visiblePercent :
+                        group.openPercent * group.module.category.visiblePercent
+        );
+
         height += Render.drawTextWithTransfer(
             set.getName(),
             context,
@@ -63,7 +71,7 @@ public class ListSettingsArea extends RenderArea {
             startY,
             width,
             padding,
-            RGB.getColor(255, 255, 255, 200 * showPercent)
+            RGB.getColor(255, 255, 255, 200 * alphaPercent)
         );
         ListValue area = getValueArea();
         if (oldValue != null) {
@@ -73,12 +81,12 @@ public class ListSettingsArea extends RenderArea {
                 MathHelper.lerp(delta, oldValue.y, area.y),
                 MathHelper.lerp(delta, oldValue.x + oldValue.width, area.x + area.width),
                 MathHelper.lerp(delta, oldValue.y + oldValue.height, area.y + area.height),
-                RGB.getColor(0, 0, 0, 70 * showPercent),
+                RGB.getColor(0, 0, 0, 70 * alphaPercent),
                 vertexRadius,
                 2
             );
         }
-        height += area.height;
+        height += area.height + padding;
         if (openPercent > 0) {
             int x = 0;
             int y = 0;
@@ -134,7 +142,7 @@ public class ListSettingsArea extends RenderArea {
     @Override
     public void animHandler() {
         delta = AnimHelper.handleAnimValue(false, delta);
-        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), module != null ? module.openPercent * module.category.visiblePercent : group.openPercent);
+        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), showPercent);
         openPercent = AnimHelper.handleAnimValue(!open, openPercent) * showPercent;
     }
 
@@ -157,29 +165,29 @@ public class ListSettingsArea extends RenderArea {
             boolean currentValue = this.equals(lst.getValueArea());
             int color = 180;
             int colorDiff = 255 - color;
-            int alpha = (int) (
-                (color + (oldValue || currentValue ? colorDiff * (oldValue ? 1 - lst.delta : lst.delta) * lst.openPercent : 0)) * (currentValue ? lst.showPercent : lst.openPercent)
-            );
+            int alpha = (int) ((
+                (color + (oldValue || currentValue ? colorDiff * (oldValue && !currentValue ? 1 - lst.delta : lst.delta) * lst.openPercent : 0)) * (currentValue ? lst.showPercent : lst.openPercent)
+            ) * lst.alphaPercent);
             context.drawText(
                 textRenderer,
                 value.toString(),
                 startX + padding,
-                startY + padding ,
+                startY + (this.height / 2 - textRenderer.fontHeight / 2),
                 RGB.getColor(255, 255, 255, alpha),
                 false
             );
             width = textRenderer.getWidth(value.toString()) + padding * 2;
-            height = textRenderer.fontHeight + padding * 2;
 
-            super.render(context, startX, startY, width, height, mouseX, mouseY);
+            super.render(context, startX, startY, width, this.height, mouseX, mouseY);
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (checkHovered(mouseX, mouseY)) {
+            if (checkHovered(mouseX, mouseY) && !this.equals(lst.getValueArea())) {
                 lst.delta = 0;
-                if (!lst.oldValue.equals(getValueArea())) {
-                    lst.oldValue = getValueArea();
+                ListValue v = lst.getValueArea();
+                if (!lst.oldValue.equals(v)) {
+                    lst.oldValue = v;
                 }
                 lst.set.setValue(value);
             }

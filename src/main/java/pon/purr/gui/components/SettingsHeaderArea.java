@@ -34,6 +34,12 @@ public class SettingsHeaderArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
+        float alphaPercent = showPercent * (
+                module != null ?
+                        module.openPercent * module.category.visiblePercent :
+                        group.openPercent * group.module.category.visiblePercent
+        );
+
         height += Render.drawTextWithTransfer(
             set.getName(),
             context,
@@ -42,7 +48,7 @@ public class SettingsHeaderArea extends RenderArea {
             startY,
             width,
             padding,
-            RGB.getColor(200, 200, 200, 200 * showPercent),
+            RGB.getColor(200, 200, 200, 200 * alphaPercent),
             true
         );
 
@@ -51,6 +57,6 @@ public class SettingsHeaderArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), module != null ? module.openPercent * module.category.visiblePercent : group.openPercent);
+        showPercent = AnimHelper.handleAnimValue(!set.getVisible(), showPercent);
     }
 }

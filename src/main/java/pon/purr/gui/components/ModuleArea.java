@@ -3,10 +3,7 @@ package pon.purr.gui.components;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.Parent;
-import pon.purr.modules.settings.Header;
-import pon.purr.modules.settings.ListSetting;
-import pon.purr.modules.settings.SettingsGroup;
-import pon.purr.modules.settings.Setting;
+import pon.purr.modules.settings.*;
 import pon.purr.utils.KeyName;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
@@ -62,6 +59,8 @@ public class ModuleArea extends RenderArea {
                 areas.add(new BooleanSettingsArea(set, o));
             } else if (set.getValue() instanceof String) {
                 areas.add(new StringSettingsArea(set, o));
+            } else if (set.getValue() instanceof Number) {
+                areas.add(new NumberSettingsArea(set, o));
             }
         }
         return areas;

@@ -206,7 +206,7 @@ public class Render {
             );
             textY += textRenderer.fontHeight + padding;
         }
-        return textY - y;
+        return textY - y - padding;
     }
     public static int drawTextWithTransfer(
         String text, DrawContext context, TextRenderer textRenderer, int x, int y, int maxWidth, int padding, int color

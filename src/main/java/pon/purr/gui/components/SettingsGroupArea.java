@@ -30,8 +30,7 @@ public class SettingsGroupArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        openPercent = openPercent * module.openPercent * module.category.visiblePercent;
-        float alphaPercent = module.openPercent * module.category.visiblePercent;
+        float alphaPercent = module.openPercent;
         for (RenderArea area : areas) {
             height += area.height + padding * 2;
         }
@@ -66,7 +65,7 @@ public class SettingsGroupArea extends RenderArea {
         int settingsY = startY + titleHeight + padding;
         for (RenderArea area : areas) {
             area.render(context, startX + padding, settingsY, width - padding * 2, 0, mouseX, mouseY);
-            settingsY += area.height + padding;
+            settingsY += area.height + bigPadding;
         }
 
         context.disableScissor();
@@ -76,7 +75,7 @@ public class SettingsGroupArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        openPercent = AnimHelper.handleAnimValue(!group.open, openPercent);
+        openPercent = AnimHelper.handleAnimValue(!(group.open && group.getVisible()), openPercent);
     }
 
     @Override
