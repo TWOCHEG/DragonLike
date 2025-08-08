@@ -3,6 +3,8 @@ package pon.purr.gui.components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import pon.purr.Purr;
+import pon.purr.modules.ui.Gui;
 import pon.purr.utils.RGB;
 import pon.purr.utils.math.Hover;
 import pon.purr.utils.math.MathUtils;
@@ -39,8 +41,13 @@ public abstract class RenderArea {
         this.y = startY;
         this.width = width;
         this.height = height;
-
         this.animHandler();
+
+        if (Purr.moduleManager.getModuleByClass(Gui.class) instanceof Gui gui) {
+            if (gui.showAreas.getValue()) {
+                lightArea(context);
+            }
+        }
     }
 
     public void lightArea(DrawContext context) {
@@ -50,6 +57,16 @@ public abstract class RenderArea {
             x + width,
             y + height,
             lightColor
+        );
+    }
+
+    public static void lightMouse(DrawContext context, double mouseX, double mouseY) {
+        context.fill(
+            (int) mouseX,
+            (int) mouseY,
+            (int) (mouseX + 2),
+            (int) (mouseY + 2),
+            RGB.getColor(255, 255, 255, 100)
         );
     }
 
@@ -91,7 +108,7 @@ public abstract class RenderArea {
         for (RenderArea area : areas) {
             if (area.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
         }
-        return true;
+        return false;
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int button) {

@@ -93,7 +93,7 @@ public class StringSettingsArea extends RenderArea {
             startY + height,
             width - padding * 2,
             padding,
-            RGB.getColor(255, 255, 255, 255 * showPercent)
+            RGB.getColor(255, 255, 255, 255 * alphaPercent)
         );
         context.disableScissor();
 

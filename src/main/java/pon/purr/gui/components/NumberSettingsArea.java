@@ -4,9 +4,11 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.settings.Setting;
+import pon.purr.modules.world.Nuker;
 import pon.purr.utils.RGB;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
+import pon.purr.utils.math.MathUtils;
 
 import java.util.List;
 
@@ -92,7 +94,6 @@ public class NumberSettingsArea extends RenderArea {
         int sHeight = vertexRadius + 2;
         float normalizedValue = (set.getValue().floatValue() - set.min.floatValue()) /
                 (set.max.floatValue() - set.min.floatValue());
-        System.out.println(normalizedValue);
         float normalizedOldValue = (oldValue.floatValue() - set.min.floatValue()) /
                 (set.max.floatValue() - set.min.floatValue());
         float diffPercent = MathHelper.lerp(delta, normalizedOldValue, normalizedValue);
@@ -129,8 +130,10 @@ public class NumberSettingsArea extends RenderArea {
             activate = true;
             inputText = inputText.isEmpty() ? set.getValue().toString() : inputText;
             return true;
-        } else if (checkHovered(x, y + titleHeight, width, height - titleHeight, mouseX, mouseY)) {
-            setValue(mouseX);
+        } if (checkHovered(x, y + titleHeight, width, height - titleHeight, mouseX, mouseY)) {
+            dragged = true;
+            mouseSetValue(mouseX);
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -211,22 +214,28 @@ public class NumberSettingsArea extends RenderArea {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (dragged || checkHovered(x, y + titleHeight, width, height - titleHeight, mouseX, mouseY)) {
             dragged = true;
-
-            setValue(mouseX);
+            mouseSetValue(mouseX);
+            return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (checkHovered(mouseX, mouseY)) {
+            scrollSetValue(scrollY > 0 ? 1 : -1);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
 
-    private void setValue(double mouseX) {
-        oldValue = set.getValue();
-
+    private void mouseSetValue(double mouseX) {
         float percent = (float) ((mouseX - x) / width);
         float rawValue = set.min.floatValue() + (set.max.floatValue() - set.min.floatValue()) * percent;
         boolean integer = set.defaultValue instanceof Integer;
 
         if (integer) {
             int clampedValue = MathHelper.clamp(Math.round(rawValue), set.min.intValue(), set.max.intValue());
-            set.setValue(clampedValue);
+            lowSetValue(clampedValue);
         } else {
             int decimalPlaces = 0;
             String defaultValueStr = set.defaultValue.toString();
@@ -238,11 +247,39 @@ public class NumberSettingsArea extends RenderArea {
 
             float factor = (float) Math.pow(10, decimalPlaces);
             float roundedValue = Math.round(rawValue * factor) / factor;
-            float clampedValue = MathHelper.clamp(roundedValue, set.min.floatValue(), set.max.floatValue());
-            set.setValue(clampedValue);
+            float clampedValue = Math.clamp(roundedValue, set.min.floatValue(), set.max.floatValue());
+            lowSetValue(clampedValue);
         }
-        if (!set.getValue().equals(oldValue)) {
-            delta = 0f;
+    }
+    private void scrollSetValue(int delta) {
+        boolean integer = set.defaultValue instanceof Integer;
+
+        if (integer) {
+            int clampedValue = MathHelper.clamp(set.getValue().intValue() + delta, set.min.intValue(), set.max.intValue());
+            lowSetValue(clampedValue);
+        } else {
+            int decimalPlaces = 0;
+            String defaultValueStr = set.defaultValue.toString();
+            int dotIndex = defaultValueStr.indexOf('.');
+            if (dotIndex != -1) {
+                decimalPlaces = defaultValueStr.length() - dotIndex - 1;
+            }
+
+            float factor = (float) Math.pow(10, decimalPlaces);
+            float value = set.getValue().floatValue() + (delta / factor);
+            float roundedValue = Math.round(value * factor) / factor;
+            float clampedValue = Math.clamp(roundedValue, set.min.floatValue(), set.max.floatValue());
+            lowSetValue(clampedValue);
+        }
+    }
+    private void lowSetValue(Number n) {
+        Number v = set.getValue();
+        if (!v.equals(n)) {
+            oldValue = v;
+            if (delta == 1) {
+                delta = 0;
+            }
+            set.setValue(n);
         }
     }
 }

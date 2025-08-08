@@ -44,6 +44,7 @@ public class Gui extends Parent {
         animEnable,
         animSpeed
     );
+    public final Setting<Boolean> showAreas = new Setting<>("show areas (debug)", false);
 
     private float imageWidth = 0f;
     private float imageHeight = 0f;
