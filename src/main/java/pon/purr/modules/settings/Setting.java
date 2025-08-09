@@ -1,5 +1,7 @@
 package pon.purr.modules.settings;
 
+import pon.purr.gui.components.NumberSettingsArea;
+import pon.purr.gui.components.RenderArea;
 import pon.purr.modules.Parent;
 
 import java.util.function.Predicate;
@@ -10,7 +12,6 @@ public class Setting<T> {
     public T min, max;
     public Parent module;
     public SettingsGroup group = null;
-
     private Predicate<T> visibility;
 
     public T defaultValue;

@@ -5,7 +5,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.Purr;
 import pon.purr.modules.ui.Gui;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.math.Hover;
 import pon.purr.utils.math.MathUtils;
 
@@ -23,7 +23,7 @@ public abstract class RenderArea {
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public final TextRenderer textRenderer = mc.textRenderer;
 
-    private final int lightColor = RGB.getColor(
+    private final int lightColor = Color.fromRGB(
         MathUtils.randomInt(0, 255),
         MathUtils.randomInt(0, 255),
         MathUtils.randomInt(0, 255),
@@ -66,7 +66,7 @@ public abstract class RenderArea {
             (int) mouseY,
             (int) (mouseX + 2),
             (int) (mouseY + 2),
-            RGB.getColor(255, 255, 255, 100)
+            Color.fromRGB(255, 255, 255, 100)
         );
     }
 

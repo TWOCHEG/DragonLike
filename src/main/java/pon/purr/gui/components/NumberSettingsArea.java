@@ -4,11 +4,9 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.settings.Setting;
-import pon.purr.modules.world.Nuker;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
-import pon.purr.utils.math.MathUtils;
 
 import java.util.List;
 
@@ -18,19 +16,19 @@ public class NumberSettingsArea extends RenderArea {
     private ModuleArea module = null;
     private SettingsGroupArea group = null;
 
-    private float showPercent = 0f;
+    private float showPercent = 0;
 
     private int titleHeight = 0;
 
     private boolean activate = false;
     private String inputText = "";
-    private float lightPercent = 0f;
+    private float lightPercent = 0;
     private boolean light = false;
 
     private boolean dragged = false;
-    private float draggedPercent = 0f;
+    private float draggedPercent = 0;
 
-    private float delta = 0f;
+    private float delta = 0;
 
     private Number oldValue;
 
@@ -69,7 +67,7 @@ public class NumberSettingsArea extends RenderArea {
             startY,
             width - (valueWidth - padding * 2) - bigPadding,
             padding,
-            RGB.getColor(255, 255, 255, 200 * alphaPercent)
+            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
         height += titleHeight;
         Render.fill(
@@ -78,7 +76,7 @@ public class NumberSettingsArea extends RenderArea {
             startY + (height / 2 - (titleHeight + padding * 2) / 2),
             startX + width,
             startY + (height / 2 + (titleHeight + padding * 2) / 2),
-            RGB.getColor(0, 0, 0, 70 * alphaPercent),
+            Color.fromRGB(0, 0, 0, 70 * alphaPercent),
             vertexRadius,
             2
         );
@@ -87,7 +85,7 @@ public class NumberSettingsArea extends RenderArea {
             value,
             startX + width - (valueWidth + padding),
             startY + (height / 2 - (titleHeight + padding * 2) / 2) + padding,
-            RGB.getColor(255, 255, 255, (200 - (100 * lightPercent)) * alphaPercent),
+            Color.fromRGB(255, 255, 255, (200 - (100 * lightPercent)) * alphaPercent),
             false
         );
         height += padding;
@@ -103,7 +101,7 @@ public class NumberSettingsArea extends RenderArea {
             startY + height,
             startX + width,
             startY + height + sHeight,
-            RGB.getColor(100, 100, 100, (70 + 50 * draggedPercent) * alphaPercent),
+            Color.fromRGB(100, 100, 100, (70 + 50 * draggedPercent) * alphaPercent),
             vertexRadius / 2, 2
         );
         int panelWidth = (int) ((width - 1) * diffPercent);
@@ -113,7 +111,7 @@ public class NumberSettingsArea extends RenderArea {
             startY + height + 1,
             startX + (panelWidth <= vertexRadius + 1 ? vertexRadius + 1 : panelWidth),
             startY + height + sHeight - 1,
-            RGB.getColor(200, 200, 200, 70 * alphaPercent),
+            Color.fromRGB(200, 200, 200, 70 * alphaPercent),
             vertexRadius / 2, 2
         );
         height += sHeight;

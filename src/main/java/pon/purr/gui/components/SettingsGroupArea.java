@@ -2,7 +2,7 @@ package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.modules.settings.SettingsGroup;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -32,7 +32,7 @@ public class SettingsGroupArea extends RenderArea {
     ) {
         float alphaPercent = module.openPercent;
         for (RenderArea area : areas) {
-            height += area.height + padding * 2;
+            height += area.height + bigPadding;
         }
         height = (int) (titleHeight + height * openPercent);
 
@@ -49,7 +49,7 @@ public class SettingsGroupArea extends RenderArea {
             startY,
             startX + width,
             startY + height,
-            RGB.getColor(100, 100, 100, (30 * alphaPercent) + (30 * openPercent)),
+            Color.fromRGB(100, 100, 100, (30 * alphaPercent) + (30 * openPercent)),
             5, 2
         );
         int titleX = startX + (width / 2 - textRenderer.getWidth(group.getName()) / 2);
@@ -58,7 +58,7 @@ public class SettingsGroupArea extends RenderArea {
             group.getName() + " " + (group.open ? "+" : "-"),
             titleX,
             startY + padding,
-            RGB.getColor(200, 200, 200, 200 * alphaPercent),
+            Color.fromRGB(200, 200, 200, 200 * alphaPercent),
             false
         );
 
@@ -84,7 +84,7 @@ public class SettingsGroupArea extends RenderArea {
             group.open = !group.open;
             return true;
         }
-        if (openPercent > 0.9f) {
+        if (openPercent == 1) {
             return super.mouseClicked(mouseX, mouseY, button);
         }
         return false;

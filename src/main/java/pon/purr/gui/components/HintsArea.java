@@ -2,7 +2,7 @@ package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.gui.ModulesGui;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -55,7 +55,7 @@ public class HintsArea extends RenderArea {
             startY - height,
             startX + width,
             startY,
-            RGB.getColor(0, 0, 0, 100 * gui.openPercent),
+            Color.fromRGB(0, 0, 0, 100 * gui.openPercent),
             2,
             2
         );
@@ -64,7 +64,7 @@ public class HintsArea extends RenderArea {
             closeText,
             startX + textPadding,
             startY - (textRenderer.fontHeight + textPadding),
-            RGB.getColor(255, 255, 255, textAlpha * (1 - openPercent)),
+            Color.fromRGB(255, 255, 255, textAlpha * (1 - openPercent)),
             false
         );
         if (openPercent > 0) {
@@ -76,7 +76,7 @@ public class HintsArea extends RenderArea {
                     s,
                     startX + textPadding,
                     (int) (text0 + offSet * openPercent),
-                    RGB.getColor(255, 255, 255, textAlpha * openPercent),
+                    Color.fromRGB(255, 255, 255, textAlpha * openPercent),
                     false
                 );
                 offSet += textRenderer.fontHeight + textPadding;

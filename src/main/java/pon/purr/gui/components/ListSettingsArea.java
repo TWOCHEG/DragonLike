@@ -4,13 +4,9 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.settings.ListSetting;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.Render;
-import pon.purr.utils.Text;
 import pon.purr.utils.math.AnimHelper;
-import pon.purr.utils.math.MathUtils;
-
-import java.util.*;
 
 public class ListSettingsArea extends RenderArea {
     public final ListSetting set;
@@ -18,18 +14,16 @@ public class ListSettingsArea extends RenderArea {
     private ModuleArea module = null;
     private SettingsGroupArea group = null;
 
-    private float showPercent = 0f;
+    private float showPercent = 0;
 
     private boolean open = false;
-    private float openPercent = 0f;
+    private float openPercent = 0;
 
-    private int saveHeight = 0;
-
-    private float delta = 0f;
+    private float delta = 0;
 
     private ListValue oldValue;
 
-    private float alphaPercent = 0f;
+    private float alphaPercent = 0;
 
     public ListSettingsArea(ListSetting set, Object o) {
         super();
@@ -71,7 +65,7 @@ public class ListSettingsArea extends RenderArea {
             startY,
             width,
             padding,
-            RGB.getColor(255, 255, 255, 200 * alphaPercent)
+            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
         ListValue area = getValueArea();
         if (oldValue != null) {
@@ -81,7 +75,7 @@ public class ListSettingsArea extends RenderArea {
                 MathHelper.lerp(delta, oldValue.y, area.y),
                 MathHelper.lerp(delta, oldValue.x + oldValue.width, area.x + area.width),
                 MathHelper.lerp(delta, oldValue.y + oldValue.height, area.y + area.height),
-                RGB.getColor(0, 0, 0, 70 * alphaPercent),
+                Color.fromRGB(0, 0, 0, 70 * alphaPercent),
                 vertexRadius,
                 2
             );
@@ -173,7 +167,7 @@ public class ListSettingsArea extends RenderArea {
                 value.toString(),
                 startX + padding,
                 startY + (this.height / 2 - textRenderer.fontHeight / 2),
-                RGB.getColor(255, 255, 255, alpha),
+                Color.fromRGB(255, 255, 255, alpha),
                 false
             );
             width = textRenderer.getWidth(value.toString()) + padding * 2;

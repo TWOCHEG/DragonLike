@@ -3,7 +3,7 @@ package pon.purr.gui.components;
 import net.minecraft.client.gui.DrawContext;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.settings.Setting;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.Render;
 import pon.purr.utils.Text;
 import pon.purr.utils.math.AnimHelper;
@@ -17,12 +17,12 @@ public class StringSettingsArea extends RenderArea {
     private ModuleArea module = null;
     private SettingsGroupArea group = null;
 
-    private float showPercent = 0f;
+    private float showPercent = 0;
 
     private boolean activate = false;
     private String inputText = "";
 
-    private float lightPercent = 0f;
+    private float lightPercent = 0;
     private boolean light = false;
 
     public StringSettingsArea(Setting<String> set, Object o) {
@@ -60,7 +60,7 @@ public class StringSettingsArea extends RenderArea {
             startY,
             width,
             padding,
-            RGB.getColor(255, 255, 255, 200 * alphaPercent)
+            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
 
         int vHeight = 0;
@@ -75,7 +75,7 @@ public class StringSettingsArea extends RenderArea {
             startY + height - padding,
             startX + width,
             startY + height + vHeight,
-            RGB.getColor(color, color, color, 70 * alphaPercent),
+            Color.fromRGB(color, color, color, 70 * alphaPercent),
             vertexRadius, 2
         );
 
@@ -93,7 +93,7 @@ public class StringSettingsArea extends RenderArea {
             startY + height,
             width - padding * 2,
             padding,
-            RGB.getColor(255, 255, 255, 255 * alphaPercent)
+            Color.fromRGB(255, 255, 255, 255 * alphaPercent)
         );
         context.disableScissor();
 

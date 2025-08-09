@@ -1,20 +1,30 @@
 package pon.purr.gui;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.text.Text;
+import org.joml.Matrix3x2fStack;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.gui.components.*;
+import pon.purr.modules.Parent;
 import pon.purr.modules.ui.Gui;
 import pon.purr.utils.GetAnimDiff;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
+import pon.purr.utils.Rotations;
 import pon.purr.utils.math.AnimHelper;
 
 import java.util.*;
 
 public class ModulesGui extends Screen {
     private int frameCounter = 0;
-    private final Gui guiModule;
+    private final Gui gui;
     private final Screen previous;
 
     private boolean mouseDown = false;
@@ -38,16 +48,19 @@ public class ModulesGui extends Screen {
     private float startX = 0;
     private final int categoriesShow;
 
+    private float moveDelta = 0f;
+    private double lastMouseX, lastMouseY = 0;
+
     private final HintsArea hints = new HintsArea(
         "RIGHT SHIFT - show keybinds\nMOUSE MIDDLE - bind module\n ⬅ ⬆ ⬇ ⮕ - move gui",
         this
     );
 
-    public ModulesGui(Screen previous, Gui guiModule) {
+    public ModulesGui(Screen previous, Gui gui) {
         super(Text.literal("ModulesGui"));
-        this.guiModule = guiModule;
+        this.gui = gui;
         this.previous = previous;
-        this.categoriesShow = 130 * guiModule.categories.size();
+        this.categoriesShow = 130 * this.gui.categories.size();
     }
     public void closeGui() {
         open = false;
@@ -61,15 +74,15 @@ public class ModulesGui extends Screen {
         animHandler();
         if (previous != null) previous.render(context, mouseX, mouseY, delta);
 
-        LinkedList<CategoryArea> categories = guiModule.categories;
+        LinkedList<CategoryArea> categories = gui.categories;
 
         int startX = (int) (((context.getScaledWindowWidth() / 2) - (((categoryWidth + categoryPadding) * categories.size()) / 2)) + this.startX);
 
         context.fillGradient(
             0, 0,
-            context.getScaledWindowWidth(), context.getScaledWindowHeight(),
-            RGB.getColor(0, 0, 0, (int) (50 * openPercent)),
-            RGB.getColor(0, 0, 0, 0)
+            this.width, this.height,
+            Color.fromRGB(0, 0, 0, (int) (50 * openPercent)),
+            Color.fromRGB(0, 0, 0, 0)
         );
 
         int closeCount = 0;
@@ -86,15 +99,58 @@ public class ModulesGui extends Screen {
             startX += categoryWidth + categoryPadding;
         }
 
-        if (closeCount == categories.size() && !open) {
+        if (closeCount == categories.size() && !open && openPercent == 0) {
             client.setScreen(null);
         }
         hints.render(context, 5,  context.getScaledWindowHeight() - 5, 0, 0, mouseX, mouseY);
+
+//        RenderPipeline renderPipeline = RenderPipeline.builder()
+//            .withVertexFormat(VertexFormats.BLIT_SCREEN, VertexFormat.DrawMode.LINES)
+//            .build();
+//        if (!gui.image.getValue().equals("none")) {
+//            context.drawTexture(
+//                renderPipeline,
+//                gui.texture,
+//                gui.imageWidth,
+//                gui.imageHeight,
+//                0, 0,
+//                context.getScaledWindowWidth() - gui.imageWidth,
+//                context.getScaledWindowHeight() - gui.imageHeight,
+//                gui.imageWidth,
+//                gui.imageHeight
+//            );
+//        }
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        if (!Parent.fullNullCheck() && gui.mouseMove.getValue()) {
+            double deltaX = mouseX - lastMouseX;
+            double deltaY = mouseY - lastMouseY;
+
+            if (lastMouseX == 0 && lastMouseY == 0) {
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+                return;
+            }
+
+            float sensitivity = 0.05f;
+
+            float yaw = Rotations.getCameraYaw() + (float) (deltaX * sensitivity);
+            float pitch = Math.clamp(Rotations.getCameraPitch() + (float) (deltaY * sensitivity), -89.0f, 89.0f);
+
+            Rotations.rotate(yaw, pitch, moveDelta);
+
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+        }
+
+        super.mouseMoved(mouseX, mouseY);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        for (CategoryArea c : guiModule.categories) {
+        for (CategoryArea c : gui.categories) {
             if (c.keyPressed(keyCode, scanCode, modifiers)) return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -105,7 +161,7 @@ public class ModulesGui extends Screen {
     }
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        for (RenderArea area : guiModule.categories) {
+        for (RenderArea area : gui.categories) {
             if (area.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
         }
 
@@ -170,6 +226,8 @@ public class ModulesGui extends Screen {
             moveAnimDiff
         );
         startX += moveDiff * rightPercent;
+
+        moveDelta = AnimHelper.handleAnimValue(false, moveDelta);
     }
 
     @Override
@@ -179,7 +237,7 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (CategoryArea c : guiModule.categories) {
+        for (CategoryArea c : gui.categories) {
             if (c.mouseClicked(mouseX, mouseY, button)) return true;
         }
         if (hints.mouseClicked(mouseX, mouseY, button)) return true;
@@ -188,7 +246,7 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        for (CategoryArea c : guiModule.categories) {
+        for (CategoryArea c : gui.categories) {
             if (c.charTyped(chr, modifiers)) return true;
         }
         return super.charTyped(chr, modifiers);
@@ -196,7 +254,7 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        for (RenderArea area : guiModule.categories) {
+        for (RenderArea area : gui.categories) {
             if (area.mouseReleased(mouseX, mouseY, button)) return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
@@ -204,7 +262,7 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        for (RenderArea area : guiModule.categories) {
+        for (RenderArea area : gui.categories) {
             if (area.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);

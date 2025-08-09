@@ -1,11 +1,12 @@
 package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.entity.boss.BossBar;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.*;
 import pon.purr.utils.KeyName;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -53,6 +54,8 @@ public class ModuleArea extends RenderArea {
                 areas.add(new SettingsGroupArea(g, module));
             } else if (set instanceof ListSetting l) {
                 areas.add(new ListSettingsArea(l, o));
+            } else if (set instanceof ColorSettings c) {
+                areas.add(new ColorSettingsArea(c, o));
             } else if (set instanceof Header) {
                 areas.add(new SettingsHeaderArea(set, o));
             } else if (set.getValue() instanceof Boolean) {
@@ -94,7 +97,7 @@ public class ModuleArea extends RenderArea {
                 startY,
                 startX + width,
                 startY + vertexRadius,
-                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
+                Color.fromRGB(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
                 2,
                 true
             );
@@ -103,7 +106,7 @@ public class ModuleArea extends RenderArea {
                 startY + vertexRadius,
                 startX + width,
                 startY + height - vertexRadius,
-                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent)
+                Color.fromRGB(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent)
             );
             Render.fillPart(
                 context,
@@ -111,7 +114,7 @@ public class ModuleArea extends RenderArea {
                 startY + height - vertexRadius,
                 startX + width,
                 startY + height,
-                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
+                Color.fromRGB(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
                 2,
                 false
             );
@@ -122,7 +125,7 @@ public class ModuleArea extends RenderArea {
                 startY,
                 startX + width,
                 startY + textRenderer.fontHeight + (padding * 2),
-                RGB.getColor(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
+                Color.fromRGB(c, c, c, (50 + (40 * hoverPercent)) * category.visiblePercent),
                 vertexRadius,
                 2
             );
@@ -142,7 +145,7 @@ public class ModuleArea extends RenderArea {
             name,
             startX + (width / 2 - textRenderer.getWidth(name) / 2),
             startY + padding,
-            RGB.getColor(255, 255, 255, 200 * category.visiblePercent),
+            Color.fromRGB(255, 255, 255, 200 * category.visiblePercent),
             false
         );
         if (enablePercent > 0) {
@@ -150,7 +153,7 @@ public class ModuleArea extends RenderArea {
                 (int) (startX + (width / 2) - (textRenderer.getWidth(name) / 2) * enablePercent),
                 (int) (startX + (width / 2) + (textRenderer.getWidth(name) / 2) * enablePercent),
                 startY + textRenderer.fontHeight + padding,
-                RGB.getColor(255, 255, 255, 200 * category.visiblePercent * enablePercent)
+                Color.fromRGB(255, 255, 255, 200 * category.visiblePercent * enablePercent)
             );
         }
 

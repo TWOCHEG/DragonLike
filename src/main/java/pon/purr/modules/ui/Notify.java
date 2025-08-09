@@ -12,7 +12,7 @@ import pon.purr.modules.settings.Setting;
 import meteordevelopment.orbit.EventHandler;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
-import pon.purr.utils.RGB;
+import pon.purr.utils.Color;
 
 import java.util.*;
 
@@ -65,7 +65,7 @@ public class Notify extends Parent {
                 renderText,
                 (int) (screenWidth / 2),
                 (int) (y * animPercent),
-                RGB.getColor(255, 255, 255, (int) (255 * animPercent))
+                Color.fromRGB(255, 255, 255, (int) (255 * animPercent))
             );
 
             y += (textRenderer.fontHeight + 5) * animPercent;
@@ -94,7 +94,7 @@ public class Notify extends Parent {
                 (int) (y - padding),
                 (int) (screenWidth - (textRenderer.getWidth(renderText) + textPadding) * animPercent - padding),
                 (int) (y + textRenderer.fontHeight + padding),
-                RGB.getColor(0, 0, 0, 100 * animPercent),
+                Color.fromRGB(0, 0, 0, 100 * animPercent),
                 textRenderer.getWidth(renderText) / 20,
                 3
             );
@@ -103,7 +103,7 @@ public class Notify extends Parent {
                 renderText,
                 (int) (screenWidth - ((textRenderer.getWidth(renderText) + textPadding) * animPercent)),
                 (int) (y),
-                RGB.getColor(255, 255, 255, (int) (255 * animPercent)),
+                Color.fromRGB(255, 255, 255, (int) (255 * animPercent)),
                 false
             );
 
@@ -134,7 +134,7 @@ public class Notify extends Parent {
                 (int) (y - padding * 2),
                 (int) (((screenWidth / 2 + textRenderer.getWidth(renderText) / 2f) + padding) + offset),
                 (int) (y + textRenderer.fontHeight + padding),
-                RGB.getColor(0, 0, 0, (int) (100 * animPercent)),
+                Color.fromRGB(0, 0, 0, (int) (100 * animPercent)),
                 5,
                 2
             );
@@ -143,7 +143,7 @@ public class Notify extends Parent {
                 renderText,
                 (int) ((screenWidth / 2) - (textRenderer.getWidth(renderText) / 2) - offset),
                 (int) (y),
-                RGB.getColor(255, 255, 255, (int) (255 * animPercent)),
+                Color.fromRGB(255, 255, 255, (int) (255 * animPercent)),
                 false
             );
 

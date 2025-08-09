@@ -1,20 +1,22 @@
 package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
+import pon.purr.modules.settings.ColorSettings;
 import pon.purr.modules.settings.Setting;
 import pon.purr.utils.Color;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
-public class SettingsHeaderArea extends RenderArea {
-    private final Setting<Void> set;
+public class ColorSettingsArea extends RenderArea {
+    private final ColorSettings set;
 
     private ModuleArea module = null;
     private SettingsGroupArea group = null;
 
-    private float showPercent = 0;
+    private float showPercent = 0f;
 
-    public SettingsHeaderArea(Setting<Void> set, Object o) {
+
+    public ColorSettingsArea(ColorSettings set, Object o) {
         super();
         this.set = set;
         if (o instanceof ModuleArea m) {
@@ -32,21 +34,16 @@ public class SettingsHeaderArea extends RenderArea {
         double mouseX, double mouseY
     ) {
         float alphaPercent = showPercent * (
-                module != null ?
-                        module.openPercent * module.category.visiblePercent :
-                        group.openPercent * group.module.category.visiblePercent
+            module != null ?
+                module.openPercent * module.category.visiblePercent :
+                group.openPercent * group.module.category.visiblePercent
         );
 
         height += Render.drawTextWithTransfer(
-            set.getName(),
-            context,
-            textRenderer,
-            startX,
-            startY,
-            width,
-            padding,
-            Color.fromRGB(200, 200, 200, 200 * alphaPercent),
-            true
+            "карта цветов покачто в разработке",
+            context, textRenderer,
+            startX, startY, width, padding,
+            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
 
         super.render(context, startX, startY, width, (int) (height * showPercent), mouseX, mouseY);

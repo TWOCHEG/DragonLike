@@ -1,15 +1,18 @@
 package pon.purr.modules.ui;
 
+import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
 import pon.purr.Purr;
+import pon.purr.events.impl.EventResizeScreen;
 import pon.purr.gui.ModulesGui;
 import pon.purr.gui.components.CategoryArea;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.*;
+import pon.purr.utils.Color;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,6 +30,9 @@ public class Gui extends Parent {
         images.put("skala", "textures/gui/skala.png");
         images.put("smalik", "textures/gui/smalik.png");
     }
+
+    public ColorSettings theme = new ColorSettings("theme", Color.fromRGB(0, 0, 0));
+    public ColorSettings textColor = new ColorSettings("text color", Color.fromRGB(255, 255, 255));
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public ListSetting<String> image = new ListSetting<>(
         "image",
@@ -46,8 +52,9 @@ public class Gui extends Parent {
     );
     public final Setting<Boolean> showAreas = new Setting<>("show areas (debug)", false);
 
-    private float imageWidth = 0f;
-    private float imageHeight = 0f;
+    public int imageWidth = 0;
+    public int imageHeight = 0;
+    public Identifier texture = Identifier.of("purr", images.get(image.getValue()));
 
     public LinkedList<CategoryArea> categories = null;
 
@@ -100,38 +107,47 @@ public class Gui extends Parent {
     public void onUpdate(Setting setting) {
         if (setting.equals(image) || setting.equals(imgSize)) {
             if (!Objects.equals(image.getValue(), "none")) {
-                updateImageSize(Identifier.of("purr", getImages().get(image.getValue())));
+                texture = Identifier.of("purr", getImages().get(image.getValue()));
+                updateImageSize(texture, mc.getWindow().getWidth(), mc.getWindow().getHeight());
             }
         }
     }
 
-    public void updateImageSize(Identifier texture) {
-        Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
-        NativeImage nativeImage;
-        try {
-            nativeImage = NativeImage.read(resource.get().getInputStream());
-        } catch (IOException e) {
-            return;
-        }
-
-        float imageWidth = nativeImage.getWidth();
-        float imageHeight = nativeImage.getHeight();
-
-        nativeImage.close();
-
-        float screenMin = Math.min(mc.getWindow().getWidth(), mc.getWindow().getHeight());
-        float fixedSize = screenMin * imgSize.getValue();
-
-        float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
-
-        this.imageWidth = imageWidth * scale;
-        this.imageHeight = imageHeight * scale;
+    @EventHandler
+    private void onScreenResize(EventResizeScreen e) {
+        updateImageSize(texture, e.width, e.height);
     }
 
-    public List<Float> getImageSize(Identifier texture) {
+    public void updateImageSize(Identifier texture, int screenWidth, int screenHeight) {
+//        Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+//        NativeImage nativeImage;
+//        try {
+//            nativeImage = NativeImage.read(resource.get().getInputStream());
+//        } catch (IOException e) {
+//            return;
+//        }
+//
+//        float imageWidth = nativeImage.getWidth();
+//        float imageHeight = nativeImage.getHeight();
+//
+//        nativeImage.close();
+//
+//        float screenMin = Math.min(screenWidth, screenHeight);
+//        float fixedSize = screenMin * imgSize.getValue();
+//
+//        float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
+//
+//        this.imageWidth = (int) (imageWidth * scale);
+//        this.imageHeight = (int) (imageHeight * scale);
+
+        this.imageWidth = 100;
+        this.imageHeight = 100;
+    }
+
+    public List<Integer> getImageSize(Identifier texture) {
         if (imageWidth == 0 && imageHeight == 0) {
-            updateImageSize(texture);
+            updateImageSize(texture, mc.getWindow().getWidth(), mc.getWindow().getHeight());
         }
-        return new ArrayList<>(List.of(imageWidth, imageHeight));
+        return Arrays.asList(imageWidth, imageHeight);
     }
 }
