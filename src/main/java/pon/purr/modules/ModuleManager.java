@@ -6,7 +6,7 @@ import java.util.*;
 
 
 public class ModuleManager {
-    private final List<Parent> modules;
+    public final List<Parent> modules;
 
     public ModuleManager(Parent... modules) {
         this.modules = List.of(modules);

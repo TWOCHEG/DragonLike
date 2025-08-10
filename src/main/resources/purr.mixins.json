@@ -7,7 +7,12 @@
     "MixinKeyboard",
     "MixinCamera",
     "MixinClientPlayerEntity",
-    "MixinScreen"
+    "MixinScreen",
+    "MixinKeyboardInput",
+    "MixinClientConnection",
+    "LivingEntityRenderer",
+    "accesors.IClientPlayerEntity",
+    "accesors.IExplosion"
   ],
   "injectors": {
     "defaultRequire": 1

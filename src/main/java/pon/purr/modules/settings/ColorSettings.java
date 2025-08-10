@@ -1,6 +1,6 @@
 package pon.purr.modules.settings;
 
-import pon.purr.utils.Color;
+import pon.purr.utils.ColorUtils;
 
 public class ColorSettings extends Setting<Integer> {
     public ColorSettings(String name, int defaultValue) {
@@ -8,15 +8,15 @@ public class ColorSettings extends Setting<Integer> {
     }
 
     public int r() {
-        return Color.fromInt(getValue()).getFirst();
+        return ColorUtils.fromInt(getValue()).getRed();
     }
     public int g() {
-        return Color.fromInt(getValue()).get(1);
+        return ColorUtils.fromInt(getValue()).getGreen();
     }
     public int b() {
-        return Color.fromInt(getValue()).get(2);
+        return ColorUtils.fromInt(getValue()).getBlue();
     }
     public int a() {
-        return Color.fromInt(getValue()).get(3);
+        return ColorUtils.fromInt(getValue()).getAlpha();
     }
 }

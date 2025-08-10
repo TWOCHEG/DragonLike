@@ -1,9 +1,6 @@
 package pon.purr.modules.ui;
 
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
 import pon.purr.Purr;
@@ -12,9 +9,8 @@ import pon.purr.gui.ModulesGui;
 import pon.purr.gui.components.CategoryArea;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.*;
-import pon.purr.utils.Color;
+import pon.purr.utils.ColorUtils;
 
-import java.io.IOException;
 import java.util.*;
 
 public class Gui extends Parent {
@@ -31,8 +27,8 @@ public class Gui extends Parent {
         images.put("smalik", "textures/gui/smalik.png");
     }
 
-    public ColorSettings theme = new ColorSettings("theme", Color.fromRGB(0, 0, 0));
-    public ColorSettings textColor = new ColorSettings("text color", Color.fromRGB(255, 255, 255));
+    public ColorSettings theme = new ColorSettings("theme", ColorUtils.fromRGB(0, 0, 0));
+    public ColorSettings textColor = new ColorSettings("text color", ColorUtils.fromRGB(255, 255, 255));
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public ListSetting<String> image = new ListSetting<>(
         "image",

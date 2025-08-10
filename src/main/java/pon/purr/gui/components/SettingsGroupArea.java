@@ -2,7 +2,7 @@ package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.modules.settings.SettingsGroup;
-import pon.purr.utils.Color;
+import pon.purr.utils.ColorUtils;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -49,7 +49,7 @@ public class SettingsGroupArea extends RenderArea {
             startY,
             startX + width,
             startY + height,
-            Color.fromRGB(100, 100, 100, (30 * alphaPercent) + (30 * openPercent)),
+            ColorUtils.fromRGB(100, 100, 100, (30 * alphaPercent) + (30 * openPercent)),
             5, 2
         );
         int titleX = startX + (width / 2 - textRenderer.getWidth(group.getName()) / 2);
@@ -58,7 +58,7 @@ public class SettingsGroupArea extends RenderArea {
             group.getName() + " " + (group.open ? "+" : "-"),
             titleX,
             startY + padding,
-            Color.fromRGB(200, 200, 200, 200 * alphaPercent),
+            ColorUtils.fromRGB(200, 200, 200, 200 * alphaPercent),
             false
         );
 

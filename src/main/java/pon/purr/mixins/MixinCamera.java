@@ -1,77 +1,70 @@
 package pon.purr.mixins;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.BlockView;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import pon.purr.Purr;
+import pon.purr.modules.render.FreeCam;
+import pon.purr.modules.render.NoCameraClip;
 import net.minecraft.client.render.Camera;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
-import pon.purr.Purr;
-import pon.purr.events.impl.EventPositionCamera;
-import pon.purr.events.impl.EventRotateCamera;
 
 @Mixin(Camera.class)
 public abstract class MixinCamera {
+    @Shadow
+    protected abstract float clipToSpace(float desiredCameraDistance);
 
-    @Shadow protected abstract float clipToSpace(float desiredCameraDistance);
+    @Shadow
+    private boolean thirdPerson;
 
-//    @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;moveBy(FFF)V", ordinal = 0))
-//    public void modifyArgsMoveBy(Args args) {
-//        ModifyCamera modifyCamera = (ModifyCamera) Purr.moduleManager.getModuleByClass(ModifyCamera.class);
-//        if (modifyCamera.getEnable() && modifyCamera.rewriteDistance.getValue())
-//            args.set(0, -clipToSpace(modifyCamera.distance.getValue()));
-//    }
+    @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;moveBy(FFF)V", ordinal = 0))
+    private void modifyCameraDistance(Args args) {
+        if (Purr.moduleManager.getModuleByClass(NoCameraClip.class) instanceof NoCameraClip ncp) {
+            if (ncp.getEnable()) {
+                args.set(0, -clipToSpace(ncp.getDistance()));
+            }
+        }
+    }
 
-//    @Inject(method = "clipToSpace", at = @At(value = "HEAD"), cancellable = true)
-//    public void modifyClipToSpace(float defaultDistance, CallbackInfoReturnable<Float> cir) {
-//        if (ModuleList.cameraClip.isEnabled()) {
-//            cir.setReturnValue(defaultDistance);
-//        }
-//    }
+    @Inject(method = "clipToSpace", at = @At("HEAD"), cancellable = true)
+    private void onClipToSpace(float f, CallbackInfoReturnable<Float> cir) {
+        if (Purr.moduleManager.getModuleByClass(NoCameraClip.class) instanceof NoCameraClip ncp) {
+            if (ncp.getEnable()) {
+                cir.setReturnValue(ncp.getDistance());
+            }
+        }
+    }
+
+    @Inject(method = "update", at = @At("TAIL"))
+    private void updateHook(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
+        if (Purr.moduleManager.getModuleByClass(FreeCam.class) instanceof FreeCam f) {
+            if (f.getEnable()) {
+                this.thirdPerson = true;
+            }
+        }
+    }
 
     @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setRotation(FF)V"))
-    public void modifyArgsSetRotationOnUpdate(Args args) {
-        EventRotateCamera event = new EventRotateCamera(args.get(0), args.get(1));
-        Purr.EVENT_BUS.post(event);
-
-        args.set(0, event.getYaw());
-        args.set(1, event.getPitch());
+    private void setRotationHook(Args args) {
+        if (Purr.moduleManager.getModuleByClass(FreeCam.class) instanceof FreeCam f) {
+            if (f.getEnable()) {
+                args.setAll(f.getFakeYaw(), f.getFakePitch());
+            }
+        }
     }
 
     @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setPos(DDD)V"))
-    public void modifyArgsSetPosOnUpdate(Args args) {
-        EventPositionCamera event = new EventPositionCamera(args.get(0), args.get(1), args.get(2), MinecraftClient.getInstance().getRenderTickCounter().getDynamicDeltaTicks());
-        Purr.EVENT_BUS.post(event);
-
-        args.set(0, event.getX());
-        args.set(1, event.getY());
-        args.set(2, event.getZ());
+    private void setPosHook(Args args) {
+        if (Purr.moduleManager.getModuleByClass(FreeCam.class) instanceof FreeCam f) {
+            if (f.getEnable()) {
+                args.setAll(f.getFakeX(), f.getFakeY(),f.getFakeZ());
+            }
+        }
     }
-
-//    @Inject(method = "getSubmersionType", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
-//    public void modifyGetSubmersionTypeWithWaterReturn(CallbackInfoReturnable<CameraSubmersionType> cir) {
-//        if (Client.isOptionActivated(ModuleList.noRender, ModuleList.noRender.waterFog))
-//            cir.setReturnValue(CameraSubmersionType.NONE);
-//        else cir.cancel();
-//    }
-//
-//    @Inject(method = "getSubmersionType", at = @At(value = "RETURN", ordinal = 2), cancellable = true)
-//    public void modifyGetSubmersionTypeWithLavaReturn(CallbackInfoReturnable<CameraSubmersionType> cir) {
-//        if (Client.isOptionActivated(ModuleList.noRender, ModuleList.noRender.lavaFog))
-//            cir.setReturnValue(CameraSubmersionType.NONE);
-//        else cir.cancel();
-//    }
-//
-//    @Inject(method = "getSubmersionType", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
-//    public void modifyGetSubmersionTypeWithPowderSnowReturn(CallbackInfoReturnable<CameraSubmersionType> cir) {
-//        if (Client.isOptionActivated(ModuleList.noRender, ModuleList.noRender.powderSnowFog))
-//            cir.setReturnValue(CameraSubmersionType.NONE);
-//        else cir.cancel();
-//    }
-//
-//    @Inject(method = "isThirdPerson", at = @At("HEAD"), cancellable = true)
-//    public void modifyIsThirdPerson(CallbackInfoReturnable<Boolean> cir) {
-//        if (ModuleList.freeCam.isEnabled()) cir.setReturnValue(true);
-//    }
 }

@@ -11,4 +11,8 @@ public class ListSetting<E> extends Setting<E> {
     }
 
     public List<E> getOptions() { return options; }
+
+    public boolean equals(Enum v) {
+        return v.name().toLowerCase().equals(getValue().toString().toLowerCase());
+    }
 }

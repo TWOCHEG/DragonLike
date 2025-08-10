@@ -3,6 +3,7 @@ package pon.purr.modules.settings;
 import pon.purr.gui.components.NumberSettingsArea;
 import pon.purr.gui.components.RenderArea;
 import pon.purr.modules.Parent;
+import pon.purr.utils.EnumConverter;
 
 import java.util.function.Predicate;
 
@@ -30,6 +31,15 @@ public class Setting<T> {
     public String getName() { return name; }
     public T getValue() {
         return value != null ? value : defaultValue;
+    }
+    public static Enum get(Enum clazz) {
+        int index = EnumConverter.currentEnum(clazz);
+        for (int i = 0; i < clazz.getClass().getEnumConstants().length; ++i) {
+            Enum e = clazz.getClass().getEnumConstants()[i];
+            if (i != index + 1) continue;
+            return e;
+        }
+        return clazz.getClass().getEnumConstants()[0];
     }
     public void setValue(T value) {
         if (this.module != null) {

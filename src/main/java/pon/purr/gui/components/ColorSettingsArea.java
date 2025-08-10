@@ -2,8 +2,7 @@ package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.modules.settings.ColorSettings;
-import pon.purr.modules.settings.Setting;
-import pon.purr.utils.Color;
+import pon.purr.utils.ColorUtils;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -43,7 +42,7 @@ public class ColorSettingsArea extends RenderArea {
             "карта цветов покачто в разработке",
             context, textRenderer,
             startX, startY, width, padding,
-            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
+            ColorUtils.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
 
         super.render(context, startX, startY, width, (int) (height * showPercent), mouseX, mouseY);

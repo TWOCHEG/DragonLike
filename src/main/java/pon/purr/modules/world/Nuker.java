@@ -22,7 +22,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
 import pon.purr.utils.Render;
-import pon.purr.utils.Rotations;
+import pon.purr.utils.player.MovementUtility;
 import pon.purr.utils.math.AnimHelper;
 
 import java.util.*;
@@ -70,20 +70,15 @@ public class Nuker extends Parent {
     public Nuker() {
         super("nuker", Purr.Categories.world);
 
-        WorldRenderEvents.START.register(context -> {
+        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             if (mc.player != null && enable && mc.world != null) {
                 boolean isPlayerMining = (
                     net.fabricmc.api.EnvType.CLIENT == null ?
                         false :
                         org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().getHandle(), mc.options.attackKey.getDefaultKey().getCode()) == org.lwjgl.glfw.GLFW.GLFW_PRESS
                 );
-                boolean move = false;
-                if (movePause.getValue()) {
-                    Vec3d speed = mc.player.getVelocity();
-                    move = (speed.x > 0.0f || speed.z > 0.0f || speed.y > 0.0f);
-                }
 
-                if (!isPlayerMining && !move) {
+                if (!isPlayerMining && (!MovementUtility.isMoving() && movePause.getValue())) {
                     process();
                 }
             }
@@ -305,7 +300,8 @@ public class Nuker extends Parent {
         pitch = currentPitch + (pitch - currentPitch) * 0.4f;
         pitch = MathHelper.clamp(pitch, -90, 90);
 
-        Rotations.rotate(yaw, pitch);
+        mc.player.setYaw(yaw);
+        mc.player.setYaw(pitch);
     }
 
     private void abortMining() {

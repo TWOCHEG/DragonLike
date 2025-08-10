@@ -1,8 +1,10 @@
 package pon.purr.utils;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
-public class Color {
+public class ColorUtils {
     public static int fromRGB(int r, int g, int b, int a) {
         if (a <= 4 || a > 255) {
             return 0x00000000;
@@ -23,11 +25,21 @@ public class Color {
      * @param color цвет в int кодировке
      * @return red, green, blue, alpha
      */
-    public static List<Integer> fromInt(int color) {
+    public static Color fromInt(int color) {
         int red = (color >> 16) & 0xFF;
         int green = (color >> 8) & 0xFF;
         int blue = color & 0xFF;
         int alpha = (color >> 24) & 0xff;
-        return Arrays.asList(red, green, blue, alpha);
+        return new Color(red, green, blue, alpha);
+    }
+
+    public static Color applyOpacity(Color color, float opacity) {
+        opacity = Math.min(1, Math.max(0, opacity));
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * opacity));
+    }
+    public static int applyOpacity(int color_int, float opacity) {
+        opacity = Math.min(1, Math.max(0, opacity));
+        Color color = new Color(color_int);
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * opacity)).getRGB();
     }
 }

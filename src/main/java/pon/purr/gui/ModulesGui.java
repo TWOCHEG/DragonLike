@@ -1,23 +1,17 @@
 package pon.purr.gui;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.text.Text;
-import org.joml.Matrix3x2fStack;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
+import pon.purr.Purr;
 import pon.purr.gui.components.*;
+import pon.purr.managers.Managers;
 import pon.purr.modules.Parent;
+import pon.purr.modules.client.Rotations;
 import pon.purr.modules.ui.Gui;
 import pon.purr.utils.GetAnimDiff;
-import pon.purr.utils.Color;
-import pon.purr.utils.Rotations;
+import pon.purr.utils.ColorUtils;
 import pon.purr.utils.math.AnimHelper;
 
 import java.util.*;
@@ -81,8 +75,8 @@ public class ModulesGui extends Screen {
         context.fillGradient(
             0, 0,
             this.width, this.height,
-            Color.fromRGB(0, 0, 0, (int) (50 * openPercent)),
-            Color.fromRGB(0, 0, 0, 0)
+            ColorUtils.fromRGB(0, 0, 0, (int) (50 * openPercent)),
+            ColorUtils.fromRGB(0, 0, 0, 0)
         );
 
         int closeCount = 0;
@@ -136,10 +130,12 @@ public class ModulesGui extends Screen {
 
             float sensitivity = 0.05f;
 
-            float yaw = Rotations.getCameraYaw() + (float) (deltaX * sensitivity);
-            float pitch = Math.clamp(Rotations.getCameraPitch() + (float) (deltaY * sensitivity), -89.0f, 89.0f);
+            if (Purr.moduleManager != null && Purr.moduleManager.getModuleByClass(Rotations.class) instanceof Rotations r) {
+                float yaw = Managers.PLAYER.pitch + (float) (deltaX * sensitivity);
+                float pitch = Math.clamp(Managers.PLAYER.yaw + (float) (deltaY * sensitivity), -89.0f, 89.0f);
 
-            Rotations.rotate(yaw, pitch, moveDelta);
+                r.normalRotate(yaw, pitch);
+            }
 
             lastMouseX = mouseX;
             lastMouseY = mouseY;

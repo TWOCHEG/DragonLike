@@ -26,5 +26,6 @@
     },
 	"suggests": {
 		"another-mod": "*"
-	}
+	},
+    "accessWidener": "purr.accesswidener"
 }

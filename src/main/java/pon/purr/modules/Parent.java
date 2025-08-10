@@ -1,5 +1,6 @@
 package pon.purr.modules;
 
+import org.lwjgl.glfw.GLFW;
 import pon.purr.Purr;
 import pon.purr.Purr.Categories;
 import pon.purr.config.ConfigManager;
@@ -131,7 +132,7 @@ public abstract class Parent {
         return config;
     }
 
-    public void notify(Notify.NotifyData n) {
+    public static void notify(Notify.NotifyData n) {
         if (Purr.moduleManager != null) {
             Parent notify = Purr.moduleManager.getModuleByClass(Notify.class);
             if (notify instanceof Notify no)  {
@@ -140,7 +141,7 @@ public abstract class Parent {
         }
     }
 
-    public int getNotifyLiveTime() {
+    public static int getNotifyLiveTime() {
         if (Purr.moduleManager != null) {
             Parent notify = Purr.moduleManager.getModuleByClass(Notify.class);
             if (notify instanceof Notify no)  {
@@ -156,7 +157,14 @@ public abstract class Parent {
         }
     }
 
+    public void onThread() {
+    }
+
     public static boolean fullNullCheck() {
         return mc.player == null || mc.world == null;
+    }
+
+    public boolean isKeyPressed(int button) {
+        return GLFW.glfwGetKey(mc.getWindow().getHandle(), button) == GLFW.GLFW_PRESS;
     }
 }

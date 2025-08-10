@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.purr.modules.settings.ListSetting;
-import pon.purr.utils.Color;
+import pon.purr.utils.ColorUtils;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -65,7 +65,7 @@ public class ListSettingsArea extends RenderArea {
             startY,
             width,
             padding,
-            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
+            ColorUtils.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
         ListValue area = getValueArea();
         if (oldValue != null) {
@@ -75,7 +75,7 @@ public class ListSettingsArea extends RenderArea {
                 MathHelper.lerp(delta, oldValue.y, area.y),
                 MathHelper.lerp(delta, oldValue.x + oldValue.width, area.x + area.width),
                 MathHelper.lerp(delta, oldValue.y + oldValue.height, area.y + area.height),
-                Color.fromRGB(0, 0, 0, 70 * alphaPercent),
+                ColorUtils.fromRGB(0, 0, 0, 70 * alphaPercent),
                 vertexRadius,
                 2
             );
@@ -167,7 +167,7 @@ public class ListSettingsArea extends RenderArea {
                 value.toString(),
                 startX + padding,
                 startY + (this.height / 2 - textRenderer.fontHeight / 2),
-                Color.fromRGB(255, 255, 255, alpha),
+                ColorUtils.fromRGB(255, 255, 255, alpha),
                 false
             );
             width = textRenderer.getWidth(value.toString()) + padding * 2;

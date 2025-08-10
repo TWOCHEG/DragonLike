@@ -1,4 +1,4 @@
-package pon.purr.utils;
+package pon.purr.utils.player;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.PlayerInput;

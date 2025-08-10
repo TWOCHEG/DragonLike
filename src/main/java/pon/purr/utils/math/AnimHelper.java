@@ -3,6 +3,7 @@ package pon.purr.utils.math;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.lwjgl.system.MathUtil;
 import pon.purr.Purr;
 import pon.purr.modules.ui.Gui;
 import pon.purr.utils.GetAnimDiff;
@@ -68,5 +69,14 @@ public class AnimHelper {
             int drawChars = Math.round(endText.length() * drawRatio);
             return endText.substring(0, drawChars);
         }
+    }
+
+    public static float deltaTime() {
+        return FrameRateCounter.INSTANCE.getFps() > 5 ? (1f / FrameRateCounter.INSTANCE.getFps()) : 0.016f;
+    }
+
+    public static float fast(float end, float start, float multiple) {
+        float clampedDelta = Math.clamp(deltaTime() * multiple, 0f, 1f);
+        return (1f - clampedDelta) * end + clampedDelta * start;
     }
 }

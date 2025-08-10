@@ -2,7 +2,7 @@ package pon.purr.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import pon.purr.modules.settings.Setting;
-import pon.purr.utils.Color;
+import pon.purr.utils.ColorUtils;
 import pon.purr.utils.Render;
 import pon.purr.utils.math.AnimHelper;
 
@@ -48,7 +48,7 @@ public class BooleanSettingsArea extends RenderArea {
             startY,
             width - buttonWidth - padding * 2,
             padding,
-            Color.fromRGB(255, 255, 255, 200 * alphaPercent)
+            ColorUtils.fromRGB(255, 255, 255, 200 * alphaPercent)
         );
 
         Render.fill(
@@ -57,7 +57,7 @@ public class BooleanSettingsArea extends RenderArea {
             startY + ((height - padding) / 2 - buttonHeight / 2),
             startX + width,
             startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight,
-            Color.fromRGB(100, 100, (int) (100 + (200 * enablePercent)), 200 * alphaPercent),
+            ColorUtils.fromRGB(100, 100, (int) (100 + (200 * enablePercent)), 200 * alphaPercent),
             3, 2
         );
         int buttonX = (int) (startX + width - buttonWidth + 1 + (buttonWidth / 2 * enablePercent));
@@ -67,7 +67,7 @@ public class BooleanSettingsArea extends RenderArea {
             startY + ((height - padding) / 2 - buttonHeight / 2) + 1,
             (buttonX + buttonWidth / 2) - 1,
             startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight - 1,
-            Color.fromRGB(200, 200, 200, 200 * alphaPercent),
+            ColorUtils.fromRGB(200, 200, 200, 200 * alphaPercent),
             3, 2
         );
 
