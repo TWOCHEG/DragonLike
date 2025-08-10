@@ -50,9 +50,9 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
             originalPrevHeadPitch = livingEntity.getPitch();
             originalHeadPitch = livingEntity.getPitch();
 
-            livingEntity.setPitch(MinecraftClient.getInstance().player.lastPitch);
+            livingEntity.setPitch(((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastPitch());
             livingEntity.lastPitch = Managers.PLAYER.lastPitch;
-            livingEntity.headYaw = MinecraftClient.getInstance().player.lastYaw;
+            livingEntity.headYaw = ((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastYaw();
             livingEntity.bodyYaw = Render2DEngine.interpolateFloat(Managers.PLAYER.prevBodyYaw, Managers.PLAYER.bodyYaw, Render3DEngine.getTickDelta());
             livingEntity.lastHeadYaw = Managers.PLAYER.lastYaw;
             livingEntity.lastBodyYaw = Render2DEngine.interpolateFloat(Managers.PLAYER.prevBodyYaw, Managers.PLAYER.bodyYaw, Render3DEngine.getTickDelta());
