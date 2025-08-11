@@ -1,4 +1,4 @@
-package pon.purr.mixins;
+package pon.purr.injection;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.world.BlockView;

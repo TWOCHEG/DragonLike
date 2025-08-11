@@ -1,4 +1,4 @@
-package pon.purr.mixins.accesors;
+package pon.purr.injection.accesors;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

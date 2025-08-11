@@ -1,4 +1,4 @@
-package pon.purr.mixins;
+package pon.purr.injection;
 
 import net.minecraft.client.input.KeyboardInput;
 import org.spongepowered.asm.mixin.Mixin;

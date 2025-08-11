@@ -1,4 +1,4 @@
-package pon.purr.mixins;
+package pon.purr.injection;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;

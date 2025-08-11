@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "pon.purr.mixins",
+  "package": "pon.purr.injection",
   "compatibilityLevel": "JAVA_21",
   "client": [
     "MixinMinecraftClient",
@@ -11,13 +11,14 @@
     "MixinKeyboardInput",
     "MixinClientConnection",
     "MixinLivingEntityRenderer",
-    "accesors.IClientPlayerEntity",
-    "accesors.IExplosion"
+    "accesors.IClientPlayerEntity"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-    "MixinEntity"
+    "MixinEntity",
+    "accesors.IExplosion",
+    "accesors.ILivingEntity"
   ]
 }

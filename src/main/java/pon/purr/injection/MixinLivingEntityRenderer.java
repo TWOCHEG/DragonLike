@@ -1,16 +1,13 @@
-package pon.purr.mixins;
+package pon.purr.injection;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import pon.purr.Purr;
 import pon.purr.managers.Managers;
-import pon.purr.mixins.accesors.IClientPlayerEntity;
+import pon.purr.injection.accesors.IClientPlayerEntity;
 import pon.purr.modules.Parent;
 import pon.purr.modules.render.FreeCam;
 import pon.purr.modules.render.NoRender;

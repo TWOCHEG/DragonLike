@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import pon.purr.Purr;
 import pon.purr.events.impl.*;
 import pon.purr.managers.IManager;
-import pon.purr.mixins.accesors.IClientPlayerEntity;
 import pon.purr.modules.Parent;
 import pon.purr.modules.client.Rotations;
 import pon.purr.utils.math.Timer;

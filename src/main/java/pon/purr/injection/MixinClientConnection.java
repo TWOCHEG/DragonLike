@@ -1,24 +1,16 @@
-package pon.purr.mixins;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
+package pon.purr.injection;
 
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.handler.PacketSizeLogger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pon.purr.Purr;
 import pon.purr.events.impl.PacketEvent;
-import pon.purr.managers.Managers;
 import pon.purr.modules.Parent;
-
-import java.net.InetSocketAddress;
 
 @Mixin(ClientConnection.class)
 public class MixinClientConnection {
