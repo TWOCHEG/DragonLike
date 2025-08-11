@@ -23,10 +23,8 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.explosion.Explosion;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
-import pon.purr.mixins.accesors.IExplosion;
+// import pon.purr.mixins.accesors.IExplosion;
 import pon.purr.utils.math.PredictUtility;
-
-import java.util.Objects;
 
 import static pon.purr.gui.components.RenderArea.mc;
 

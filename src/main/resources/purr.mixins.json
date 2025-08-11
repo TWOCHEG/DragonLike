@@ -10,7 +10,7 @@
     "MixinScreen",
     "MixinKeyboardInput",
     "MixinClientConnection",
-    "LivingEntityRenderer",
+    "MixinLivingEntityRenderer",
     "accesors.IClientPlayerEntity",
     "accesors.IExplosion"
   ],

@@ -2,10 +2,16 @@ package pon.purr.mixins;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.MathHelper;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,12 +30,12 @@ import pon.purr.utils.ColorUtils;
 import pon.purr.utils.render.Render2DEngine;
 import pon.purr.utils.render.Render3DEngine;
 
-import java.awt.*;
+import java.util.List;
 
 import static pon.purr.modules.Parent.mc;
 
 @Mixin(net.minecraft.client.render.entity.LivingEntityRenderer.class)
-public abstract class LivingEntityRenderer<T extends LivingEntity, M extends EntityModel<?>> {
+public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
     private LivingEntity lastEntity;
 
     private float originalHeadYaw, originalPrevHeadYaw, originalPrevHeadPitch, originalHeadPitch;
@@ -37,9 +43,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
     @Shadow
     protected M model;
 
-//    @Shadow
-//    @Final
-//    protected List<FeatureRenderer<T, M>> features;
+    @Shadow @Final protected List<FeatureRenderer<S, M>> features;
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     public void onRenderPre(T livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {

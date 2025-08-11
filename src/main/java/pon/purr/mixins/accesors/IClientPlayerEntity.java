@@ -10,16 +10,16 @@ public interface IClientPlayerEntity {
     @Invoker(value = "sendMovementPackets")
     void iSendMovementPackets();
 
-    @Accessor(value = "lastHeadYaw")
+    @Accessor(value = "lastRenderYaw")
     float getLastYaw();
 
-    @Accessor(value = "lastPitch")
+    @Accessor(value = "lastRenderPitch")
     float getLastPitch();
 
-    @Accessor(value = "lastYaw")
+    @Accessor(value = "lastRenderYaw")
     void setLastYaw(float yaw);
 
-    @Accessor(value = "lastPitch")
+    @Accessor(value = "lastRenderPitch")
     void setLastPitch(float pitch);
 
     @Accessor(value = "mountJumpStrength")
