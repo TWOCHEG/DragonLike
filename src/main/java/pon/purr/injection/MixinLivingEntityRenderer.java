@@ -37,10 +37,9 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, S extend
 
     private float originalHeadYaw, originalPrevHeadYaw, originalPrevHeadPitch, originalHeadPitch;
 
-    @Shadow
-    protected M model;
+//    @Shadow protected M model;
 
-    @Shadow @Final protected List<FeatureRenderer<S, M>> features;
+//    @Shadow @Final protected List<FeatureRenderer<S, M>> features;
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     public void onRenderPre(T livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {

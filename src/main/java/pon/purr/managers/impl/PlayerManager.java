@@ -110,7 +110,7 @@ public class PlayerManager implements IManager {
     }
 
     @EventHandler
-    public void modifyVelocity(EventPlayerTravel e) {
+    public void modifyVelocity(EventTravel e) {
         if (Purr.moduleManager.getModuleByClass(Rotations.class) instanceof Rotations r) {
             r.modifyVelocity(e);
         }

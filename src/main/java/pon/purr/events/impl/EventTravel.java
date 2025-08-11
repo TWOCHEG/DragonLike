@@ -3,11 +3,11 @@ package pon.purr.events.impl;
 import pon.purr.events.Event;
 import net.minecraft.util.math.Vec3d;
 
-public class EventPlayerTravel extends Event {
+public class EventTravel extends Event {
     private Vec3d mVec;
     private boolean pre;
 
-    public EventPlayerTravel(Vec3d mVec, boolean pre) {
+    public EventTravel(Vec3d mVec, boolean pre) {
         this.mVec = mVec;
         this.pre = pre;
     }

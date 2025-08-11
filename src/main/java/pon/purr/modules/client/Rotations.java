@@ -52,7 +52,7 @@ public class Rotations extends Parent {
         }
     }
 
-    public void modifyVelocity(EventPlayerTravel e) {
+    public void modifyVelocity(EventTravel e) {
 //        if (ModuleManager.aura.isEnabled() && ModuleManager.aura.target != null && ModuleManager.aura.rotationMode.not(Aura.Mode.None)
 //                && ModuleManager.aura.elytraTarget.getValue() && Managers.PLAYER.ticksElytraFlying > 5) {
 //            if (e.isPre()) {
