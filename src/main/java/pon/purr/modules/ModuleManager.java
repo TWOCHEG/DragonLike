@@ -41,8 +41,8 @@ public class ModuleManager {
             .orElse(null);
     }
     public <T extends Parent> T getModuleByClass(Class<T> c) {
-        for (Parent p : modules) {
-            if (Objects.equals(c.getClass(), p.getClass())) return (T) p;
+        for (Parent m : modules) {
+            if (Objects.equals(c, m.getClass())) return (T) m;
         }
         return null;
     }

@@ -1,103 +1,150 @@
 package pon.purr.modules.render;
 
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.input.Input;
+import net.minecraft.client.input.KeyboardInput;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import pon.purr.Purr;
-import pon.purr.events.impl.EventKey;
-import pon.purr.events.impl.EventTick;
+import pon.purr.events.impl.EventChangePlayerLook;
+import pon.purr.events.impl.EventPositionCamera;
+import pon.purr.events.impl.EventRotateCamera;
 import pon.purr.modules.Parent;
 import pon.purr.modules.settings.Setting;
-import pon.purr.utils.math.MathUtils;
-import pon.purr.utils.player.MovementUtility;
-import pon.purr.utils.render.Render2DEngine;
-import pon.purr.utils.render.Render3DEngine;
 
 public class FreeCam extends Parent {
-    public Setting<Float> horizontalSpeed = new Setting<>("horizontal speed", 1.0f, 0.1f, 3.0f);
-    public Setting<Float> verticalSpeed = new Setting<>("vertical speed", 0.5f, 0.1f, 3.0f);
+    public final Setting<Integer> verticalSpeed = new Setting<>("v Sspeed",10, 1, 100);
+    public final Setting<Integer> horizontalSpeed = new Setting<>("h speed", 10, 1, 100);
 
-    private float freeYaw, freePitch;
-    private float prevFreeYaw, prevFreePitch;
-
-    private double freeX, freeY, freeZ;
-    private double prevFreeX, prevFreeY, prevFreeZ;
+    private final FreeCamData freeCamData = new FreeCamData();
 
     public FreeCam() {
         super("free cam", Purr.Categories.render);
         enable = false;
     }
 
-    @EventHandler
-    public void onTick(EventTick e) {
-        if (mc.player == null) return;
-
-        prevFreeYaw = freeYaw;
-        prevFreePitch = freePitch;
-
-        freeYaw = mc.player.getYaw();
-        freePitch = mc.player.getPitch();
-    }
-
-    @EventHandler
-    public void onKeyboardTick(EventKey e) {
-        if (mc.player == null) return;
-
-        double[] motion = MovementUtility.forward(horizontalSpeed.getValue().doubleValue());
-
-        prevFreeX = freeX;
-        prevFreeY = freeY;
-        prevFreeZ = freeZ;
-
-        freeX += motion[0];
-        freeZ += motion[1];
-
-        if (mc.options.jumpKey.isPressed()) freeY += verticalSpeed.getValue().doubleValue();
-        if (mc.options.sneakKey.isPressed()) freeY -= verticalSpeed.getValue().doubleValue();
-
-        MovementUtility.setInput(mc.player.input.playerInput.forward(), mc.player.input.playerInput.backward(), mc.player.input.playerInput.left(), mc.player.input.playerInput.right(), false, false, false);
-    }
-
     @Override
     public void onEnable() {
-        if (fullNullCheck()) {
-            enable = false;
-            return;
-        }
-
-        mc.chunkCullingEnabled = false;
-
-        freeYaw = prevFreeYaw = mc.player.getYaw();
-        freePitch = prevFreePitch = mc.player.getPitch();
-
-        freeX = prevFreeX = mc.player.getX();
-        freeY = prevFreeY = mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose());
-        freeZ = prevFreeZ = mc.player.getZ();
+        if (fullNullCheck()) return;
+        freeCamData.reset();
+        mc.player.input = new FreecamKeyboardInput(mc.options, freeCamData);
     }
 
     @Override
     public void onDisable() {
-        if (mc.player == null || mc.world == null) return;
-
-        mc.chunkCullingEnabled = true;
+        if (fullNullCheck()) return;
+        mc.player.input = new KeyboardInput(mc.options);
     }
 
-    public float getFreeYaw() {
-        return (float) MathHelper.lerp(prevFreeYaw, freeYaw, Render3DEngine.getTickDelta());
+    @EventHandler
+    @SuppressWarnings("unused")
+    public void onCameraPosition(EventPositionCamera e) {
+        if (freeCamData.lastPosition == null) return;
+        e.setPosition(freeCamData.lastPosition.lerp(freeCamData.position, e.getTickDelta()));
     }
 
-    public float getFreePitch() {
-        return (float) MathHelper.lerp(prevFreePitch, freePitch, Render3DEngine.getTickDelta());
+    @EventHandler
+    @SuppressWarnings("unused")
+    public void onCameraRotate(EventRotateCamera e) {
+        e.setRotation(new Vec2f(freeCamData.yaw, freeCamData.pitch));
     }
 
-    public double getFreeX() {
-        return MathHelper.lerp(prevFreeX, freeX, Render3DEngine.getTickDelta());
+    @EventHandler
+    @SuppressWarnings("unused")
+    public void onMouseUpdate(EventChangePlayerLook e) {
+        e.cancel();
+        freeCamData.changeLookDirection(e.cursorDeltaX, e.cursorDeltaY);
     }
 
-    public double getFreeY() {
-        return MathHelper.lerp(prevFreeY, freeY, Render3DEngine.getTickDelta());
+//    @EventHandler
+//    @SuppressWarnings("unused")
+//    public void onSetOpaqueCube(SetOpaqueCubeEvent e) {
+//        e.setCancelled(true);
+//    }
+
+    public static class FreecamKeyboardInput extends Input {
+
+        private final GameOptions options;
+        private final FreeCamData freeCamData;
+
+        public FreecamKeyboardInput(GameOptions options, FreeCamData freeCamData) {
+            this.options = options;
+            this.freeCamData = freeCamData;
+        }
+
+        @Override
+        public void tick() {
+            if (fullNullCheck()) return;
+            unset();
+            FreeCam freeCam = Purr.moduleManager.getModuleByClass(FreeCam.class);
+
+            float hSpeed = freeCam.horizontalSpeed.getValue().floatValue() / 10f;
+            float vSpeed = freeCam.verticalSpeed.getValue().floatValue() / 10f;
+            float fakeMovementForward = getMovementMultiplier(options.forwardKey.isPressed(), options.backKey.isPressed());
+            float fakeMovementSideways = getMovementMultiplier(options.leftKey.isPressed(), options.rightKey.isPressed());
+            Vec2f dir = handleVanillaMotion(hSpeed, fakeMovementForward, fakeMovementSideways);
+
+            float y = 0;
+            if (options.jumpKey.isPressed()) {
+                y += vSpeed;
+            } else if (options.sneakKey.isPressed()) {
+                y -= vSpeed;
+            }
+
+            freeCamData.lastPosition = freeCamData.position;
+            freeCamData.position = freeCamData.position.add(dir.x, y, dir.y);
+        }
+
+        private void unset() {
+            playerInput = new PlayerInput(false, false, false, false, false, false, false);
+        }
+
+        private float getMovementMultiplier(boolean positive, boolean negative) {
+            if (positive == negative) {
+                return 0.0F;
+            } else {
+                return positive ? 1.0F : -1.0F;
+            }
+        }
+
+        private Vec2f handleVanillaMotion(final float speed, float forward, float strafe) {
+            if (forward == 0.0f && strafe == 0.0f) {
+                return Vec2f.ZERO;
+            } else if (forward != 0.0f && strafe != 0.0f) {
+                forward *= (float) Math.sin(0.7853981633974483);
+                strafe *= (float) Math.cos(0.7853981633974483);
+            }
+            return new Vec2f((float) (forward * speed * -Math.sin(Math.toRadians(freeCamData.yaw)) + strafe * speed * Math.cos(Math.toRadians(freeCamData.yaw))),
+                    (float) (forward * speed * Math.cos(Math.toRadians(freeCamData.yaw)) - strafe * speed * -Math.sin(Math.toRadians(freeCamData.yaw))));
+        }
     }
 
-    public double getFreeZ() {
-        return MathHelper.lerp(prevFreeZ, freeZ, Render3DEngine.getTickDelta());
+    public static class FreeCamData {
+        private MinecraftClient mc = MinecraftClient.getInstance();
+        public Vec3d position, lastPosition;
+
+        public float yaw, pitch;
+
+        public void reset() {
+            if (fullNullCheck()) return;
+
+            position = mc.gameRenderer.getCamera().getPos();
+            lastPosition = position;
+
+            yaw = mc.player.getYaw();
+            pitch = mc.player.getPitch();
+        }
+
+        public void changeLookDirection(double cursorDeltaX, double cursorDeltaY) {
+            float f = (float)cursorDeltaY * 0.15F;
+            float g = (float)cursorDeltaX * 0.15F;
+            this.pitch += f;
+            this.yaw += g;
+            this.pitch = MathHelper.clamp(pitch, -90.0F, 90.0F);
+        }
     }
 }
