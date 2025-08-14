@@ -117,7 +117,7 @@ public class PlayerManager implements IManager {
     }
 
     @EventHandler
-    public void onKeyInput(EventKeyboardInput e) {
+    public void onKeyInput(EventKey e) {
         if (Purr.moduleManager.getModuleByClass(Rotations.class) instanceof Rotations r) {
             r.onKeyInput(e);
         }

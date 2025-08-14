@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import pon.purr.events.impl.EventKey;
 import pon.purr.events.impl.EventKeyPress;
 import pon.purr.events.impl.EventKeyRelease;
 import pon.purr.gui.ModulesGui;
@@ -22,6 +23,7 @@ public class MixinKeyboard {
         boolean whitelist = mc.currentScreen == null || mc.currentScreen instanceof ModulesGui || mc.currentScreen instanceof TitleScreen;
         if (!whitelist) return;
 
+        Purr.EVENT_BUS.post(new EventKey(key, scanCode, modifiers));
         switch (action) {
             case 0 -> {
                 EventKeyRelease event = new EventKeyRelease(key, scanCode, modifiers);

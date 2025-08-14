@@ -30,6 +30,8 @@ public class Rotations extends Parent {
     private float prevYaw, prevPitch;
 
     public void normalRotate(float yaw, float pitch) {
+        prevYaw = yaw;
+        prevPitch = pitch;
         mc.player.setYaw(yaw);
         mc.player.setPitch(pitch);
     }
@@ -77,8 +79,7 @@ public class Rotations extends Parent {
             }
         }
     }
-
-    public void onKeyInput(EventKeyboardInput e) {
+    public void onKeyInput(EventKey e) {
         if (moveFix.equals(MoveFix.Free)) {
             float forward = (mc.player.input.playerInput.forward() ? 1 : mc.player.input.playerInput.backward() ? -1 : 0);
             float sideways = (mc.player.input.playerInput.left() ? 1 : mc.player.input.playerInput.right() ? -1 : 0);

@@ -87,7 +87,7 @@ public class FreeCam extends Parent {
 
 
     @EventHandler
-    public void onKeyboardInput(EventKeyboardInput e) {
+    public void onKeyboardInput(EventKey e) {
         if (mc.player == null) return;
 
         if (trackEntity == null) {
@@ -107,6 +107,8 @@ public class FreeCam extends Parent {
                 fakeY -= hspeed.getValue();
         }
 
+        MovementUtility.setMotion(0);
+
         InputUtils.setBackward(false);
         InputUtils.setLeft(false);
         InputUtils.setRight(false);
@@ -119,9 +121,9 @@ public class FreeCam extends Parent {
     @EventHandler(priority = EventPriority.LOW)
     public void onMove(EventMove e) {
         if (freeze.getValue()) {
-            e.setX(0.);
-            e.setY(0.);
-            e.setZ(0.);
+            e.setX(0);
+            e.setY(0);
+            e.setZ(0);
             e.cancel();
         }
     }
