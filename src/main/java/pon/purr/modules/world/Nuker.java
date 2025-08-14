@@ -78,14 +78,15 @@ public class Nuker extends Parent {
                         org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().getHandle(), mc.options.attackKey.getDefaultKey().getCode()) == org.lwjgl.glfw.GLFW.GLFW_PRESS
                 );
 
-                if (!isPlayerMining && (!MovementUtility.isMoving() && movePause.getValue())) {
+                if (!isPlayerMining) {
+                    System.out.println(1);
                     process();
                 }
             }
         });
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             if (miningTarget != null && miningHit != null && enable && mc.player != null && mc.world != null) {
-                Render.highlightBlock(context, miningTarget, 1.0f, 1.0f, 1.0f, anim / 100);
+                Render.highlightBlock(context, miningTarget, 1, 1, 1, anim);
             }
         });
     }
@@ -93,7 +94,7 @@ public class Nuker extends Parent {
     @EventHandler
     private void onTick(EventPostTick e) {
         anim = AnimHelper.handleAnimValue(animReverse, anim, null);
-        if (anim == 100) {
+        if (anim == 1) {
             animReverse = true;
         } else if (anim == 0) {
             animReverse = false;
@@ -300,8 +301,7 @@ public class Nuker extends Parent {
         pitch = currentPitch + (pitch - currentPitch) * 0.4f;
         pitch = MathHelper.clamp(pitch, -90, 90);
 
-        mc.player.setYaw(yaw);
-        mc.player.setPitch(pitch);
+        Purr.rotations.rotate(yaw, pitch, true);
     }
 
     private void abortMining() {

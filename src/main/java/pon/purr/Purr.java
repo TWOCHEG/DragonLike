@@ -6,15 +6,16 @@ import net.fabricmc.api.ModInitializer;
 import java.lang.invoke.MethodHandles;
 
 import net.fabricmc.loader.api.FabricLoader;
+import pon.purr.managers.RotationManager;
 import pon.purr.modules.ModuleManager;
 
 import pon.purr.modules.ui.*;
 import pon.purr.modules.world.*;
-import pon.purr.modules.render.*;
 
 public class Purr implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
 	public static ModuleManager moduleManager = null;
+	public static RotationManager rotations = new RotationManager();
 
 	public enum Categories {
 		combat,
@@ -38,8 +39,7 @@ public class Purr implements ModInitializer {
 			new FakePlayer(),
 			new Nuker(),
 			new Notify(),
-			new AutoResponser(),
-            new FreeCam()
+			new AutoResponser()
 		);
 	}
 

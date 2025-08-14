@@ -11,7 +11,7 @@ import pon.purr.modules.ui.Gui;
 import pon.purr.utils.GetAnimDiff;
 import pon.purr.utils.ColorUtils;
 import pon.purr.utils.math.AnimHelper;
-import pon.purr.utils.player.Rotations;
+import pon.purr.managers.RotationManager;
 
 import java.util.*;
 
@@ -131,7 +131,7 @@ public class ModulesGui extends Screen {
 
             float yaw = client.player.getPitch() + (float) (deltaX * sensitivity);
             float pitch = Math.clamp(client.player.getYaw() + (float) (deltaY * sensitivity), -89.0f, 89.0f);
-            Rotations.rotateCamera(yaw, pitch);
+            Purr.rotations.rotate(yaw, pitch);
 
             lastMouseX = mouseX;
             lastMouseY = mouseY;

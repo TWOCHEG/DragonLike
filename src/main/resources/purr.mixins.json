@@ -7,7 +7,6 @@
     "MixinKeyboard",
     "MixinClientPlayerEntity",
     "MixinScreen",
-    "MixinCamera",
     "MixinClientConnection",
     "accesors.IClientPlayerEntity"
   ],
