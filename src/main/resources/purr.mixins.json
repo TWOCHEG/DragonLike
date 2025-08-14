@@ -5,11 +5,9 @@
   "client": [
     "MixinMinecraftClient",
     "MixinKeyboard",
-    "MixinCamera",
     "MixinClientPlayerEntity",
     "MixinScreen",
     "MixinClientConnection",
-    "MixinLivingEntityRenderer",
     "accesors.IClientPlayerEntity"
   ],
   "injectors": {
@@ -17,7 +15,6 @@
   },
   "mixins": [
     "MixinEntity",
-    "MixinEntityLiving",
     "accesors.IExplosion",
     "accesors.ILivingEntity"
   ]

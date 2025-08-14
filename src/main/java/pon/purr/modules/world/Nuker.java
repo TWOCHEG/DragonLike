@@ -70,8 +70,8 @@ public class Nuker extends Parent {
     public Nuker() {
         super("nuker", Purr.Categories.world);
 
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            if (mc.player != null && enable && mc.world != null) {
+        WorldRenderEvents.START.register(context -> {
+            if (!fullNullCheck() && enable) {
                 boolean isPlayerMining = (
                     net.fabricmc.api.EnvType.CLIENT == null ?
                         false :
@@ -301,7 +301,7 @@ public class Nuker extends Parent {
         pitch = MathHelper.clamp(pitch, -90, 90);
 
         mc.player.setYaw(yaw);
-        mc.player.setYaw(pitch);
+        mc.player.setPitch(pitch);
     }
 
     private void abortMining() {

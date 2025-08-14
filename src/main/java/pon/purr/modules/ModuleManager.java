@@ -40,12 +40,11 @@ public class ModuleManager {
             .findFirst()
             .orElse(null);
     }
-
-    public Parent getModuleByClass(Class c) {
-        return modules.stream()
-            .filter(m -> Objects.equals(m.getClass(), c))
-            .findFirst()
-            .orElse(null);
+    public <T extends Parent> T getModuleByClass(Class<T> c) {
+        for (Parent p : modules) {
+            if (Objects.equals(c.getClass(), p.getClass())) return (T) p;
+        }
+        return null;
     }
 
     public Parent getModuleByKey(int keyCode) {

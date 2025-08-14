@@ -43,10 +43,9 @@ public abstract class RenderArea {
         this.height = height;
         this.animHandler();
 
-        if (Purr.moduleManager.getModuleByClass(Gui.class) instanceof Gui gui) {
-            if (gui.showAreas.getValue()) {
-                lightArea(context);
-            }
+        Gui gui = Purr.moduleManager.getModuleByClass(Gui.class);
+        if (gui.showAreas.getValue()) {
+            lightArea(context);
         }
     }
 

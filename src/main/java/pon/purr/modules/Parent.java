@@ -133,22 +133,13 @@ public abstract class Parent {
     }
 
     public static void notify(Notify.NotifyData n) {
-        if (Purr.moduleManager != null) {
-            Parent notify = Purr.moduleManager.getModuleByClass(Notify.class);
-            if (notify instanceof Notify no)  {
-                no.add(n);
-            }
-        }
+        Notify notify = Purr.moduleManager.getModuleByClass(Notify.class);
+        notify.add(n);
     }
 
     public static int getNotifyLiveTime() {
-        if (Purr.moduleManager != null) {
-            Parent notify = Purr.moduleManager.getModuleByClass(Notify.class);
-            if (notify instanceof Notify no)  {
-                return no.liveTimeSet.getValue();
-            }
-        }
-        return 50;
+        Notify notify = Purr.moduleManager.getModuleByClass(Notify.class);
+        return notify.liveTimeSet.getValue();
     }
 
     public void resetSettings() {

@@ -2,6 +2,7 @@ package pon.purr.utils.player;
 
 import net.minecraft.client.input.Input;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.MathHelper;
 import pon.purr.events.impl.EventMove;
 import pon.purr.modules.Parent;
@@ -175,5 +176,44 @@ public final class MovementUtility {
 
     public static boolean sprintIsLegit(float yaw) {
         return (Math.abs(Math.abs(MathHelper.wrapDegrees(yaw)) - Math.abs(MathHelper.wrapDegrees(mc.player.getYaw()))) < 40);
+    }
+
+    public static void setForward(boolean forward) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(forward, input.backward(), input.left(), input.right(), input.jump(), input.sneak(), input.sprint());
+    }
+
+    public static void setBackward(boolean backward) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(input.forward(), backward, input.left(), input.right(), input.jump(), input.sneak(), input.sprint());
+    }
+
+    public static void setLeft(boolean left) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(input.forward(), input.backward(), left, input.right(), input.jump(), input.sneak(), input.sprint());
+    }
+
+    public static void setRight(boolean right) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(input.forward(), input.backward(), input.left(), right, input.jump(), input.sneak(), input.sprint());
+    }
+
+    public static void setJumping(boolean jumping) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(input.forward(), input.backward(), input.left(), input.right(), jumping, input.sneak(), input.sprint());
+    }
+
+    public static void setSneaking(boolean sneaking) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(input.forward(), input.backward(), input.left(), input.right(), input.jump(), sneaking, input.sprint());
+    }
+
+    public static void setSprinting(boolean sprinting) {
+        PlayerInput input = mc.player.input.playerInput;
+        mc.player.input.playerInput = new PlayerInput(input.forward(), input.backward(), input.left(), input.right(), input.jump(), input.sneak(), sprinting);
+    }
+
+    public static void setInput(boolean forward, boolean backward, boolean left, boolean right, boolean jump, boolean sneak, boolean sprint) {
+        mc.player.input.playerInput = new PlayerInput(forward, backward, left, right, jump, sneak, sprint);
     }
 }
