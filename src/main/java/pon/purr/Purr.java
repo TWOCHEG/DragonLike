@@ -32,6 +32,7 @@ public class Purr implements ModInitializer {
 			"pon.purr",
 			(lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup())
 		);
+		EVENT_BUS.subscribe(rotations);
 
 		moduleManager = new ModuleManager(
 			new Gui(),

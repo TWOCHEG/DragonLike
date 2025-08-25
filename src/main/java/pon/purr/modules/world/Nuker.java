@@ -79,7 +79,6 @@ public class Nuker extends Parent {
                 );
 
                 if (!isPlayerMining) {
-                    System.out.println(1);
                     process();
                 }
             }
@@ -282,6 +281,8 @@ public class Nuker extends Parent {
     private void look(BlockPos pos) {
         if (mc.player == null || mc.getNetworkHandler() == null) return;
 
+        Purr.rotations.track = false;
+
         Vec3d eyesPos = mc.player.getCameraPosVec(1.0f);
         Vec3d target = pos.toCenterPos();
         Vec3d diff = target.subtract(eyesPos);
@@ -320,5 +321,10 @@ public class Nuker extends Parent {
         miningHit = null;
         miningStage = 0;
         delayTimer = breakDelay.getValue();
+    }
+
+    @Override
+    public void onDisable() {
+        Purr.rotations.track = true;
     }
 }
