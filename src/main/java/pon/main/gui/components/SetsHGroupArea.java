@@ -121,28 +121,25 @@ public class SetsHGroupArea extends RenderArea {
             bigPadding, 2
         );
 
-        int headersY = startY;
-        int headersX = startX;
-        int estimatedHeight = 0;
-        for (RenderArea area : areas) {
-            if (area instanceof SelectValueArea ssb) {
-                ssb.render(context, headersX, headersY, width, height, mouseX, mouseY);
-                estimatedHeight = ssb.height;
-                if (headersX - startX > width) {
-                    headersY += area.height + padding;
-                    headersX = startX;
-                }
-                headersX += ssb.width + padding;
-            }
-        }
-        height += (headersY - startY) + estimatedHeight + bigPadding;
-
         List<SelectValueArea> clearList = new ArrayList<>();
         for (RenderArea area : areas) {
             if (area instanceof SelectValueArea sva) {
                 clearList.add(sva);
             }
         }
+
+        height += currentSVA.height;
+        int x = 0;
+        int y = 0;
+        for (SelectValueArea sva : clearList) {
+            if (x + sva.width > width) {
+                y += sva.height;
+                x = 0;
+            }
+            sva.render(context, startX + x, startY + height - sva.height + y, width, 0, mouseX, mouseY);
+            x += sva.width + padding;
+        }
+        height += y + padding;
 
         currentArea = getArea(hgroup.getValue());
         currentArea.render(

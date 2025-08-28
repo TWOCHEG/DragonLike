@@ -58,8 +58,8 @@ public class ModuleArea extends RenderArea {
                 areas.add(new ColorSetArea(c, parent));
             } else if (set instanceof KeyButton kb) {
                 areas.add(new KeyButtonArea(kb, parent));
-            } else if (set instanceof Header) {
-                areas.add(new HeaderSetArea(set, parent));
+            } else if (set instanceof Header h) {
+                areas.add(new HeaderSetArea(h, parent));
             } else if (set.getValue() instanceof Boolean) {
                 areas.add(new BooleanSetArea(set, parent));
             } else if (set.getValue() instanceof String) {

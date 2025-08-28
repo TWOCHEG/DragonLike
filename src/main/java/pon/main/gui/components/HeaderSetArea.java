@@ -1,15 +1,16 @@
 package pon.main.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
+import pon.main.modules.settings.Header;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
 public class HeaderSetArea extends RenderArea {
-    private final Setting<Void> set;
+    private final Header set;
 
-    public HeaderSetArea(Setting<Void> set, RenderArea parentArea) {
+    public HeaderSetArea(Header set, RenderArea parentArea) {
         super(parentArea);
         this.showFactor = set.getVisible() ? 1 : 0;
         this.set = set;
@@ -37,6 +38,14 @@ public class HeaderSetArea extends RenderArea {
         );
 
         super.render(context, startX, startY, width, (int) (height * showFactor), mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (checkHovered(mouseX, mouseY) && set.onClick != null) {
+            set.onClick.run();
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

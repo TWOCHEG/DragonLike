@@ -7,6 +7,7 @@ import net.minecraft.text.Text;
 import pon.main.Main;
 import pon.main.events.impl.EventOnRender;
 import pon.main.events.impl.EventTick;
+import pon.main.gui.components.CategoryArea;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
 import meteordevelopment.orbit.EventHandler;
@@ -122,7 +123,7 @@ public class Notify extends Parent {
                 (int) y - (height - padding),
                 (int) ((screenWidth - (textPadding * animFactor)) + padding),
                 (int) y + textPadding,
-                ColorUtils.fromRGB(0, 0, 0, 100 * animFactor),
+                CategoryArea.makeAColor((100 * animFactor) / 255),
                 5, 2
             );
             Render2D.drawTextWithTransfer(
@@ -144,11 +145,11 @@ public class Notify extends Parent {
             if (!Objects.equals(c.notifyType, NotifyType.Module)) continue;
 
             Text renderText = Text.literal(c.notifyText);
-            float animPercent = c.visibleFactor;
+            float animFactor = c.visibleFactor;
             float screenWidth = context.getScaledWindowWidth();
             float offset = c.reverseFactor ?
-            (-textRenderer.getWidth(renderText) / 2f) * (1 - animPercent) :
-            (textRenderer.getWidth(renderText) / 2f) * (1 - animPercent);
+            (-textRenderer.getWidth(renderText) / 2f) * (1 - animFactor) :
+            (textRenderer.getWidth(renderText) / 2f) * (1 - animFactor);
 
             Render2D.fill(
                 context,
@@ -156,7 +157,7 @@ public class Notify extends Parent {
                 (int) (y - padding * 2),
                 (int) (((screenWidth / 2 + textRenderer.getWidth(renderText) / 2f) + padding) + offset),
                 (int) (y + textRenderer.fontHeight + padding),
-                ColorUtils.fromRGB(0, 0, 0, (int) (100 * animPercent)),
+                CategoryArea.makeAColor((100 * animFactor) / 255),
                 5,
                 2
             );
@@ -165,11 +166,11 @@ public class Notify extends Parent {
                 renderText,
                 (int) ((screenWidth / 2) - (textRenderer.getWidth(renderText) / 2) - offset),
                 (int) (y),
-                ColorUtils.fromRGB(255, 255, 255, (int) (255 * animPercent)),
+                ColorUtils.fromRGB(255, 255, 255, (int) (255 * animFactor)),
                 false
             );
 
-            y += (textRenderer.fontHeight + 5) * animPercent;
+            y += (textRenderer.fontHeight + 5) * animFactor;
         }
     }
 

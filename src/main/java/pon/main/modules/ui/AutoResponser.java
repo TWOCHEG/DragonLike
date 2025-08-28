@@ -17,7 +17,10 @@ import net.minecraft.text.Text;
 
 import com.mojang.authlib.GameProfile;
 
+import java.awt.*;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -41,14 +44,27 @@ public class AutoResponser extends Parent {
     public Setting<Integer> sendDelay = new Setting<>("send delay", 4, 1, 6);
     public Setting<Integer> maxTokens = new Setting<>("max tokens", 3000, 100, 10000);
 
-    public Setting<String> modelId = new Setting<>("model id", "meta-llama/llama-3.3-70b-instruct");
+    public Header header = new Header("this module works on https://openrouter.ai", () -> {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI("https://openrouter.ai"));
+            } catch (Exception ignored) {}
+        } else {
+            notify(new Notify.NotifyData(
+                "java desktop is not supported on this system",
+                Notify.NotifyType.System,
+                getNotifyLiveTime()
+            ));
+        }
+    });
+    public Setting<String> modelId = new Setting<>("model id", "openai/gpt-oss-20b:free");
     public Setting<String> token = new Setting<>("token", "sk-...");
     public Setting<String> mentions = new Setting<>("mentions", "");
+    public HGroup hgroup = new HGroup("constants", modelId, modelId, token, mentions);
     public Group constants = new Group(
         "constants",
-        modelId,
-        token,
-        mentions
+        header,
+        hgroup
     );
     public KeyButton cancelButton = new KeyButton(
         "cancel button", -1, () -> {
