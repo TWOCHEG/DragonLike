@@ -3,10 +3,10 @@
 
 <div align="center">
 
-# Purr
-**1.21.5 fabric** minecraft cheat
+# DragonLike
+**1.21.8 fabric** minecraft cheat
 
-<img src="src/main/resources/assets/purr/icon.png" alt="logo" width="200" height="200">
+<img src="src/main/resources/assets/main/icon.png" alt="logo" width="200" height="200">
 
 [![Discord Mine](https://img.shields.io/discord/1152572002088009749?label=discord&logo=discord&logoColor=white)](https://discord.gg/4eVSEj9jku)
 

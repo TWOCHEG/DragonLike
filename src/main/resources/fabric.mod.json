@@ -1,22 +1,22 @@
 {
 	"schemaVersion": 1,
-	"id": "purr",
+	"id": "dragon_like",
 	"version": "${version}",
-	"name": "Purr",
-	"description": "...",
+	"name": "DragonLike",
+	"description": "DragonLike - minecraft utility mod | but... gui is cool (perhaps)",
 	"authors": [
 		"TWOCHEG"
 	],
 	"license": "CC0-1.0",
-	"icon": "assets/purr/icon.png",
+	"icon": "assets/main/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"pon.purr.Purr"
+          "pon.main.Main"
 		]
 	},
 	"mixins": [
-		"purr.mixins.json"
+		"main.mixins.json"
 	],
     "depends": {
         "fabricloader": ">=0.16.14",
@@ -27,5 +27,5 @@
 	"suggests": {
 		"another-mod": "*"
 	},
-    "accessWidener": "purr.accesswidener"
+    "accessWidener": "main.accesswidener"
 }

@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "package": "pon.main.injection",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinMinecraftClient",
+    "MixinKeyboard",
+    "MixinClientPlayerEntity",
+    "MixinScreen",
+    "MixinClientConnection",
+    "MixinCamera",
+    "accesors.IClientPlayerEntity"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "MixinEntity",
+    "accesors.IExplosion",
+    "accesors.ILivingEntity"
+  ]
+}
