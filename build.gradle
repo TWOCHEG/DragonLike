@@ -39,7 +39,7 @@ configurations {
 
 loom {
 	mods {
-		"purr" {
+		"main" {
 			sourceSet sourceSets.main
 		}
 	}
