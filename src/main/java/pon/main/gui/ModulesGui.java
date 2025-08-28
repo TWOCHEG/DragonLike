@@ -117,7 +117,7 @@ public class ModulesGui extends Screen {
     public void onChangeLook(EventChangePlayerLook e) {
         if (Parent.fullNullCheck()) return;
 
-        Main.rotations.rotate(
+        Main.ROTATIONS.rotate(
             (float) (client.player.getYaw() + e.cursorDeltaY),
             (float) (client.player.getPitch() + e.cursorDeltaX)
         );

@@ -62,8 +62,7 @@ public abstract class Parent {
             notify(
                 new Notify.NotifyData(
                     text + " " + name,
-                    Notify.NotifyType.Module,
-                    getNotifyLiveTime()
+                    Notify.NotifyType.Module
                 )
             );
         }
@@ -134,13 +133,8 @@ public abstract class Parent {
     }
 
     public static void notify(Notify.NotifyData n) {
-        Notify notify = Main.moduleManager.getModule(Notify.class);
+        Notify notify = Main.MODULE_MANAGER.getModule(Notify.class);
         notify.add(n);
-    }
-
-    public static int getNotifyLiveTime() {
-        Notify notify = Main.moduleManager.getModule(Notify.class);
-        return notify.liveTimeSet.getValue();
     }
 
     public void resetSettings() {

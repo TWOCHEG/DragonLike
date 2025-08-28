@@ -36,7 +36,7 @@ public class KeyButtonArea extends RenderArea {
             ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
         );
         height += padding;
-        String keyName = keyButton.getValue() != -1 ? KeyName.get(keyButton.getValue()) : "none";
+        String keyName = (keyButton.getValue() != -1 ? KeyName.get(keyButton.getValue()) : "none").toLowerCase();
         keyName = inputtingFactor == 0 ? keyName : AnimHelper.getAnimText(keyName, "...", inputtingFactor);
         Render2D.fill(
             context,

@@ -15,8 +15,12 @@ import pon.main.utils.TextUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.ColorUtils;
+import pon.main.utils.render.Render3D;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class Notify extends Parent {
     public Setting<Integer> liveTimeSet = new Setting<>(
@@ -77,7 +81,7 @@ public class Notify extends Parent {
             float animFactor = c.visibleFactor;
 
             int maxWidth = 0;
-            for (String t : TextUtils.splitForRender(c.notifyText, 200, s -> textRenderer.getWidth(s))) {
+            for (String t : TextUtils.splitForRender(c.getNotifyText(), 200, s -> textRenderer.getWidth(s))) {
                 int currentWidth = textRenderer.getWidth(t);
                 if (currentWidth > maxWidth) {
                     maxWidth = currentWidth;
@@ -85,12 +89,11 @@ public class Notify extends Parent {
             }
 
             int height = Render2D.drawTextWithTransfer(
-                c.notifyText, context, textRenderer,
-                (int) ((screenWidth / 2) - (maxWidth / 2)),
+                c.getNotifyText(), context, textRenderer,
+                (int) (screenWidth / 2) - 100,
                 (int) (y * animFactor),
-                200,
-                2,
-                ColorUtils.fromRGB(255, 255, 255, (int) (255 * animFactor)),
+                200, 2,
+                ColorUtils.applyOpacity(c.getColor(), animFactor),
                 true
             );
 
@@ -110,13 +113,13 @@ public class Notify extends Parent {
             float screenWidth = context.getScaledWindowWidth();
 
             int maxWidth = 0;
-            for (String t : TextUtils.splitForRender(c.notifyText, 200, s -> textRenderer.getWidth(s))) {
+            for (String t : TextUtils.splitForRender(c.getNotifyText(), 200, s -> textRenderer.getWidth(s))) {
                 int currentWidth = textRenderer.getWidth(t);
                 if (currentWidth > maxWidth) {
                     maxWidth = currentWidth;
                 }
             }
-            int height = (textRenderer.fontHeight + padding) * TextUtils.splitForRender(c.notifyText, 200, s -> textRenderer.getWidth(s)).size();
+            int height = (textRenderer.fontHeight + padding) * TextUtils.splitForRender(c.getNotifyText(), 200, s -> textRenderer.getWidth(s)).size();
             Render2D.fill(
                 context,
                 (int) (screenWidth - ((maxWidth + textPadding + padding) * animFactor)),
@@ -130,7 +133,7 @@ public class Notify extends Parent {
                 c.notifyText, context, textRenderer,
                 (int) (screenWidth - ((maxWidth + textPadding) * animFactor)),
                 (int) ((y - height) + textPadding), 200,
-                padding, ColorUtils.fromRGB(255, 255, 255, 255 * animFactor)
+                padding, ColorUtils.applyOpacity(c.getColor(), animFactor)
             );
 
             y -= (height + textPadding) * animFactor;
@@ -144,7 +147,7 @@ public class Notify extends Parent {
             NotifyData c = notifications.get(i);
             if (!Objects.equals(c.notifyType, NotifyType.Module)) continue;
 
-            Text renderText = Text.literal(c.notifyText);
+            Text renderText = Text.literal(c.getNotifyText());
             float animFactor = c.visibleFactor;
             float screenWidth = context.getScaledWindowWidth();
             float offset = c.reverseFactor ?
@@ -166,7 +169,7 @@ public class Notify extends Parent {
                 renderText,
                 (int) ((screenWidth / 2) - (textRenderer.getWidth(renderText) / 2) - offset),
                 (int) (y),
-                ColorUtils.fromRGB(255, 255, 255, (int) (255 * animFactor)),
+                ColorUtils.applyOpacity(c.getColor(), animFactor),
                 false
             );
 
@@ -184,20 +187,69 @@ public class Notify extends Parent {
     public static class NotifyData {
         public int liveTime;
         public NotifyType notifyType;
-        public String notifyText;
+        private String notifyText;
 
         public float visibleFactor = 0f;
         public boolean reverseFactor = false;
 
-        public NotifyData(String text, NotifyType notifyType, int liveTime) {
+        private Supplier<Boolean> reverseProvider = null;
+        private Supplier<String> notifyTextProvider = null;
+
+        int totalTickDelta = 0;
+
+        public List<Integer> colors = new LinkedList<>();
+
+        public NotifyData(String text, NotifyType notifyType) {
             this.notifyText = text;
             this.notifyType = notifyType;
-            this.liveTime = liveTime;
+            this.liveTime = Main.MODULE_MANAGER.getModule(Notify.class).liveTimeSet.getValue();
+        }
+
+        public NotifyData setNotifyTextProvider(Supplier<String> notifyTextProvider) {
+            this.notifyTextProvider = notifyTextProvider;
+            return this;
+        }
+        public NotifyData setReverseProvider(Supplier<Boolean> reverseProvider) {
+            this.reverseProvider = reverseProvider;
+            return this;
+        }
+
+        public int getColor() {
+            if (colors.isEmpty()) {
+                return new Color(255, 255, 255).getRGB();
+            }
+
+            final float speed = 20.0f;
+            final int size = colors.size();
+
+            float cyclePosition = (totalTickDelta / speed) % size;
+            int currentIndex = (int) cyclePosition;
+            int nextIndex = (currentIndex + 1) % size;
+            float progress = cyclePosition - currentIndex;
+
+            int color1 = colors.get(currentIndex);
+            int color2 = colors.get(nextIndex);
+
+            int r1 = (color1 >> 16) & 0xFF;
+            int g1 = (color1 >> 8) & 0xFF;
+            int b1 = color1 & 0xFF;
+
+            int r2 = (color2 >> 16) & 0xFF;
+            int g2 = (color2 >> 8) & 0xFF;
+            int b2 = color2 & 0xFF;
+
+            int r = (int) (r1 + (r2 - r1) * progress);
+            int g = (int) (g1 + (g2 - g1) * progress);
+            int b = (int) (b1 + (b2 - b1) * progress);
+
+            return (r << 16) | (g << 8) | b;
         }
 
         @EventHandler
         private void onTick(EventTick e) {
-            if (liveTime > 0) {
+            totalTickDelta ++;
+
+            if (liveTime > 0 && reverseProvider == null) {
                 liveTime--;
                 if (liveTime < 1) {
                     reverseFactor = true;
@@ -205,8 +257,18 @@ public class Notify extends Parent {
             }
         }
 
+        public String getNotifyText() {
+            if (notifyTextProvider != null) {
+                return notifyTextProvider.get().strip();
+            }
+            return notifyText.strip();
+        }
+
         @EventHandler
         private void onRender(EventOnRender e) {
+            if (reverseProvider != null) {
+                reverseFactor = reverseProvider.get();
+            }
             visibleFactor = AnimHelper.handle(reverseFactor, visibleFactor);
         }
     }

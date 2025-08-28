@@ -68,7 +68,7 @@ public class Gui extends Parent {
     public void onEnable() {
         if (mc.currentScreen instanceof TitleScreen || mc.currentScreen == null) {
             if (categories == null) {
-                Map<Main.Categories, java.util.List<Parent>> modules = Main.moduleManager.getForGui();
+                Map<Main.Categories, java.util.List<Parent>> modules = Main.MODULE_MANAGER.getForGui();
                 categories = new LinkedList<>();
                 for (Map.Entry<Main.Categories, java.util.List<Parent>> entry : modules.entrySet()) {
                     LinkedList<Parent> moduleList = new LinkedList<>(entry.getValue());

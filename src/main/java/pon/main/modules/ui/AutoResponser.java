@@ -52,8 +52,7 @@ public class AutoResponser extends Parent {
         } else {
             notify(new Notify.NotifyData(
                 "java desktop is not supported on this system",
-                Notify.NotifyType.System,
-                getNotifyLiveTime()
+                Notify.NotifyType.System
             ));
         }
     });
@@ -114,8 +113,7 @@ public class AutoResponser extends Parent {
 
             Notify.NotifyData n = new Notify.NotifyData(
                 getName() + " | cancel",
-                Notify.NotifyType.Important,
-                getNotifyLiveTime()
+                Notify.NotifyType.Important
             );
             notify(n);
         }
@@ -202,8 +200,7 @@ public class AutoResponser extends Parent {
             } catch (Exception e) {
                 Notify.NotifyData n = new Notify.NotifyData(
                     getName() + " | " + e,
-                    Notify.NotifyType.System,
-                    getNotifyLiveTime()
+                    Notify.NotifyType.System
                 );
                 notify(n);
             }
@@ -327,8 +324,9 @@ public class AutoResponser extends Parent {
         if (cleanedText != null) {
             Notify.NotifyData n = new Notify.NotifyData(
                 "mentioned! gen will start in " + delay.getValue().toString() + "s, disable module or open the chat to cancel",
-                Notify.NotifyType.Important, (int) (delay.getValue() * 20)
+                Notify.NotifyType.Important
             );
+            n.liveTime = (int) (delay.getValue() * 20);
             notify(n);
             scheduleMessageProcessing(senderName, cleanedText, prefix);
         }

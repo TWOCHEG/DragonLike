@@ -17,11 +17,11 @@ public class Keybinds extends Parent {
         if (
             mc.currentScreen != null &&
             !(mc.currentScreen instanceof TitleScreen) &&
-            e.getKey() != Main.moduleManager.getModule(Gui.class).getKeybind()
+            e.getKey() != Main.MODULE_MANAGER.getModule(Gui.class).getKeybind()
         ) return;
         if (e.getModifiers() == 5) return;  // смена языка
 
-        for (Parent module : Main.moduleManager.modules) {
+        for (Parent module : Main.MODULE_MANAGER.modules) {
             module.onKey(e.getKey());
         }
     }

@@ -7,7 +7,7 @@ public class GetAnimDiff {
     public static float get() {
         float diff = 30f / FrameRateCounter.INSTANCE.getFps();
 
-        Gui gui = Main.moduleManager.getModule(Gui.class);
+        Gui gui = Main.MODULE_MANAGER.getModule(Gui.class);
         return diff * gui.animSpeed.getValue();
     }
 

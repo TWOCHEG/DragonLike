@@ -9,7 +9,6 @@ import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
-import java.awt.*;
 import java.util.*;
 
 public class CategoryArea extends RenderArea {
@@ -31,7 +30,7 @@ public class CategoryArea extends RenderArea {
 
     public static int makeAColor(float opacity) {
         return ColorUtils.applyOpacity(
-            Main.moduleManager.getModule(Gui.class).theme.color(),
+            Main.MODULE_MANAGER.getModule(Gui.class).theme.color(),
             opacity
         ).getRGB();
     }

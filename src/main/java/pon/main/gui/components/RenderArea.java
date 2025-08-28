@@ -55,7 +55,7 @@ public abstract class RenderArea {
         this.height = height;
         this.animHandler();
 
-        Gui gui = Main.moduleManager.getModule(Gui.class);
+        Gui gui = Main.MODULE_MANAGER.getModule(Gui.class);
         if (gui.showAreas.getValue()) {
             lightArea(context);
         }
