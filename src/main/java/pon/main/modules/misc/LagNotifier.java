@@ -17,9 +17,9 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class LagNotifier extends Parent {
-    private final Setting<Boolean> rubberbandNotify = new Setting<>("rubberband", true);
-    private final Setting<Boolean> serverResponseNotify = new Setting<>("server tesponse", true);
-    private final Setting<Integer> responseTreshold = new Setting<>("response treshold", 5, 0, 15).visibleIf(v -> serverResponseNotify.getValue());
+    private final Setting<Boolean> rubberbandNotify = new Setting<>("rubber band", true);
+    private final Setting<Boolean> serverResponseNotify = new Setting<>("server response", true);
+    private final Setting<Integer> responseTreshold = new Setting<>("response threshold", 5, 0, 15).visibleIf(v -> serverResponseNotify.getValue());
     private final Setting<Boolean> tpsNotify = new Setting<>("TPS", true);
 
     private Timer notifyTimer = new Timer();
@@ -36,7 +36,7 @@ public class LagNotifier extends Parent {
     @Override
     public void onEnable() {
         notifyTimer = new Timer();
-        rubberbandTimer = new Timer();
+        rubberbandTimer = null;
         packetTimer = new Timer();
         isLagging = false;
 
@@ -45,12 +45,12 @@ public class LagNotifier extends Parent {
 
     @EventHandler
     private void onTick(EventTick e) {
-        if (!rubberbandTimer.passedMs(5000)) {
+        if (rubberbandTimer != null && !rubberbandTimer.passedMs(5000)) {
             DecimalFormat decimalFormat = new DecimalFormat("#.#");
             if (!isRubberband && rubberbandNotify.getValue()) {
                 Notify.NotifyData n = new Notify.NotifyData("", Notify.NotifyType.Important)
-                        .setNotifyTextProvider(() -> ("rubberband detected! " + decimalFormat.format((5000f - (float) rubberbandTimer.getTimeMs()) / 1000f)))
-                        .setReverseProvider(() -> (5000f - rubberbandTimer.getTimeMs()) / 1000f < 0);
+                        .setNotifyTextProvider(() -> ("rubber band detected! " + decimalFormat.format((5000f - (rubberbandTimer != null ? rubberbandTimer.getTimeMs() : 5000f)) / 1000f)))
+                        .setReverseProvider(() -> (5000f - (rubberbandTimer != null ? rubberbandTimer.getTimeMs() : 5000f)) / 1000f < 0);
                 n.colors.add(new Color(255, 0, 0).getRGB());
                 n.colors.add(new Color(255, 255, 0).getRGB());
                 n.liveTime = 100;
@@ -93,8 +93,8 @@ public class LagNotifier extends Parent {
 
         if (Main.SERVER_MANAGER.getTPS() > 15 && isLagging) {
             notify(new Notify.NotifyData(
-                    "server TPS has stabilized!",
-                    Notify.NotifyType.Important
+                "server TPS has stabilized!",
+                Notify.NotifyType.Important
             ));
             isLagging = false;
         }
@@ -103,6 +103,10 @@ public class LagNotifier extends Parent {
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive e) {
         if (fullNullCheck()) return;
+
+        if (rubberbandTimer == null) {
+            rubberbandTimer = new Timer();
+        }
 
         if (e.getPacket() instanceof PlayerPositionLookS2CPacket) rubberbandTimer.reset();
         if (e.getPacket() instanceof WorldTimeUpdateS2CPacket) packetTimer.reset();

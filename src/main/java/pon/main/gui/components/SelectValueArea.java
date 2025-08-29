@@ -1,6 +1,7 @@
 package pon.main.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
+import pon.main.gui.ModulesGui;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 
@@ -25,8 +26,8 @@ public class SelectValueArea extends RenderArea {
         Supplier<Object> oldValueProvider,
         Function<Object, String> valueNameProvider
     ) {
+        super(parentArea);
         this.value = value;
-        this.parentArea = parentArea;
         this.task = task;
         this.deltaProvider = deltaProvider;
         this.currentValueProvider = currentValueProvider;
@@ -40,8 +41,8 @@ public class SelectValueArea extends RenderArea {
         Supplier<Object> currentValueProvider,
         Supplier<Object> oldValueProvider
     ) {
+        super(parentArea);
         this.value = value;
-        this.parentArea = parentArea;
         this.task = task;
         this.deltaProvider = deltaProvider;
         this.currentValueProvider = currentValueProvider;
@@ -86,14 +87,14 @@ public class SelectValueArea extends RenderArea {
         ) * getShowFactor());
 
         context.drawText(
-            textRenderer, name,
+            mc.textRenderer, name,
             startX + padding,
             startY + padding,
             ColorUtils.fromRGB(255, 255, 255, alpha),
             false
         );
-        width = textRenderer.getWidth(name) + padding * 2;
-        height = textRenderer.fontHeight + padding * 2;
+        width = mc.textRenderer.getWidth(name) + padding * 2;
+        height = mc.textRenderer.fontHeight + padding * 2;
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);
     }
@@ -103,6 +104,7 @@ public class SelectValueArea extends RenderArea {
         if (checkHovered(mouseX, mouseY)) {
             if (!Objects.equals(value, currentValueProvider.get())) {
                 task.accept(value);
+                return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);

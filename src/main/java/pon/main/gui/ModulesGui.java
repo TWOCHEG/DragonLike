@@ -13,19 +13,20 @@ import pon.main.utils.math.GetAnimDiff;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 
-import java.util.*;
+import java.util.LinkedList;
 
 public class ModulesGui extends Screen {
-    private int frameCounter = 0;
+    private int frameCounter;
     private final Gui gui;
-    private final Screen previous;
 
-    private boolean mouseDown = false;
-    private int mouseDownCounter = 0;
-    private float mouseDownFactor = 0f;
-    private boolean mouseUp = false;
-    private int mouseUpCounter = 0;
-    private float mouseUpFactor = 0f;
+    private float scrollVelocityY = 0f;
+    private float moveVelocityX = 0f;
+    private float moveVelocityY = 0f;
+
+    private static final float SCROLL_FRICTION = 0.92f;
+    private static final float MOVE_FRICTION = 0.85f;
+    private static final float MOVE_ACCELERATION = 1.5f;
+    private static final float SCROLL_SENSITIVITY = 5f;
 
     private float upFactor = 0f;
     private float downFactor = 0f;
@@ -33,7 +34,7 @@ public class ModulesGui extends Screen {
     private float rightFactor = 0f;
 
     private boolean open = true;
-    public float openFactor = 0f;
+    public float openFactor;
 
     private final int categoryWidth = 130;
     private final int categoryPadding = 20;
@@ -41,19 +42,17 @@ public class ModulesGui extends Screen {
     private float startX = 0;
     private final int categoriesShow;
 
-    private float moveDelta = 0f;
-
     private final HintsArea hints = new HintsArea(
         "RIGHT SHIFT - show keybinds\nMOUSE MIDDLE - bind module\n ⬅ ⬆ ⬇ ⮕ - move gui",
         this
     );
 
-    public ModulesGui(Screen previous, Gui gui) {
+    public ModulesGui() {
         super(Text.literal("ModulesGui"));
-        this.gui = gui;
-        this.previous = previous;
+        this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
         this.categoriesShow = 130 * this.gui.categories.size();
     }
+
     public void closeGui() {
         open = false;
         frameCounter = 0;
@@ -64,7 +63,8 @@ public class ModulesGui extends Screen {
         frameCounter++;
 
         animHandler();
-        if (previous != null) previous.render(context, mouseX, mouseY, delta);
+
+        if (gui.oldScreen != null) gui.oldScreen.render(context, mouseX, mouseY, delta);
 
         LinkedList<CategoryArea> categories = gui.categories;
 
@@ -73,9 +73,11 @@ public class ModulesGui extends Screen {
         context.fillGradient(
             0, 0,
             this.width, this.height,
-            ColorUtils.fromRGB(0, 0, 0, (int) (50 * openFactor)),
+            ColorUtils.fromRGB(0, 0, 0, (int) (80 * gui.choseGuiArea.showFactor)),
             ColorUtils.fromRGB(0, 0, 0, 0)
         );
+
+        gui.choseGuiArea.render(context, context.getScaledWindowWidth() / 2, 0, 0, 0, mouseX, mouseY);
 
         int closeCount = 0;
         for (int i = 0; i < categories.size(); i++) {
@@ -95,31 +97,14 @@ public class ModulesGui extends Screen {
             client.setScreen(null);
         }
         hints.render(context, 5,  context.getScaledWindowHeight() - 5, 0, 0, mouseX, mouseY);
-
-//        RenderPipeline renderPipeline = RenderPipeline.builder()
-//            .withVertexFormat(VertexFormats.BLIT_SCREEN, VertexFormat.DrawMode.LINES)
-//            .build();
-//        if (!gui.image.getValue().equals("none")) {
-//            context.drawTexture(
-//                renderPipeline,
-//                gui.texture,
-//                gui.imageWidth,
-//                gui.imageHeight,
-//                0, 0,
-//                context.getScaledWindowWidth() - gui.imageWidth,
-//                context.getScaledWindowHeight() - gui.imageHeight,
-//                gui.imageWidth,
-//                gui.imageHeight
-//            );
-//        }
     }
 
     public void onChangeLook(EventChangePlayerLook e) {
         if (Parent.fullNullCheck()) return;
 
         Main.ROTATIONS.rotate(
-            (float) (client.player.getYaw() + e.cursorDeltaY),
-            (float) (client.player.getPitch() + e.cursorDeltaX)
+                (float) (client.player.getYaw() + e.cursorDeltaY),
+                (float) (client.player.getPitch() + e.cursorDeltaX)
         );
     }
 
@@ -129,78 +114,51 @@ public class ModulesGui extends Screen {
             if (c.keyPressed(keyCode, scanCode, modifiers)) return true;
         }
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            closeGui();
+            gui.onDisable();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         for (RenderArea area : gui.categories) {
             if (area.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
         }
-
-        if (scrollY < 0) {
-            mouseUp = true;
-            mouseUpCounter = frameCounter;
-        } else {
-            mouseDown = true;
-            mouseDownCounter = frameCounter;
-        }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        scrollVelocityY += (float) scrollY * SCROLL_SENSITIVITY;
+        return true;
     }
 
     private void animHandler() {
-        openFactor = AnimHelper.handle(!open, openFactor);
+        openFactor = AnimHelper.handle(!open, openFactor, AnimHelper.AnimMode.EaseOut);
 
-        float moveDiff = GetAnimDiff.get() * 10;
-        float moveAnimDiff = GetAnimDiff.get() * 10;
-        float mouseDiff = GetAnimDiff.get() * 10;
-        float mouseAnimDiff = Math.max(GetAnimDiff.get(), 50) * 20;
+        float moveDiff = GetAnimDiff.get() * 2;
+        float moveAnimDiff = GetAnimDiff.get();
 
-        if (frameCounter > mouseUpCounter + GetAnimDiff.get100X() / 3 && mouseUp) {
-            mouseUp = false;
+        startY += scrollVelocityY;
+        scrollVelocityY *= SCROLL_FRICTION;
+        if (Math.abs(scrollVelocityY) < 0.1f) {
+            scrollVelocityY = 0f;
         }
-        if (frameCounter > mouseDownCounter + GetAnimDiff.get100X() / 3 && mouseDown) {
-            mouseDown = false;
-        }
-        mouseDownFactor = AnimHelper.handle(
-            !mouseDown, mouseDownFactor,
-            mouseAnimDiff
-        );
-        startY += mouseDiff * mouseDownFactor;
-        mouseUpFactor = AnimHelper.handle(
-            !mouseUp, mouseUpFactor,
-            mouseAnimDiff
-        );
-        startY -= mouseDiff * mouseUpFactor;
 
-        upFactor = AnimHelper.handle(
-            !(GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS),
-            upFactor,
-            moveAnimDiff
-        );
-        startY -= moveDiff * upFactor;
-        downFactor = AnimHelper.handle(
-            !(GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS),
-            downFactor,
-            moveAnimDiff
-        );
-        startY += moveDiff * downFactor;
-        leftFactor = AnimHelper.handle(
-            GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_RELEASE,
-            leftFactor,
-            moveAnimDiff
-        );
-        startX -= moveDiff * leftFactor;
-        rightFactor = AnimHelper.handle(
-            GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_RELEASE,
-            rightFactor,
-            moveAnimDiff
-        );
-        startX += moveDiff * rightFactor;
+        boolean upPressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_UP) == GLFW.GLFW_PRESS;
+        boolean downPressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_DOWN) == GLFW.GLFW_PRESS;
+        boolean leftPressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS;
+        boolean rightPressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS;
 
-        moveDelta = AnimHelper.handle(false, moveDelta);
+        upFactor = AnimHelper.handle(!upPressed, upFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        downFactor = AnimHelper.handle(!downPressed, downFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        leftFactor = AnimHelper.handle(!leftPressed, leftFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        rightFactor = AnimHelper.handle(!rightPressed, rightFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+
+        float moveDirY = (downFactor - upFactor);
+        float moveDirX = (rightFactor - leftFactor);
+
+        moveVelocityY = moveVelocityY * MOVE_FRICTION + moveDirY * MOVE_ACCELERATION;
+        moveVelocityX = moveVelocityX * MOVE_FRICTION + moveDirX * MOVE_ACCELERATION;
+
+        startY += moveVelocityY * moveDiff;
+        startX += moveVelocityX * moveDiff;
     }
 
     @Override
@@ -210,6 +168,7 @@ public class ModulesGui extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (gui.choseGuiArea.mouseClicked(mouseX, mouseY, button)) return true;
         for (CategoryArea c : gui.categories) {
             if (c.mouseClicked(mouseX, mouseY, button)) return true;
         }

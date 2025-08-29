@@ -1,14 +1,18 @@
 package pon.main.modules.ui;
 
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
 import pon.main.events.impl.EventResizeScreen;
+import pon.main.gui.ConfigsGui;
 import pon.main.gui.ModulesGui;
 import pon.main.gui.components.CategoryArea;
+import pon.main.gui.components.ChoseGuiArea;
+import pon.main.gui.components.ConfigWindowArea;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.*;
 import pon.main.modules.settings.SetsList;
@@ -48,11 +52,13 @@ public class Gui extends Parent {
 
     public final Setting<Boolean> showAreas = new Setting<>("show areas (debug)", false);
 
-    public int imageWidth = 0;
-    public int imageHeight = 0;
     public Identifier texture = Identifier.of("purr", images.get(image.getValue()));
 
+    // render components
     public LinkedList<CategoryArea> categories = null;
+    public Screen oldScreen = null;
+    public ChoseGuiArea choseGuiArea = new ChoseGuiArea(ModulesGui.class, ModulesGui.class, ConfigsGui.class);
+    public ConfigWindowArea configWindowArea = new ConfigWindowArea(this);
 
     public Gui() {
         super("click gui", Main.Categories.ui);
@@ -67,22 +73,30 @@ public class Gui extends Parent {
     @Override
     public void onEnable() {
         if (mc.currentScreen instanceof TitleScreen || mc.currentScreen == null) {
+            choseGuiArea.show = true;
             if (categories == null) {
-                Map<Main.Categories, java.util.List<Parent>> modules = Main.MODULE_MANAGER.getForGui();
+                Map<Main.Categories, List<Parent>> modules = Main.MODULE_MANAGER.getForGui();
                 categories = new LinkedList<>();
-                for (Map.Entry<Main.Categories, java.util.List<Parent>> entry : modules.entrySet()) {
+                for (Map.Entry<Main.Categories, List<Parent>> entry : modules.entrySet()) {
                     LinkedList<Parent> moduleList = new LinkedList<>(entry.getValue());
                     categories.add(new CategoryArea(moduleList, entry.getKey()));
                 }
+            } else {
+                closeGuiAnimComponents();
             }
-            mc.setScreen(new ModulesGui(mc.currentScreen, this));
+            oldScreen = mc.currentScreen;
+            mc.setScreen(new ModulesGui());
         }
     }
 
     @Override
     public void onDisable() {
+        choseGuiArea.show = false;
+        choseGuiArea.returnToDefault();
         if (mc.currentScreen instanceof ModulesGui modulesGui) {
             modulesGui.closeGui();
+        } else if (mc.currentScreen instanceof ConfigsGui configsGui) {
+            configsGui.closeGui();
         }
     }
 
@@ -103,8 +117,7 @@ public class Gui extends Parent {
     public void onUpdate(Setting setting) {
         if (setting.equals(image) || setting.equals(imgSize)) {
             if (!Objects.equals(image.getValue(), "none")) {
-                texture = Identifier.of("purr", getImages().get(image.getValue()));
-                updateImageSize(texture, mc.getWindow().getWidth(), mc.getWindow().getHeight());
+                texture = Identifier.of("main", getImages().get(image.getValue()));
             }
         }
     }
@@ -114,44 +127,18 @@ public class Gui extends Parent {
         if (Parent.fullNullCheck()) return;
         if (mc.currentScreen instanceof ModulesGui gui) {
             gui.onChangeLook(e);
+        } else if (mc.currentScreen instanceof ConfigsGui configsGui) {
+            configsGui.onChangeLook(e);
         }
     }
 
-    @EventHandler
-    private void onScreenResize(EventResizeScreen e) {
-        updateImageSize(texture, e.width, e.height);
-    }
-
-    public void updateImageSize(Identifier texture, int screenWidth, int screenHeight) {
-//        Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(texture);
-//        NativeImage nativeImage;
-//        try {
-//            nativeImage = NativeImage.read(resource.get().getInputStream());
-//        } catch (IOException e) {
-//            return;
-//        }
-//
-//        float imageWidth = nativeImage.getWidth();
-//        float imageHeight = nativeImage.getHeight();
-//
-//        nativeImage.close();
-//
-//        float screenMin = Math.min(screenWidth, screenHeight);
-//        float fixedSize = screenMin * imgSize.getValue();
-//
-//        float scale = Math.min(fixedSize / imageWidth, fixedSize / imageHeight);
-//
-//        this.imageWidth = (int) (imageWidth * scale);
-//        this.imageHeight = (int) (imageHeight * scale);
-
-        this.imageWidth = 100;
-        this.imageHeight = 100;
-    }
-
-    public java.util.List<Integer> getImageSize(Identifier texture) {
-        if (imageWidth == 0 && imageHeight == 0) {
-            updateImageSize(texture, mc.getWindow().getWidth(), mc.getWindow().getHeight());
+    public void closeGuiAnimComponents() {
+        for (CategoryArea categoryArea : categories) {
+            categoryArea.show = false;
+            categoryArea.showFactor = 0;
+            categoryArea.updateAnim();
         }
-        return Arrays.asList(imageWidth, imageHeight);
+        configWindowArea.showFactor = 0;
+        configWindowArea.show = false;
     }
 }

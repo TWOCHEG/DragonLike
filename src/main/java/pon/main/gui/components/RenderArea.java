@@ -25,7 +25,7 @@ public abstract class RenderArea {
     public List<RenderArea> areas = new LinkedList<>();
 
     public static final MinecraftClient mc = MinecraftClient.getInstance();
-    public final TextRenderer textRenderer = mc.textRenderer;
+    public TextRenderer textRenderer = mc.textRenderer;
 
     private final int lightColor = ColorUtils.fromRGB(
         MathUtils.random(0, 255),
@@ -93,6 +93,13 @@ public abstract class RenderArea {
     }
 
     public void animHandler() {}
+
+    public void updateAnim() {
+        animHandler();
+        for (RenderArea area : areas) {
+            area.updateAnim();
+        }
+    }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (RenderArea a : areas) {
