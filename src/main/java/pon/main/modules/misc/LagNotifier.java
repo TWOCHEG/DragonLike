@@ -75,7 +75,7 @@ public class LagNotifier extends Parent {
             }
         }
 
-        if (Main.SERVER_MANAGER.getTPS() < 10 && notifyTimer.passedMs(60000) && tpsNotify.getValue()) {
+        if (Main.managers.SERVER_MANAGER.getTPS() < 10 && notifyTimer.passedMs(60000) && tpsNotify.getValue()) {
             if (!isLagging) {
                 Notify.NotifyData n = new Notify.NotifyData(
                         "! server TPS is below 10 !",
@@ -91,7 +91,7 @@ public class LagNotifier extends Parent {
             notifyTimer.reset();
         }
 
-        if (Main.SERVER_MANAGER.getTPS() > 15 && isLagging) {
+        if (Main.managers.SERVER_MANAGER.getTPS() > 15 && isLagging) {
             notify(new Notify.NotifyData(
                 "server TPS has stabilized!",
                 Notify.NotifyType.Important

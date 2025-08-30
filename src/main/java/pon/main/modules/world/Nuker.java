@@ -63,9 +63,6 @@ public class Nuker extends Parent {
     private long miningTime = 0;
     private int miningStage = 0;
 
-    private float anim = 0;
-    private boolean animReverse = false;
-
     public Nuker() {
         super("nuker", Main.Categories.world);
 
@@ -82,21 +79,15 @@ public class Nuker extends Parent {
                 }
             }
         });
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
+        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> {
             if (miningTarget != null && miningHit != null && enable && mc.player != null && mc.world != null) {
-                Render3D.highlightBlock(context, miningTarget, 1, 1, 1, anim);
+                Render3D.highlightBlock(context, miningTarget, 1, 1, 1);
             }
         });
     }
 
     @EventHandler
     private void onTick(EventPostTick e) {
-        anim = AnimHelper.handle(animReverse, anim, null);
-        if (anim == 1) {
-            animReverse = true;
-        } else if (anim == 0) {
-            animReverse = false;
-        }
 
         if (mc.player == null || mc.world == null) return;
 
@@ -280,7 +271,7 @@ public class Nuker extends Parent {
     private void look(BlockPos pos) {
         if (mc.player == null || mc.getNetworkHandler() == null) return;
 
-        Main.ROTATIONS.track = false;
+        Main.managers.ROTATIONS.track = false;
 
         Vec3d eyesPos = mc.player.getCameraPosVec(1.0f);
         Vec3d target = pos.toCenterPos();
@@ -301,7 +292,7 @@ public class Nuker extends Parent {
         pitch = currentPitch + (pitch - currentPitch) * 0.4f;
         pitch = MathHelper.clamp(pitch, -90, 90);
 
-        Main.ROTATIONS.rotate(yaw, pitch, true);
+        Main.managers.ROTATIONS.rotate(yaw, pitch, true);
     }
 
     private void abortMining() {
@@ -324,6 +315,6 @@ public class Nuker extends Parent {
 
     @Override
     public void onDisable() {
-        Main.ROTATIONS.track = true;
+        Main.managers.ROTATIONS.track = true;
     }
 }

@@ -32,26 +32,26 @@ public class AnimHelper {
         }
     }
 
-    public static float handle(boolean reverse, float factor, float diff, AnimMode mode) {
-        if (factor == 1 && !reverse) return 1;
-        if (factor == 0 && reverse) return 0;
+    public static float handle(boolean forward, float factor, float diff, AnimMode mode) {
+        if (factor == 1 && forward) return 1;
+        if (factor == 0 && !forward) return 0;
 
         float finalDiff = diff;
         if (mode != null) {
             finalDiff = Math.max(mode.getDiff(factor, finalDiff), 0.01f);
         }
 
-        factor = reverse ? factor - finalDiff : factor + finalDiff;
+        factor = !forward ? factor - finalDiff : factor + finalDiff;
         return Math.clamp(factor, 0, 1);
     }
-    public static float handle(boolean reverse, float factor, float diff) {
-        return handle(reverse, factor, diff, AnimMode.EaseInOut);
+    public static float handle(boolean forward, float factor, float diff) {
+        return handle(forward, factor, diff, AnimMode.EaseInOut);
     }
-    public static float handle(boolean reverse, float factor, AnimMode mode) {
-        return handle(reverse, factor, GetAnimDiff.get(), mode);
+    public static float handle(boolean forward, float factor, AnimMode mode) {
+        return handle(forward, factor, GetAnimDiff.get(), mode);
     }
-    public static float handle(boolean reverse, float factor) {
-        return handle(reverse, factor, GetAnimDiff.get(), AnimMode.EaseInOut);
+    public static float handle(boolean forward, float factor) {
+        return handle(forward, factor, GetAnimDiff.get(), AnimMode.EaseInOut);
     }
 
     public static String getAnimText(String startText, String endText, float factor) {

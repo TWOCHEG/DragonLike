@@ -8,6 +8,7 @@ import java.util.List;
 
 import net.fabricmc.loader.api.FabricLoader;
 import org.lwjgl.glfw.GLFW;
+import pon.main.managers.Managers;
 import pon.main.managers.RotationManager;
 import pon.main.managers.ServerManager;
 import pon.main.modules.ModuleManager;
@@ -20,8 +21,7 @@ import pon.main.modules.client.*;
 public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
 	public static ModuleManager MODULE_MANAGER = null;
-	public static RotationManager ROTATIONS = new RotationManager();
-    public static ServerManager SERVER_MANAGER = new ServerManager();
+	public static Managers managers = new Managers();
     public static final String VERSION = "0.0.1";
 
 	public static List<Integer> cancelButtons = java.util.List.of(
@@ -45,7 +45,7 @@ public class Main implements ModInitializer {
 			"pon.main",
 			(lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup())
 		);
-		EVENT_BUS.subscribe(ROTATIONS);
+		Managers.init();
 
 		MODULE_MANAGER = new ModuleManager(
 			new Gui(),

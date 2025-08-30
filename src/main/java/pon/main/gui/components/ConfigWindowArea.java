@@ -6,9 +6,10 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
-import pon.main.config.ConfigManager;
+import pon.main.managers.ConfigManager;
 import pon.main.events.impl.OnChangeConfig;
 import pon.main.gui.ConfigsGui;
+import pon.main.managers.Managers;
 import pon.main.modules.ui.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
@@ -35,8 +36,6 @@ public class ConfigWindowArea extends RenderArea {
     private final int windowHeight = 200;
     private final int windowWidth = 400;
 
-    private ConfigManager config;
-
     private ButtonArea buttonArea;
 
     private float configsDrawY = titleHeight + bigPadding;
@@ -51,24 +50,23 @@ public class ConfigWindowArea extends RenderArea {
     private Path oldPath;
     private Path currentPath;
 
-    public ConfigWindowArea(Gui gui) {
+    public ConfigWindowArea() {
         super();
         Main.EVENT_BUS.subscribe(this);
 
-        this.config = gui.getConfig();
         this.buttonArea = new ButtonArea(
                 this, () -> {
-            gui.getConfig().openConfigDir();
+            Managers.CONFIG.openFilesDir();
         },
                 "open in explorer"
         );
-        for (Path path : config.configFiles()) {
+        for (Path path : Managers.CONFIG.getFiles()) {
             areas.add(new ConfigArea(
                     this, path
             ));
         }
 
-        Path cfg = config.getActiveConfig();
+        Path cfg = Managers.CONFIG.getCurrent();
         oldPath = cfg;
         currentPath = cfg;
     }
@@ -101,7 +99,7 @@ public class ConfigWindowArea extends RenderArea {
     }
 
     public void updateConfigs() {
-        List<Path> currentConfigs = config.configFiles();
+        List<Path> currentConfigs = Managers.CONFIG.getFiles();
 
         List<ConfigArea> newConfigAreas = new ArrayList<>();
         for (Path path : currentConfigs) {
@@ -178,7 +176,7 @@ public class ConfigWindowArea extends RenderArea {
         ConfigArea oldArea = getCfgArea(oldPath);
         ConfigArea currentArea = getCfgArea(currentPath);
         if (oldArea == null || currentArea == null) {
-            currentPath = config.getActiveConfig();
+            currentPath = Managers.CONFIG.getCurrent();
             oldPath = currentPath;
             currentArea = getCfgArea(currentPath);
             oldArea = currentArea;
@@ -242,7 +240,7 @@ public class ConfigWindowArea extends RenderArea {
                 this, null, new int[]{x, y},
                 new ButtonArea[]{new ButtonArea(
                     this, () -> {
-                        config.createConfig();
+                    Managers.CONFIG.createCfg();
                         resetCM();
                     }, "+ create",
                     cmWidth - (padding * 2)
@@ -256,7 +254,7 @@ public class ConfigWindowArea extends RenderArea {
     }
 
     private float calculateTotalContentHeight() {
-        int numConfigs = config.configFiles().size();
+        int numConfigs = Managers.CONFIG.getFiles().size();
         if (numConfigs == 0) return 0;
 
         int rows = (numConfigs + maxCfgInLine - 1) / maxCfgInLine;
@@ -280,9 +278,9 @@ public class ConfigWindowArea extends RenderArea {
     @Override
     public void animHandler() {
         if (mc.currentScreen instanceof ConfigsGui configsGui) {
-            draggedFactor = AnimHelper.handle(!configsGui.dragged, draggedFactor);
+            draggedFactor = AnimHelper.handle(configsGui.dragged, draggedFactor);
         }
-        showFactor = AnimHelper.handle(!show, showFactor, AnimHelper.AnimMode.EaseOut);
+        showFactor = AnimHelper.handle(show, showFactor, AnimHelper.AnimMode.EaseOut);
 
         configsDrawY += scrollVelocityY;
         scrollVelocityY *= SCROLL_FRICTION;
@@ -296,19 +294,19 @@ public class ConfigWindowArea extends RenderArea {
 
         if (configsDrawY > maxScroll) {
             float overshoot = configsDrawY - maxScroll;
-            bounceBackFactor = AnimHelper.handle(false, bounceBackFactor);
+            bounceBackFactor = AnimHelper.handle(true, bounceBackFactor);
             configsDrawY = maxScroll + overshoot * (1 - bounceBackFactor);
         }
         else if (configsDrawY < minScroll) {
             float overshoot = minScroll - configsDrawY;
-            bounceBackFactor = AnimHelper.handle(false, bounceBackFactor);
+            bounceBackFactor = AnimHelper.handle(true, bounceBackFactor);
             configsDrawY = minScroll - overshoot * (1 - bounceBackFactor);
         }
         else {
             bounceBackFactor = 0;
         }
 
-        delta = AnimHelper.handle(false, delta);
+        delta = AnimHelper.handle(true, delta);
     }
 
     public class ConfigArea extends RenderArea {
@@ -397,7 +395,7 @@ public class ConfigWindowArea extends RenderArea {
             } else {
                 inputLight = false;
             }
-            inputLightFactor = AnimHelper.handle(!inputLight, inputLightFactor);
+            inputLightFactor = AnimHelper.handle(inputLight, inputLightFactor);
         }
 
         @Override
@@ -428,7 +426,7 @@ public class ConfigWindowArea extends RenderArea {
                         ),
                         new ButtonArea(
                             this, () -> {
-                                parentArea.config.setActiveConfig(config);
+                                Managers.CONFIG.setCurrent(config);
                                 parentArea.resetCM();
                             }, "✔ set current",
                             parentArea.cmWidth - (padding * 2),
@@ -436,7 +434,7 @@ public class ConfigWindowArea extends RenderArea {
                         ),
                         new ButtonArea(
                             this, () -> {
-                                parentArea.config.deleteConfig(config);
+                                Managers.CONFIG.deleteCfg(config);
                                 resetCM();
                             }, "❌ delete",
                             parentArea.cmWidth - (padding * 2),
@@ -447,7 +445,7 @@ public class ConfigWindowArea extends RenderArea {
                 ));
                 return true;
             } else if (hovered) {
-                parentArea.config.setActiveConfig(config);
+                Managers.CONFIG.setCurrent(config);
                 parentArea.resetCM();
                 return true;
             }
@@ -472,7 +470,7 @@ public class ConfigWindowArea extends RenderArea {
                     inputting = false;
                 } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
                     inputting = false;
-                    parentArea.config.renameConfig(config, inputText);
+                    Managers.CONFIG.renameCfg(config, inputText);
                 }
                 return true;
             }

@@ -167,7 +167,7 @@ public class SetsHGroupArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!hgroup.getVisible(), showFactor);
-        delta = AnimHelper.handle(false, delta);
+        showFactor = AnimHelper.handle(hgroup.getVisible(), showFactor);
+        delta = AnimHelper.handle(true, delta);
     }
 }

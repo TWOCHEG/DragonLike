@@ -64,7 +64,7 @@ public class ColorSetArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!color.getVisible(), showFactor);
+        showFactor = AnimHelper.handle(color.getVisible(), showFactor);
     }
 
     public class Slider extends RenderArea {
@@ -196,7 +196,7 @@ public class ColorSetArea extends RenderArea {
             } else {
                 light = false;
             }
-            lightFactor = AnimHelper.handle(!light, lightFactor);
+            lightFactor = AnimHelper.handle(light, lightFactor);
         }
 
         @Override

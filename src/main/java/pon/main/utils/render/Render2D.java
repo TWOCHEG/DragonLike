@@ -2,7 +2,9 @@ package pon.main.utils.render;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import pon.main.utils.ColorUtils;
 import pon.main.utils.TextUtils;
+import pon.main.utils.math.AnimHelper;
 
 import java.util.LinkedList;
 
@@ -157,5 +159,63 @@ public class Render2D {
     }
     public static int interpolateInt(int oldValue, int newValue, double interpolationValue) {
         return (int) interpolate(oldValue, newValue, (float) interpolationValue);
+    }
+
+    public static void drawBuildScreen(DrawContext context, TextRenderer textRenderer) {
+        drawBuildScreen(context, textRenderer, 1);
+    }
+    public static void drawBuildScreen(DrawContext context, TextRenderer textRenderer, float delta) {
+        String text1 = AnimHelper.getAnimText("", "скоро будет готово", delta);
+        String text2 = "it will be ready soon";
+
+        int scale1 = 5;
+        int scale2 = 2;
+
+        int windowWidth = context.getScaledWindowWidth();
+        int windowHeight = context.getScaledWindowHeight();
+
+        int text1Width = textRenderer.getWidth(text1);
+        int text1Height = textRenderer.fontHeight;
+        int text2Width = textRenderer.getWidth(text2);
+        int text2Height = textRenderer.fontHeight;
+
+        int centerX = windowWidth / 2;
+        int centerY = windowHeight / 2;
+
+        context.getMatrices().pushMatrix();
+
+        context.getMatrices().translate(centerX, centerY);
+        context.getMatrices().scale(scale1, scale1);
+
+        int x1 = -text1Width / 2;
+        int y1 = -text1Height / 2;
+
+        context.drawText(
+            textRenderer, text1,
+            x1, y1,
+            ColorUtils.fromRGB(255, 255, 255, (int)(255 * delta)),
+            false
+        );
+
+        context.getMatrices().popMatrix();
+
+        context.getMatrices().pushMatrix();
+
+        float offsetY = (text1Height / 2f) * scale1 + 20;
+
+        context.getMatrices().translate(centerX, centerY + offsetY);
+        context.getMatrices().scale(scale2, scale2);
+
+        int x2 = -text2Width / 2;
+        int y2 = 0;
+
+        context.drawText(
+            textRenderer, text2,
+            x2, (int) (y2 - (40 * (1 - delta))),
+            ColorUtils.fromRGB(150, 150, 150, (int)(255 * delta)),
+            false
+        );
+
+        context.getMatrices().popMatrix();
     }
 }

@@ -60,7 +60,7 @@ public class ContextMenu extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor2 = AnimHelper.handle(false, showFactor2);
+        showFactor2 = AnimHelper.handle(true, showFactor2);
         showFactor = showFactor2 * parentArea.showFactor;
     }
 }

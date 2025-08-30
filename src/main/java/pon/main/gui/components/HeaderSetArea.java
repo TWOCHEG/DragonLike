@@ -50,6 +50,6 @@ public class HeaderSetArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!set.getVisible(), showFactor);
+        showFactor = AnimHelper.handle(set.getVisible(), showFactor);
     }
 }

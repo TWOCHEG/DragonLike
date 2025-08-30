@@ -5,7 +5,7 @@ import net.minecraft.client.resource.language.LanguageManager;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.Main.Categories;
-import pon.main.config.ConfigManager;
+import pon.main.managers.ConfigManager;
 import pon.main.events.impl.OnChangeConfig;
 import pon.main.modules.settings.Setting;
 import pon.main.modules.ui.Notify;
@@ -15,9 +15,9 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public abstract class Parent {
-    private final String name;
-    private final Categories category;
-    protected final ConfigManager config;
+    private final String NAME;
+    private final Categories CATEGORY;
+    protected final ConfigManager CONFIG;
     protected boolean enable;
     protected int keybindCode;
     private int defaultKeybind = -1;
@@ -27,34 +27,34 @@ public abstract class Parent {
     public List<Setting> settings = new LinkedList();
 
     public Parent(Categories category) {
-        this.name = this.getClass().getName();
-        this.config = new ConfigManager(name);
+        this.NAME = this.getClass().getName();
+        this.CONFIG = new ConfigManager(NAME);
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
         this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.category = category;
+        this.CATEGORY = category;
     }
     public Parent(String name, Categories category) {
-        this.name = name;
-        this.config = new ConfigManager(name);
+        this.NAME = name;
+        this.CONFIG = new ConfigManager(name);
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
         this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.category = category;
+        this.CATEGORY = category;
     }
     public Parent(String name, Categories category, int keybind) {
-        this.name = name;
+        this.NAME = name;
         this.defaultKeybind = keybind;
-        this.config = new ConfigManager(name);
+        this.CONFIG = new ConfigManager(name);
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
         this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.category = category;
+        this.CATEGORY = category;
     }
     public Parent(String name, Categories category, boolean enable) {
-        this.name = name;
+        this.NAME = name;
         this.defaultEnable = enable;
-        this.config = new ConfigManager(name);
+        this.CONFIG = new ConfigManager(name);
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
         this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.category = category;
+        this.CATEGORY = category;
     }
 
     public void onUpdate(Setting setting) {}
@@ -64,11 +64,11 @@ public abstract class Parent {
     protected void onDisable() {}
 
     public String getName() {
-        return name;
+        return NAME;
     }
 
     public Categories getCategory() {
-        return category;
+        return CATEGORY;
     }
 
     public int getKeybind() {
@@ -89,12 +89,12 @@ public abstract class Parent {
             String text = value ? "enable" : "disable";
             notify(
                 new Notify.NotifyData(
-                    text + " " + name,
+                    text + " " + NAME,
                     Notify.NotifyType.Module
                 )
             );
         }
-        config.set(ConfigManager.enableKeyName, value);
+        CONFIG.set(ConfigManager.enableKeyName, value);
         enable = value;
     }
     public void setEnable(boolean value) {
@@ -106,16 +106,16 @@ public abstract class Parent {
     }
 
     public void setKeybind(int code) {
-        config.set(ConfigManager.keybindKeyName, code);
+        CONFIG.set(ConfigManager.keybindKeyName, code);
         keybindCode = code;
     }
 
     public void setValue(String key, Object value) {
-        config.set(key, value);
+        CONFIG.set(key, value);
     }
 
     public <T extends Object> T getValue(String name, T defaultValue) {
-        Object value = config.get(name, defaultValue);
+        Object value = CONFIG.get(name, defaultValue);
         try {
             if (value != null && defaultValue instanceof Integer) {
                 value = ((Float) value).intValue();
@@ -176,7 +176,7 @@ public abstract class Parent {
     }
 
     public ConfigManager getConfig() {
-        return config;
+        return CONFIG;
     }
 
     public static void notify(Notify.NotifyData n) {

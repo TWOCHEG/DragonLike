@@ -142,8 +142,8 @@ public class StringSetArea extends RenderArea {
         } else {
             light = false;
         }
-        lightFactor = AnimHelper.handle(!light, lightFactor);
-        showFactor = AnimHelper.handle(!set.getVisible(), showFactor);
+        lightFactor = AnimHelper.handle(light, lightFactor);
+        showFactor = AnimHelper.handle(set.getVisible(), showFactor);
     }
 }
 

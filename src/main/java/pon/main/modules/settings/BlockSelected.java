@@ -1,6 +1,6 @@
 package pon.main.modules.settings;
 
-import pon.main.config.ConfigManager;
+import pon.main.managers.ConfigManager;
 import pon.main.modules.Parent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

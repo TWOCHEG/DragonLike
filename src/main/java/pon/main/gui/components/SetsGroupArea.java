@@ -76,8 +76,8 @@ public class SetsGroupArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!group.open, showFactor);
-        visibleFactor = AnimHelper.handle(!group.getVisible(), visibleFactor);
+        showFactor = AnimHelper.handle(group.open, showFactor);
+        visibleFactor = AnimHelper.handle(group.getVisible(), visibleFactor);
     }
 
     @Override

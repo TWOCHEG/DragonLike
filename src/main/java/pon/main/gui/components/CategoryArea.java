@@ -109,7 +109,7 @@ public class CategoryArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        hoverFactor = AnimHelper.handle(!hovered, hoverFactor);
-        showFactor = AnimHelper.handle(!show, showFactor, AnimHelper.AnimMode.EaseOut);
+        hoverFactor = AnimHelper.handle(hovered, hoverFactor);
+        showFactor = AnimHelper.handle(show, showFactor, AnimHelper.AnimMode.EaseOut);
     }
 }

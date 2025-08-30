@@ -88,7 +88,7 @@ public class KeyButtonArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!keyButton.getVisible(), showFactor);
-        inputtingFactor = AnimHelper.handle(!inputting, inputtingFactor);
+        showFactor = AnimHelper.handle(keyButton.getVisible(), showFactor);
+        inputtingFactor = AnimHelper.handle(inputting, inputtingFactor);
     }
 }

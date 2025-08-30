@@ -172,7 +172,7 @@ public class NumberSetArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!set.getVisible(), showFactor);
+        showFactor = AnimHelper.handle(set.getVisible(), showFactor);
         if (inputting) {
             if (lightFactor == 1) {
                 light = false;
@@ -182,10 +182,10 @@ public class NumberSetArea extends RenderArea {
         } else {
             light = false;
         }
-        lightFactor = AnimHelper.handle(!light, lightFactor);
-        draggedFactor = AnimHelper.handle(!dragged, draggedFactor);
-        delta = AnimHelper.handle(false, delta);
-        showFactor = AnimHelper.handle(!set.getVisible(), showFactor);
+        lightFactor = AnimHelper.handle(light, lightFactor);
+        draggedFactor = AnimHelper.handle(dragged, draggedFactor);
+        delta = AnimHelper.handle(true, delta);
+        showFactor = AnimHelper.handle(set.getVisible(), showFactor);
     }
 
     @Override

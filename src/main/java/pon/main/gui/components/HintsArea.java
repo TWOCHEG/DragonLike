@@ -86,6 +86,6 @@ public class HintsArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!open, showFactor);
+        showFactor = AnimHelper.handle(open, showFactor);
     }
 }

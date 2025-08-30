@@ -13,14 +13,9 @@ import pon.main.modules.Parent;
 import pon.main.utils.math.MathUtils;
 import pon.main.utils.player.MovementUtility;
 
-import static pon.main.modules.Parent.mc;
-
-public class RotationManager {
+public class RotationManager implements IManager {
     public float renderYaw, renderPitch = 0;
     public boolean track = true;
-
-    public RotationManager() {
-    }
 
     @EventHandler
     private void onRender(EventMove e) {

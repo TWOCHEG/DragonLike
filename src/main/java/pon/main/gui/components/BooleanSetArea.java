@@ -73,7 +73,7 @@ public class BooleanSetArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        enableFactor = AnimHelper.handle(!set.getValue(), enableFactor);
-        showFactor = AnimHelper.handle(!set.getVisible(), showFactor);
+        enableFactor = AnimHelper.handle(set.getValue(), enableFactor);
+        showFactor = AnimHelper.handle(set.getVisible(), showFactor);
     }
 }

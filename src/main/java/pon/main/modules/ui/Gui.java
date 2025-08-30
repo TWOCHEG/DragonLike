@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
 import pon.main.gui.ConfigsGui;
+import pon.main.gui.FriendsGui;
 import pon.main.gui.ModulesGui;
 import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.ChoseGuiArea;
@@ -56,11 +57,12 @@ public class Gui extends Parent {
     // render components
     public LinkedList<CategoryArea> categories = null;
     public Screen oldScreen = null;
-    public ChoseGuiArea choseGuiArea = new ChoseGuiArea(ModulesGui.class, ModulesGui.class, ConfigsGui.class);
-    public ConfigWindowArea configWindowArea = new ConfigWindowArea(this);
+    public ChoseGuiArea choseGuiArea = new ChoseGuiArea(ModulesGui.class, ConfigsGui.class, FriendsGui.class);
+    public ConfigWindowArea configWindowArea = new ConfigWindowArea();
 
     public Gui() {
         super("click gui", Main.Categories.ui, GLFW.GLFW_KEY_RIGHT_SHIFT);
+        setEnable(false);
     }
 
     public Map<String, String> getImages() {
@@ -88,12 +90,10 @@ public class Gui extends Parent {
 
     @Override
     public void onDisable() {
-        choseGuiArea.show = false;
-        choseGuiArea.returnToDefault();
-        if (mc.currentScreen instanceof ModulesGui modulesGui) {
-            modulesGui.closeGui();
-        } else if (mc.currentScreen instanceof ConfigsGui configsGui) {
-            configsGui.closeGui();
+        if (mc.currentScreen != null) {
+            choseGuiArea.show = false;
+            choseGuiArea.returnToDefault();
+            mc.currentScreen.close();
         }
     }
 
@@ -105,7 +105,7 @@ public class Gui extends Parent {
     @Override
     public void setKeybind(int code) {
         if (code != -1) {
-            config.set("keybind", code);
+            CONFIG.set("keybind", code);
             keybindCode = code;
         }
     }
@@ -127,6 +127,8 @@ public class Gui extends Parent {
             gui.onChangeLook(e);
         } else if (mc.currentScreen instanceof ConfigsGui configsGui) {
             configsGui.onChangeLook(e);
+        } else if (mc.currentScreen instanceof FriendsGui friendsGui) {
+            friendsGui.onChangeLook(e);
         }
     }
 

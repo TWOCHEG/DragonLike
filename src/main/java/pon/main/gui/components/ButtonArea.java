@@ -86,7 +86,7 @@ public class ButtonArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        clickedFactor = AnimHelper.handle(!clicked, clickedFactor, GetAnimDiff.get() * 2);
-        hoveredFactor = AnimHelper.handle(!hovered, hoveredFactor);
+        clickedFactor = AnimHelper.handle(clicked, clickedFactor, GetAnimDiff.get() * 2);
+        hoveredFactor = AnimHelper.handle(hovered, hoveredFactor);
     }
 }

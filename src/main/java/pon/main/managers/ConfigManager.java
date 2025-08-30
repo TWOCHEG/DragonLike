@@ -1,10 +1,11 @@
-package pon.main.config;
+package pon.main.managers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import pon.main.Main;
 import pon.main.events.impl.OnChangeConfig;
+import pon.main.modules.Parent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,21 +15,19 @@ import java.util.stream.Collectors;
 import java.awt.Desktop;
 import java.io.File;
 
-public class ConfigManager {
+public class ConfigManager implements IManager {
     public final Path configDir = Path.of(System.getProperty("user.home"), ".dl");
     private static final Gson GSON = new GsonBuilder()
         .disableHtmlEscaping()
         .setPrettyPrinting()
         .create();
-    private String moduleName;
+    private String moduleName = null;
 
     public static final String currentKeyName = "current";
     public static final String keybindKeyName = "keybind";
     public static final String enableKeyName = "enable";
 
-    public ConfigManager() {
-        this.moduleName = null;
-    }
+    public ConfigManager() {}
     public ConfigManager(String moduleName) {
         this.moduleName = moduleName;
     }
@@ -55,9 +54,13 @@ public class ConfigManager {
         return get(key, null);
     }
 
+    public ConfigManager forModule(Parent module) {
+        return new ConfigManager(module.getName());
+    }
+
     public void set(String key, Object value) {
         try {
-            Path configPath = getActiveConfig();
+            Path configPath = getCurrent();
             Map<String, Object> root;
 
             if (Files.exists(configPath) && Files.isRegularFile(configPath)) {
@@ -100,7 +103,7 @@ public class ConfigManager {
     @SuppressWarnings("unchecked")
     public Map<String, Object> readJson() {
         try {
-            Path path = getActiveConfig();
+            Path path = getCurrent();
             if (Files.exists(path) && Files.isRegularFile(path)) {
                 String content = Files.readString(path, StandardCharsets.UTF_8);
                 if (!content.isBlank()) {
@@ -126,9 +129,9 @@ public class ConfigManager {
         return value;
     }
 
-    public void setActiveConfig(Path activePath) {
+    public void setCurrent(Path activePath) {
         try {
-            Path oldConfig = getActiveConfig();
+            Path oldConfig = getCurrent();
 
             if (!Files.exists(activePath)) {
                 return;
@@ -145,7 +148,7 @@ public class ConfigManager {
             String updatedActiveContent = GSON.toJson(activeData);
             Files.writeString(activePath, updatedActiveContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            for (Path configFile : configFiles()) {
+            for (Path configFile : getFiles()) {
                 if (configFile.equals(activePath)) continue;
 
                 try {
@@ -160,14 +163,14 @@ public class ConfigManager {
                     }
                 } catch (IOException | RuntimeException ignored) {}
             }
-            Path active = getActiveConfig();
+            Path active = getCurrent();
             if (active != null) {
                 Main.EVENT_BUS.post(new OnChangeConfig(oldConfig, active));
             }
         } catch (IOException | RuntimeException ignored) {}
     }
 
-    public List<Path> configFiles() {
+    public List<Path> getFiles() {
         try {
             List<Path> list = Files.list(configDir)
                 .filter(p -> p.toString().endsWith(".json"))
@@ -182,8 +185,8 @@ public class ConfigManager {
         }
     }
 
-    public Path getActiveConfig() {
-        List<Path> list = configFiles();
+    public Path getCurrent() {
+        List<Path> list = getFiles();
         for (Path p : list) {
             if (Files.isRegularFile(p) && p.toString().endsWith(".json")) {
                 try {
@@ -201,7 +204,7 @@ public class ConfigManager {
         return list.getFirst();
     }
 
-    public void openConfigDir() {
+    public void openFilesDir() {
         try {
             if (!Files.exists(configDir)) {
                 Files.createDirectories(configDir);
@@ -227,7 +230,7 @@ public class ConfigManager {
         } catch (IOException ignored) {}
     }
 
-    public boolean deleteConfig(Path path) {
+    public boolean deleteCfg(Path path) {
         try {
             if (path != null && Files.exists(path) && path.toString().endsWith(".json") && path.getParent().equals(configDir)) {
                 Files.delete(path);
@@ -237,9 +240,9 @@ public class ConfigManager {
         return false;
     }
 
-    public Path createConfig() {
-        String name = String.valueOf(configFiles().size() + 1);
-        while (configFiles().contains(configDir.resolve(name + ".json"))) {
+    public Path createCfg() {
+        String name = String.valueOf(getFiles().size() + 1);
+        while (getFiles().contains(configDir.resolve(name + ".json"))) {
             name += "-c";
         }
 
@@ -267,7 +270,7 @@ public class ConfigManager {
         return null;
     }
 
-    public Path renameConfig(Path path, String newName) {
+    public Path renameCfg(Path path, String newName) {
         if (path == null || !Files.exists(path) || !path.toString().endsWith(".json") || !path.getParent().equals(configDir)) {
             return null;
         }

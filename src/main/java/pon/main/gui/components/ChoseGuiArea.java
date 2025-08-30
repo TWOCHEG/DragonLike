@@ -10,6 +10,7 @@ import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -24,13 +25,14 @@ public class ChoseGuiArea extends RenderArea {
 
     private float delta = 1;
 
-    public ChoseGuiArea(Class<? extends Screen> defaultGuiClass, Class<? extends Screen>... guiClasses) {
+    public ChoseGuiArea(Class<? extends Screen>... guiClasses) {
+        Class<? extends Screen> defaultClass = Arrays.stream(guiClasses).toList().getFirst();
         this.showFactor = 0;
-        this.currentGuiClass = defaultGuiClass;
-        this.oldGuiClass = defaultGuiClass;
+        this.currentGuiClass = defaultClass;
+        this.oldGuiClass = defaultClass;
         this.guiClasses = guiClasses;
 
-        this.defaultGuiClass = defaultGuiClass;
+        this.defaultGuiClass = defaultClass;
 
         Consumer<Object> onSetValue = (object) -> {
             onSetValue((Class<? extends Screen>) object);
@@ -124,8 +126,8 @@ public class ChoseGuiArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(!show, showFactor);
-        delta = AnimHelper.handle(false, delta);
+        showFactor = AnimHelper.handle(show, showFactor);
+        delta = AnimHelper.handle(true, delta);
     }
 
     public void returnToDefault() {

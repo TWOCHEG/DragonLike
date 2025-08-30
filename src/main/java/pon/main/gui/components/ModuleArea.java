@@ -182,14 +182,14 @@ public class ModuleArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        hoverFactor = AnimHelper.handle(!hovered, hoverFactor);
+        hoverFactor = AnimHelper.handle(hovered, hoverFactor);
         showKeysFactor = AnimHelper.handle(
-            GLFW.glfwGetKey(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) != GLFW.GLFW_PRESS,
+            GLFW.glfwGetKey(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS,
             showKeysFactor
         );
-        enableFactor = AnimHelper.handle(!module.getEnable(), enableFactor);
-        bindingAnimFactor = AnimHelper.handle(!binding, bindingAnimFactor);
-        showFactor = AnimHelper.handle(!open, showFactor * category.showFactor);
+        enableFactor = AnimHelper.handle(module.getEnable(), enableFactor);
+        bindingAnimFactor = AnimHelper.handle(binding, bindingAnimFactor);
+        showFactor = AnimHelper.handle(open, showFactor * category.showFactor);
     }
 
     @Override

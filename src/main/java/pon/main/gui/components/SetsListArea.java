@@ -118,9 +118,9 @@ public class SetsListArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        delta = AnimHelper.handle(false, delta);
-        showFactor = AnimHelper.handle(!set.getVisible(), showFactor) ;
-        openFactor = AnimHelper.handle(!open, openFactor) * showFactor;
+        delta = AnimHelper.handle(true, delta);
+        showFactor = AnimHelper.handle(set.getVisible(), showFactor) ;
+        openFactor = AnimHelper.handle(open, openFactor) * showFactor;
     }
 
     public class ListValue extends RenderArea {

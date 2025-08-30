@@ -10,9 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
 
-import static pon.main.gui.components.RenderArea.mc;
-
-public class ServerManager {
+public class ServerManager implements IManager {
     private final ArrayDeque<Float> tpsResult = new ArrayDeque<>(20);
     private long time;
     private long tickTime;

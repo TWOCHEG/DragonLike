@@ -1,6 +1,7 @@
 package pon.main.gui;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.navigation.GuiNavigationPath;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -53,9 +54,22 @@ public class ModulesGui extends Screen {
         this.categoriesShow = 130 * this.gui.categories.size();
     }
 
-    public void closeGui() {
+    @Override
+    public void close() {
         open = false;
         frameCounter = 0;
+    }
+
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+        if (client.world == null) {
+            this.renderPanoramaBackground(context, deltaTicks);
+        }
+    }
+
+    @Override
+    public boolean shouldPause() {
+        return false;
     }
 
     @Override
@@ -68,7 +82,7 @@ public class ModulesGui extends Screen {
 
         LinkedList<CategoryArea> categories = gui.categories;
 
-        int startX = (int) (((context.getScaledWindowWidth() / 2) - (((categoryWidth + categoryPadding) * categories.size()) / 2)) + this.startX);
+        int startX = (int) (((width / 2) - (((categoryWidth + categoryPadding) * categories.size()) / 2)) + this.startX);
 
         context.fillGradient(
             0, 0,
@@ -77,7 +91,7 @@ public class ModulesGui extends Screen {
             ColorUtils.fromRGB(0, 0, 0, 0)
         );
 
-        gui.choseGuiArea.render(context, context.getScaledWindowWidth() / 2, 0, 0, 0, mouseX, mouseY);
+        gui.choseGuiArea.render(context, width / 2, 0, 0, 0, mouseX, mouseY);
 
         int closeCount = 0;
         for (int i = 0; i < categories.size(); i++) {
@@ -102,7 +116,7 @@ public class ModulesGui extends Screen {
     public void onChangeLook(EventChangePlayerLook e) {
         if (Parent.fullNullCheck()) return;
 
-        Main.ROTATIONS.rotate(
+        Main.managers.ROTATIONS.rotate(
                 (float) (client.player.getYaw() + e.cursorDeltaY),
                 (float) (client.player.getPitch() + e.cursorDeltaX)
         );
@@ -130,7 +144,7 @@ public class ModulesGui extends Screen {
     }
 
     private void animHandler() {
-        openFactor = AnimHelper.handle(!open, openFactor, AnimHelper.AnimMode.EaseOut);
+        openFactor = AnimHelper.handle(open, openFactor, AnimHelper.AnimMode.EaseOut);
 
         float moveDiff = GetAnimDiff.get() * 2;
         float moveAnimDiff = GetAnimDiff.get();
@@ -146,10 +160,10 @@ public class ModulesGui extends Screen {
         boolean leftPressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT) == GLFW.GLFW_PRESS;
         boolean rightPressed = GLFW.glfwGetKey(client.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS;
 
-        upFactor = AnimHelper.handle(!upPressed, upFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
-        downFactor = AnimHelper.handle(!downPressed, downFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
-        leftFactor = AnimHelper.handle(!leftPressed, leftFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
-        rightFactor = AnimHelper.handle(!rightPressed, rightFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        upFactor = AnimHelper.handle(upPressed, upFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        downFactor = AnimHelper.handle(downPressed, downFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        leftFactor = AnimHelper.handle(leftPressed, leftFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
+        rightFactor = AnimHelper.handle(rightPressed, rightFactor, moveAnimDiff, AnimHelper.AnimMode.EaseOut);
 
         float moveDirY = (downFactor - upFactor);
         float moveDirX = (rightFactor - leftFactor);
@@ -159,11 +173,6 @@ public class ModulesGui extends Screen {
 
         startY += moveVelocityY * moveDiff;
         startX += moveVelocityX * moveDiff;
-    }
-
-    @Override
-    public boolean shouldPause() {
-        return false;
     }
 
     @Override

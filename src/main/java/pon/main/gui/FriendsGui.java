@@ -6,18 +6,18 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
-import pon.main.gui.components.CategoryArea;
-import pon.main.gui.components.ConfigWindowArea;
 import pon.main.gui.components.RenderArea;
 import pon.main.modules.Parent;
 import pon.main.modules.ui.Gui;
 import pon.main.utils.ColorUtils;
+import pon.main.utils.TextUtils;
 import pon.main.utils.math.AnimHelper;
+import pon.main.utils.render.Render2D;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConfigsGui extends Screen {
+public class FriendsGui extends Screen {
     private final Gui gui;
 
     private boolean open = true;
@@ -30,12 +30,9 @@ public class ConfigsGui extends Screen {
     private double windowX = 100;
     private double windowY = 100;
 
-    public ConfigWindowArea cwa;
-
-    public ConfigsGui() {
-        super(Text.literal("configs"));
+    public FriendsGui() {
+        super(Text.literal("friends"));
         this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
-        this.cwa = gui.configWindowArea;
         areas.add(gui.choseGuiArea);
         areas.add(gui.configWindowArea);
     }
@@ -70,10 +67,9 @@ public class ConfigsGui extends Screen {
             ColorUtils.fromRGB(0, 0, 0, 0)
         );
 
-        gui.choseGuiArea.render(context, width / 2, 0, 0, 0, mouseX, mouseY);
+        Render2D.drawBuildScreen(context, textRenderer, openFactor);
 
-        cwa.textRenderer = textRenderer;
-        cwa.render(context, (int) windowX, (int) windowY, 0, 0, mouseX, mouseY);
+        gui.choseGuiArea.render(context, width / 2, 0, 0, 0, mouseX, mouseY);
     }
 
     public void onChangeLook(EventChangePlayerLook e) {
@@ -90,10 +86,10 @@ public class ConfigsGui extends Screen {
         for (RenderArea area : areas) {
             if (area.mouseClicked(mouseX, mouseY, button)) return true;
         }
-        if (RenderArea.checkHovered(cwa.x, cwa.y, cwa.width, cwa.titleHeight, mouseX, mouseY)) {
-            dragged = true;
-            return true;
-        }
+//        if (RenderArea.checkHovered(cwa.x, cwa.y, cwa.width, cwa.titleHeight, mouseX, mouseY)) {
+//            dragged = true;
+//            return true;
+//        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
     @Override
@@ -138,7 +134,6 @@ public class ConfigsGui extends Screen {
     }
 
     private void animHandler() {
-        gui.configWindowArea.show = open;
         openFactor = AnimHelper.handle(open, openFactor, AnimHelper.AnimMode.EaseOut);
     }
 
