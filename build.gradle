@@ -43,7 +43,6 @@ loom {
 			sourceSet sourceSets.main
 		}
 	}
-
 }
 
 dependencies {
@@ -56,6 +55,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation "meteordevelopment:orbit:0.2.3"
+
+    modImplementation "meteordevelopment:discord-ipc:1.1"
 }
 
 processResources {

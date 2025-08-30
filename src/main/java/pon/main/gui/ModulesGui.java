@@ -48,7 +48,7 @@ public class ModulesGui extends Screen {
     );
 
     public ModulesGui() {
-        super(Text.literal("ModulesGui"));
+        super(Text.literal("modules"));
         this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
         this.categoriesShow = 130 * this.gui.categories.size();
     }

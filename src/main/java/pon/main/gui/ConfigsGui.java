@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
+import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.ConfigWindowArea;
 import pon.main.gui.components.RenderArea;
 import pon.main.modules.Parent;
@@ -32,7 +33,7 @@ public class ConfigsGui extends Screen {
     public ConfigWindowArea cwa;
 
     public ConfigsGui() {
-        super(Text.literal("ConfigsGui"));
+        super(Text.literal("configs"));
         this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
         this.cwa = gui.configWindowArea;
         areas.add(gui.choseGuiArea);
@@ -87,7 +88,7 @@ public class ConfigsGui extends Screen {
         for (RenderArea area : areas) {
             if (area.keyPressed(keyCode, scanCode, modifiers)) return true;
         }
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE || keyCode == gui.getKeybind()) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE  ||keyCode == gui.getKeybind()) {
             gui.onDisable();
             return true;
         }
@@ -104,6 +105,13 @@ public class ConfigsGui extends Screen {
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        for (RenderArea area : areas) {
+            if (area.charTyped(chr, modifiers)) return true;
+        }
+        return super.charTyped(chr, modifiers);
     }
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
@@ -124,5 +132,13 @@ public class ConfigsGui extends Screen {
     @Override
     public boolean shouldPause() {
         return false;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        for (RenderArea area : areas) {
+            if (area.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
+        }
+        return true;
     }
 }

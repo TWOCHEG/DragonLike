@@ -1,9 +1,11 @@
 package pon.main.modules;
 
+import meteordevelopment.orbit.EventHandler;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.Main.Categories;
 import pon.main.config.ConfigManager;
+import pon.main.events.impl.OnChangeConfig;
 import pon.main.modules.settings.Setting;
 import pon.main.modules.ui.Notify;
 import net.minecraft.client.MinecraftClient;
@@ -17,15 +19,40 @@ public abstract class Parent {
     protected final ConfigManager config;
     protected boolean enable;
     protected int keybindCode;
+    private int defaultKeybind = -1;
+    private boolean defaultEnable = false;
     public static MinecraftClient mc = MinecraftClient.getInstance();
 
     public List<Setting> settings = new LinkedList();
 
+    public Parent(Categories category) {
+        this.name = this.getClass().getName();
+        this.config = new ConfigManager(name);
+        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
+        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
+        this.category = category;
+    }
     public Parent(String name, Categories category) {
         this.name = name;
         this.config = new ConfigManager(name);
-        this.enable = (boolean) getValue("enable", false);
-        this.keybindCode = (int) getValue("keybind", -1);
+        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
+        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
+        this.category = category;
+    }
+    public Parent(String name, Categories category, int keybind) {
+        this.name = name;
+        this.defaultKeybind = keybind;
+        this.config = new ConfigManager(name);
+        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
+        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
+        this.category = category;
+    }
+    public Parent(String name, Categories category, boolean enable) {
+        this.name = name;
+        this.defaultEnable = enable;
+        this.config = new ConfigManager(name);
+        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
+        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
         this.category = category;
     }
 
@@ -66,7 +93,7 @@ public abstract class Parent {
                 )
             );
         }
-        config.set("enable", value);
+        config.set(ConfigManager.enableKeyName, value);
         enable = value;
     }
     public void setEnable(boolean value) {
@@ -78,7 +105,7 @@ public abstract class Parent {
     }
 
     public void setKeybind(int code) {
-        config.set("keybind", code);
+        config.set(ConfigManager.keybindKeyName, code);
         keybindCode = code;
     }
 
@@ -86,7 +113,7 @@ public abstract class Parent {
         config.set(key, value);
     }
 
-    public Object getValue(String name, Object defaultValue) {
+    public <T extends Object> T getValue(String name, T defaultValue) {
         Object value = config.get(name, defaultValue);
         try {
             if (value != null && defaultValue instanceof Integer) {
@@ -95,8 +122,18 @@ public abstract class Parent {
                 value = ((Double) value).floatValue();
             }
         } catch (Exception ignore) {}
-        return value;
+        return (T) value;
     }
+
+    @EventHandler
+    private void onChangeConfig(OnChangeConfig e) {
+        for (Setting s : getSettings()) {
+            s.setValue(getValue(s.getName(), s.defaultValue));
+        }
+        setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
+        setEnable(getValue(ConfigManager.keybindKeyName, defaultEnable));
+    }
+
     public Object getValue(String name) {
         return getValue(name, null);
     }
@@ -158,5 +195,9 @@ public abstract class Parent {
         if (key == getKeybind()) {
             toggle();
         }
+    }
+
+    public boolean isToggleable() {
+        return true;
     }
 }

@@ -4,44 +4,54 @@ import java.util.LinkedList;
 import java.util.function.Function;
 
 public class TextUtils {
-    public static LinkedList<String> splitForRender(String text, int maxWidth, Function<String, Integer> widthCalculator, String splitRegex) {
+    public static LinkedList<String> splitForRender(
+        String text, int maxWidth,
+        Function<String, Integer> widthCalculator,
+        String splitRegex
+    ) {
         LinkedList<String> lines = new LinkedList<>();
-        StringBuilder currentLine = new StringBuilder();
 
-        for (String word : text.strip().split(splitRegex)) {
-            boolean fits;
-            if (currentLine.isEmpty()) {
-                fits = widthCalculator.apply(word) <= maxWidth;
-            } else {
-                fits = widthCalculator.apply(currentLine + splitRegex + word) <= maxWidth;
-            }
+        for (String paragraph : text.split("\\n", -1)) {
+            StringBuilder currentLine = new StringBuilder();
 
-            if (!fits) {
-                if (!currentLine.isEmpty()) {
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
+            for (String word : paragraph.strip().split(splitRegex)) {
+                boolean fits;
+                if (currentLine.isEmpty()) {
+                    fits = widthCalculator.apply(word) <= maxWidth;
+                } else {
+                    fits = widthCalculator.apply(currentLine + splitRegex + word) <= maxWidth;
                 }
-                if (widthCalculator.apply(word) > maxWidth) {
-                    for (char c : word.toCharArray()) {
-                        String charStr = String.valueOf(c);
-                        if (widthCalculator.apply(currentLine + charStr) > maxWidth && !currentLine.isEmpty()) {
-                            lines.add(currentLine.toString());
-                            currentLine = new StringBuilder();
+
+                if (!fits) {
+                    if (!currentLine.isEmpty()) {
+                        lines.add(currentLine.toString());
+                        currentLine = new StringBuilder();
+                    }
+
+                    // Если слово целиком не влезает, разбиваем по символам
+                    if (widthCalculator.apply(word) > maxWidth) {
+                        for (char c : word.toCharArray()) {
+                            String charStr = String.valueOf(c);
+                            if (widthCalculator.apply(currentLine + charStr) > maxWidth && !currentLine.isEmpty()) {
+                                lines.add(currentLine.toString());
+                                currentLine = new StringBuilder();
+                            }
+                            currentLine.append(c);
                         }
-                        currentLine.append(c);
+                    } else {
+                        currentLine.append(word);
                     }
                 } else {
+                    if (!currentLine.isEmpty()) {
+                        currentLine.append(splitRegex);
+                    }
                     currentLine.append(word);
                 }
-            } else {
-                if (!currentLine.isEmpty()) {
-                    currentLine.append(splitRegex);
-                }
-                currentLine.append(word);
             }
-        }
-        if (!currentLine.isEmpty()) {
-            lines.add(currentLine.toString());
+
+            if (!currentLine.isEmpty()) {
+                lines.add(currentLine.toString());
+            }
         }
 
         return lines;

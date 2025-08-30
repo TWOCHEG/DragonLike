@@ -7,7 +7,6 @@ import net.minecraft.client.gui.screen.TitleScreen;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
-import pon.main.events.impl.EventResizeScreen;
 import pon.main.gui.ConfigsGui;
 import pon.main.gui.ModulesGui;
 import pon.main.gui.components.CategoryArea;
@@ -61,9 +60,7 @@ public class Gui extends Parent {
     public ConfigWindowArea configWindowArea = new ConfigWindowArea(this);
 
     public Gui() {
-        super("click gui", Main.Categories.ui);
-        getConfig().set("keybind", getConfig().get("keybind", GLFW.GLFW_KEY_RIGHT_SHIFT));
-        enable = false;
+        super("click gui", Main.Categories.ui, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 
     public Map<String, String> getImages() {
@@ -124,6 +121,7 @@ public class Gui extends Parent {
 
     @EventHandler
     private void onChangeLook(EventChangePlayerLook e) {
+        if (!mouseMove.getValue()) return;
         if (Parent.fullNullCheck()) return;
         if (mc.currentScreen instanceof ModulesGui gui) {
             gui.onChangeLook(e);
@@ -140,5 +138,6 @@ public class Gui extends Parent {
         }
         configWindowArea.showFactor = 0;
         configWindowArea.show = false;
+        configWindowArea.resetCM();
     }
 }

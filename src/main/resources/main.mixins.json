@@ -8,15 +8,12 @@
     "MixinClientPlayerEntity",
     "MixinScreen",
     "MixinClientConnection",
-    "MixinCamera",
-    "accesors.IClientPlayerEntity"
+    "MixinCamera"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-    "MixinEntity",
-    "accesors.IExplosion",
-    "accesors.ILivingEntity"
+    "MixinEntity"
   ]
 }

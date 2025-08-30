@@ -3,6 +3,8 @@ package pon.main.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import pon.main.Main;
+import pon.main.events.impl.OnChangeConfig;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +22,9 @@ public class ConfigManager {
         .create();
     private String moduleName;
 
-    public final String currentKeyName = "current";
+    public static final String currentKeyName = "current";
+    public static final String keybindKeyName = "keybind";
+    public static final String enableKeyName = "enable";
 
     public ConfigManager() {
         this.moduleName = null;
@@ -124,6 +128,8 @@ public class ConfigManager {
 
     public void setActiveConfig(Path activePath) {
         try {
+            Path oldConfig = getActiveConfig();
+
             if (!Files.exists(activePath)) {
                 return;
             }
@@ -154,6 +160,10 @@ public class ConfigManager {
                     }
                 } catch (IOException | RuntimeException ignored) {}
             }
+            Path active = getActiveConfig();
+            if (active != null) {
+                Main.EVENT_BUS.post(new OnChangeConfig(oldConfig, active));
+            }
         } catch (IOException | RuntimeException ignored) {}
     }
 
@@ -174,7 +184,6 @@ public class ConfigManager {
 
     public Path getActiveConfig() {
         List<Path> list = configFiles();
-
         for (Path p : list) {
             if (Files.isRegularFile(p) && p.toString().endsWith(".json")) {
                 try {

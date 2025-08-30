@@ -15,7 +15,6 @@ import pon.main.utils.TextUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.ColorUtils;
-import pon.main.utils.render.Render3D;
 
 import java.awt.*;
 import java.util.*;
@@ -45,8 +44,7 @@ public class Notify extends Parent {
     }
 
     public Notify() {
-        super("notify", Main.Categories.ui);
-        enable = config.get("enable", true);
+        super("notify", Main.Categories.ui, true);
 
         HudRenderCallback.EVENT.register((context, tickDelta) -> {
             TextRenderer textRenderer = mc.textRenderer;

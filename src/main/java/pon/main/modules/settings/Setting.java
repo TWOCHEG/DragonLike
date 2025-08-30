@@ -1,5 +1,6 @@
 package pon.main.modules.settings;
 
+import pon.main.events.impl.OnChangeConfig;
 import pon.main.modules.Parent;
 import pon.main.utils.EnumConverter;
 
@@ -50,7 +51,7 @@ public class Setting<T> {
 
     public void setModule(Parent module) {
         this.module = module;
-        this.value = (T) module.getValue(name, defaultValue);
+        this.value = module.getValue(name, defaultValue);
     }
 
     public Setting<T> visibleIf(Predicate<T> visibility) {

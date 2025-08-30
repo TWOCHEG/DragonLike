@@ -1,35 +1,131 @@
 package pon.main.gui.components;
 
+import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.util.math.MathHelper;
+import org.lwjgl.glfw.GLFW;
+import pon.main.Main;
+import pon.main.config.ConfigManager;
+import pon.main.events.impl.OnChangeConfig;
 import pon.main.gui.ConfigsGui;
 import pon.main.modules.ui.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ConfigWindowArea extends RenderArea {
     public boolean show = false;
 
-    public int titleHeight = 17;
+    private ContextMenu cm = null;
+    private final int cmWidth = 80;
 
-    public int radius = 7;
+    public final int titleHeight = 17;
+
+    public final int maxCfgInLine = 5;
+
+    public final int radius = 7;
 
     private float draggedFactor = 0;
 
-    private int windowHeight = 200;
-    private int windowWidth = 400;
+    private final int windowHeight = 200;
+    private final int windowWidth = 400;
 
-    private Gui gui;
+    private ConfigManager config;
+
+    private ButtonArea buttonArea;
+
+    private float configsDrawY = titleHeight + bigPadding;
+
+    private float scrollVelocityY = 0f;
+    private static final float SCROLL_FRICTION = 0.7f;
+    private static final float SCROLL_SENSITIVITY = 5f;
+
+    private float bounceBackFactor = 0f;
+
+    private float delta = 1;
+    private Path oldPath;
+    private Path currentPath;
 
     public ConfigWindowArea(Gui gui) {
         super();
-        this.gui = gui;
-        areas.add(new ButtonArea(
-            this, () -> {
-                gui.getConfig().openConfigDir();
-            },
-            "open in explorer"
-        ));
+        Main.EVENT_BUS.subscribe(this);
+
+        this.config = gui.getConfig();
+        this.buttonArea = new ButtonArea(
+                this, () -> {
+            gui.getConfig().openConfigDir();
+        },
+                "open in explorer"
+        );
+        for (Path path : config.configFiles()) {
+            areas.add(new ConfigArea(
+                    this, path
+            ));
+        }
+
+        Path cfg = config.getActiveConfig();
+        oldPath = cfg;
+        currentPath = cfg;
+    }
+
+    public ConfigArea getCfgArea(Path path) {
+        for (RenderArea area : areas) {
+            if (area instanceof ConfigArea configArea) {
+                if (configArea.config.equals(path)) return configArea;
+            }
+        }
+        return null;
+    }
+
+    public void resetCM() {
+        if (cm != null) {
+            cm = null;
+        }
+    }
+    public void setCM(ContextMenu cm) {
+        this.cm = cm;
+    }
+
+    public ConfigArea getConfigArea(Path path) {
+        for (RenderArea area : areas) {
+            if (area instanceof ConfigArea configArea) {
+                if (configArea.config.equals(path)) return configArea;
+            }
+        }
+        return null;
+    }
+
+    public void updateConfigs() {
+        List<Path> currentConfigs = config.configFiles();
+
+        List<ConfigArea> newConfigAreas = new ArrayList<>();
+        for (Path path : currentConfigs) {
+            ConfigArea existing = getConfigArea(path);
+            if (existing != null) {
+                newConfigAreas.add(existing);
+            } else {
+                newConfigAreas.add(new ConfigArea(this, path));
+            }
+        }
+        for (int i = areas.size() - 1; i >= 0; i--) {
+            if (areas.get(i) instanceof ConfigArea) {
+                areas.remove(i);
+            }
+        }
+        areas.addAll(0, newConfigAreas);
+    }
+
+    @EventHandler
+    private void onChangeConfig(OnChangeConfig e) {
+        System.out.println(e.getCurrent());
+        delta = 0;
+        oldPath = e.getOld();
+        currentPath = e.getCurrent();
     }
 
     @Override
@@ -39,6 +135,11 @@ public class ConfigWindowArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
+        height = windowHeight;
+        width = windowWidth;
+
+        updateConfigs();
+
         startY -= (int) (50 * (1 - showFactor));
 
         Render2D.fill(
@@ -61,18 +162,119 @@ public class ConfigWindowArea extends RenderArea {
             ColorUtils.fromRGB(0, 0, 0, 50 * showFactor)
         );
 
-        areas.getFirst().render(
-            context, startX + radius + padding, startY + ((titleHeight / 2) - (areas.getFirst().height / 2)),
+        buttonArea.render(
+            context, startX + radius, startY + ((titleHeight / 2) - (buttonArea.height / 2)),
             0, 0, mouseX, mouseY
         );
 
-        context.drawCenteredTextWithShadow(
-            textRenderer, "! (пока что) идут строительные работы !",
-            startX + (windowWidth / 2), startY + ((windowHeight / 2) - (textRenderer.fontHeight / 2)),
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFactor)
+        int totalPadding = bigPadding * (maxCfgInLine + 1);
+        int availableWidth = width - totalPadding;
+        int size = Math.max(0, availableWidth / maxCfgInLine);
+
+        context.enableScissor(
+            startX, startY + titleHeight, startX + width, startY + height - 1
         );
 
-        super.render(context, startX, startY, windowWidth, windowHeight, mouseX, mouseY);
+        ConfigArea oldArea = getCfgArea(oldPath);
+        ConfigArea currentArea = getCfgArea(currentPath);
+        if (oldArea == null || currentArea == null) {
+            currentPath = config.getActiveConfig();
+            oldPath = currentPath;
+            currentArea = getCfgArea(currentPath);
+            oldArea = currentArea;
+        }
+        if (oldArea != null && currentArea != null) {
+            Render2D.fill(
+                context,
+                MathHelper.lerp(delta, oldArea.x, currentArea.x),
+                MathHelper.lerp(delta, oldArea.y, currentArea.y),
+                MathHelper.lerp(delta, oldArea.x + oldArea.width, currentArea.x + currentArea.width),
+                MathHelper.lerp(delta, oldArea.y + oldArea.height, currentArea.y + currentArea.height),
+                ColorUtils.fromRGB(0, 0, 0, 30 * showFactor),
+                bigPadding, 2
+            );
+        }
+
+        int configsX = startX + bigPadding;
+        int configsY = (int) (startY + configsDrawY);
+        for (RenderArea area : areas) {
+            if ((configsX - startX) + area.width + bigPadding > width) {
+                configsY += area.height + bigPadding;
+                configsX = startX + bigPadding;
+            }
+            area.render(context, configsX, configsY, size, size, mouseX, mouseY);
+            configsX += area.width + bigPadding;
+        }
+        context.disableScissor();
+
+        if (cm != null) {
+            cm.render(context, 0, 0, 0, 0, mouseX, mouseY);
+        }
+
+        super.render(context, startX, startY, width, height, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (checkHovered(mouseX, mouseY)) {
+            scrollVelocityY += (float) scrollY * SCROLL_SENSITIVITY;
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (buttonArea.mouseReleased(mouseX, mouseY, button)) return true;
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (cm != null && cm.mouseClicked(mouseX, mouseY, button)) return true;
+        if (buttonArea.mouseClicked(mouseX, mouseY, button)) return true;
+        for (RenderArea a : areas) {
+            if (a.mouseClicked(mouseX, mouseY, button)) return true;
+        }
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && checkHovered(mouseX, mouseY)) {
+            int x = (int) mouseX;
+            int y = (int) mouseY;
+            setCM(new ContextMenu(
+                this, null, new int[]{x, y},
+                new ButtonArea[]{new ButtonArea(
+                    this, () -> {
+                        config.createConfig();
+                        resetCM();
+                    }, "+ create",
+                    cmWidth - (padding * 2)
+                )},
+                cmWidth
+            ));
+            return true;
+        }
+        resetCM();
+        return false;
+    }
+
+    private float calculateTotalContentHeight() {
+        int numConfigs = config.configFiles().size();
+        if (numConfigs == 0) return 0;
+
+        int rows = (numConfigs + maxCfgInLine - 1) / maxCfgInLine;
+        int size = (windowWidth - (bigPadding * (maxCfgInLine + 1))) / maxCfgInLine;
+        return rows * (size + bigPadding) - bigPadding;
+    }
+
+    public void changeConfigsY(float factor) {
+        float totalHeight = calculateTotalContentHeight();
+        float availableHeight = windowHeight - titleHeight - 2 * bigPadding;
+        float maxScroll = titleHeight + bigPadding;
+        float minScroll = maxScroll - Math.max(0, totalHeight - availableHeight);
+
+        configsDrawY = maxScroll - factor * (maxScroll - minScroll);
+        configsDrawY = MathHelper.clamp(configsDrawY, minScroll, maxScroll);
+
+        bounceBackFactor = 0;
+        scrollVelocityY = 0;
     }
 
     @Override
@@ -81,5 +283,202 @@ public class ConfigWindowArea extends RenderArea {
             draggedFactor = AnimHelper.handle(!configsGui.dragged, draggedFactor);
         }
         showFactor = AnimHelper.handle(!show, showFactor, AnimHelper.AnimMode.EaseOut);
+
+        configsDrawY += scrollVelocityY;
+        scrollVelocityY *= SCROLL_FRICTION;
+        if (Math.abs(scrollVelocityY) < 0.1f) {
+            scrollVelocityY = 0f;
+        }
+        float totalHeight = calculateTotalContentHeight();
+        float availableHeight = windowHeight - titleHeight - 2 * bigPadding;
+        float maxScroll = titleHeight + bigPadding;
+        float minScroll = maxScroll - Math.max(0, totalHeight - availableHeight);
+
+        if (configsDrawY > maxScroll) {
+            float overshoot = configsDrawY - maxScroll;
+            bounceBackFactor = AnimHelper.handle(false, bounceBackFactor);
+            configsDrawY = maxScroll + overshoot * (1 - bounceBackFactor);
+            scrollVelocityY = 0;
+        }
+        else if (configsDrawY < minScroll) {
+            float overshoot = minScroll - configsDrawY;
+            bounceBackFactor = AnimHelper.handle(false, bounceBackFactor);
+            configsDrawY = minScroll - overshoot * (1 - bounceBackFactor);
+            scrollVelocityY = 0;
+        }
+        else {
+            bounceBackFactor = 0;
+        }
+
+        delta = AnimHelper.handle(false, delta);
+    }
+
+    public class ConfigArea extends RenderArea {
+        private Path config;
+        private ConfigWindowArea parentArea;
+
+        private boolean inputting = false;
+
+        private String inputText = "";
+
+        private boolean inputLight = false;
+        private float inputLightFactor = 0;
+
+        public ConfigArea(ConfigWindowArea parentArea, Path config) {
+            super();
+            this.parentArea = parentArea;
+            this.config = config;
+        }
+
+        @Override
+        public void render(
+            DrawContext context,
+            int startX, int startY,
+            int width, int height,
+            double mouseX, double mouseY
+        ) {
+            TextRenderer textRenderer = mc.textRenderer;
+
+            Render2D.fill(
+                context,
+                startX,
+                startY,
+                startX + width,
+                startY + height,
+                ColorUtils.fromRGB(0, 0, 0, 40 * showFactor),
+                bigPadding, 2
+            );
+            String name = inputting ? (inputText.isEmpty() ? "..." : inputText) + (inputLightFactor > 0.5f ? "|" : "") : getName(config);
+
+            int nameHeight = textRenderer.fontHeight + (padding * 2);
+            int nameWidth = width - (padding * 2);
+            int nameX = startX + padding;
+            int nameY = startY + height - nameHeight - padding;
+            Render2D.fill(
+                context,
+                nameX, nameY,
+                nameX + nameWidth,
+                nameY + nameHeight,
+                ColorUtils.fromRGB(0, 0, 0, 50 * showFactor),
+                bigPadding, 2
+            );
+            context.enableScissor(
+                nameX + 1, nameY,
+                nameX + nameWidth - 1,
+                nameY + nameHeight
+            );
+            context.drawText(
+                textRenderer, name,
+                nameX + ((nameWidth / 2) - (textRenderer.getWidth(name) / 2)),
+                nameY + padding,
+                ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
+                false
+            );
+            context.disableScissor();
+
+            super.render(context, startX, startY, width, height, mouseX, mouseY);
+        }
+
+        public String getName(Path path) {
+            String fileName = path.getFileName().toString();
+            int lastDotIndex = fileName.lastIndexOf('.');
+            return lastDotIndex > 0
+                    ? fileName.substring(0, lastDotIndex)
+                    : fileName;
+        }
+
+        @Override
+        public void animHandler() {
+            showFactor = parentArea.showFactor;
+            if (inputting) {
+                if (inputLightFactor == 1) {
+                    inputLight = false;
+                } else if (inputLightFactor == 0) {
+                    inputLight = true;
+                }
+            } else {
+                inputLight = false;
+            }
+            inputLightFactor = AnimHelper.handle(!inputLight, inputLightFactor);
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            int nameHeight = mc.textRenderer.fontHeight + (padding * 3);
+            if (checkHovered(x, y + height - nameHeight, width, nameHeight, mouseX, mouseY)) {
+                inputText = getName(config);
+                inputting = true;
+                parentArea.resetCM();
+                return true;
+            } else {
+                inputting = false;
+            }
+            boolean hovered = checkHovered(mouseX, mouseY);
+            if (hovered && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                int x = (int) mouseX;
+                int y = (int) mouseY;
+                setCM(new ContextMenu(
+                    parentArea, this, new int[]{x, y},
+                    new ButtonArea[]{
+                        new ButtonArea(
+                            this, () -> {
+                                inputting = true;
+                                inputText = getName(config);
+                                parentArea.resetCM();
+                            }, "✏ rename",
+                            parentArea.cmWidth - (padding * 2)
+                        ),
+                        new ButtonArea(
+                            this, () -> {
+                                parentArea.config.setActiveConfig(config);
+                                parentArea.resetCM();
+                            }, "✔ set current",
+                            parentArea.cmWidth - (padding * 2),
+                            ColorUtils.fromRGB(240, 255, 240)
+                        ),
+                        new ButtonArea(
+                            this, () -> {
+                                parentArea.config.deleteConfig(config);
+                                resetCM();
+                            }, "❌ delete",
+                            parentArea.cmWidth - (padding * 2),
+                            ColorUtils.fromRGB(255, 240, 240)
+                        ),
+                    },
+                    parentArea.cmWidth
+                ));
+                return true;
+            } else if (hovered) {
+                parentArea.config.setActiveConfig(config);
+                parentArea.resetCM();
+                return true;
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+        @Override
+        public boolean charTyped(char chr, int modifiers) {
+            if (inputting) {
+                inputText += chr;
+                return true;
+            }
+            return super.charTyped(chr, modifiers);
+        }
+        @Override
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            if (inputting) {
+                if (keyCode == GLFW.GLFW_KEY_V && modifiers != 0) {
+                    inputText += mc.keyboard.getClipboard();
+                } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE && !inputText.isEmpty()) {
+                    inputText = inputText.substring(0, inputText.length() - 1);
+                } else if (Main.cancelButtons.contains(keyCode)) {
+                    inputting = false;
+                } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
+                    inputting = false;
+                    parentArea.config.renameConfig(config, inputText);
+                }
+                return true;
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
     }
 }
