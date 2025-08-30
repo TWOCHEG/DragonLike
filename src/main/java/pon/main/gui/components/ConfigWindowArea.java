@@ -298,13 +298,11 @@ public class ConfigWindowArea extends RenderArea {
             float overshoot = configsDrawY - maxScroll;
             bounceBackFactor = AnimHelper.handle(false, bounceBackFactor);
             configsDrawY = maxScroll + overshoot * (1 - bounceBackFactor);
-            scrollVelocityY = 0;
         }
         else if (configsDrawY < minScroll) {
             float overshoot = minScroll - configsDrawY;
             bounceBackFactor = AnimHelper.handle(false, bounceBackFactor);
             configsDrawY = minScroll - overshoot * (1 - bounceBackFactor);
-            scrollVelocityY = 0;
         }
         else {
             bounceBackFactor = 0;

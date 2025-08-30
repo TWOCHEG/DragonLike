@@ -12,15 +12,17 @@ import pon.main.managers.RotationManager;
 import pon.main.managers.ServerManager;
 import pon.main.modules.ModuleManager;
 
-import pon.main.modules.misc.LagNotifier;
+import pon.main.modules.misc.*;
 import pon.main.modules.ui.*;
 import pon.main.modules.world.*;
+import pon.main.modules.client.*;
 
 public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
 	public static ModuleManager MODULE_MANAGER = null;
 	public static RotationManager ROTATIONS = new RotationManager();
     public static ServerManager SERVER_MANAGER = new ServerManager();
+    public static final String VERSION = "0.0.1";
 
 	public static List<Integer> cancelButtons = java.util.List.of(
         GLFW.GLFW_KEY_ESCAPE,
@@ -52,7 +54,8 @@ public class Main implements ModInitializer {
 			new Nuker(),
 			new Notify(),
 			new AutoResponser(),
-            new LagNotifier()
+            new LagNotifier(),
+            new DiscordRPC()
 		);
 	}
 

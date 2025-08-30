@@ -80,7 +80,7 @@ public class SetsListArea extends RenderArea {
             area.render(context, startX, startY + height - area.height, 0, 0, mouseX, mouseY);
         }
 
-        super.render(context, startX, startY, width, (int) (height * showFa), mouseX, mouseY);
+        super.render(context, startX, startY, width, (int) (height * showFactor), mouseX, mouseY);
     }
 
     private ListValue getValueArea() {

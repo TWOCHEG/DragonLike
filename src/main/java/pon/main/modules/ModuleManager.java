@@ -40,4 +40,13 @@ public class ModuleManager {
         }
         return null;
     }
+
+    public List<Parent> enableModules() {
+        List<Parent> l = new ArrayList<>();
+
+        for (Parent m : modules) {
+            if (m.getEnable()) l.add(m);
+        }
+        return l;
+    }
 }

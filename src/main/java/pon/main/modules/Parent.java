@@ -1,6 +1,7 @@
 package pon.main.modules;
 
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.resource.language.LanguageManager;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.Main.Categories;
@@ -132,6 +133,15 @@ public abstract class Parent {
         }
         setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
         setEnable(getValue(ConfigManager.keybindKeyName, defaultEnable));
+    }
+
+    public static boolean isRu() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        LanguageManager languageManager = client.getLanguageManager();
+
+        String languageCode = languageManager.getLanguage();
+
+        return languageCode.startsWith("ru");
     }
 
     public Object getValue(String name) {
