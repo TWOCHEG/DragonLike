@@ -52,8 +52,8 @@ public class ModuleArea extends RenderArea {
                 areas.add(new SetsHGroupArea(g, parent));
             } else if (set instanceof Group g) {
                 areas.add(new SetsGroupArea(g, parent));
-            } else if (set instanceof SetsList l) {
-                areas.add(new SetsListArea(l, parent));
+            } else if (set.isList()) {
+                areas.add(new SetsListArea(set, parent));
             } else if (set instanceof ColorSet c) {
                 areas.add(new ColorSetArea(c, parent));
             } else if (set instanceof KeyButton kb) {

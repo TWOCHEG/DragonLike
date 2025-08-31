@@ -15,10 +15,11 @@ import pon.main.gui.components.ChoseGuiArea;
 import pon.main.gui.components.ConfigWindowArea;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.*;
-import pon.main.modules.settings.SetsList;
 import pon.main.utils.ColorUtils;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Gui extends Parent {
     public static final Map<String, String> images = new LinkedHashMap<>();
@@ -34,12 +35,12 @@ public class Gui extends Parent {
         images.put("smalik", "textures/gui/smalik.png");
     }
 
-    public ColorSet theme = new ColorSet("theme", ColorUtils.fromRGB(0, 0, 0), false);
-    public ColorSet textColor = new ColorSet("text color", ColorUtils.fromRGB(255, 255, 255), false);
+    public ColorSet theme = new ColorSet("theme", new Color(0, 0, 0), false);
+    public ColorSet textColor = new ColorSet("text color", new Color(255, 255, 255), false);
     public HGroup colors = new HGroup("colors", theme, theme, textColor);
 
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
-    public SetsList<String> image = new SetsList<>(
+    public Setting<String> image = new Setting<>(
         "image",
         new LinkedList<>(images.keySet())
     );
@@ -111,10 +112,10 @@ public class Gui extends Parent {
     }
 
     @Override
-    public void onUpdate(Setting setting) {
-        if (setting.equals(image) || setting.equals(imgSize)) {
-            if (!Objects.equals(image.getValue(), "none")) {
-                texture = Identifier.of("main", getImages().get(image.getValue()));
+    public void onSettingUpdate(Setting set) {
+        if (set.equals(image) || set.equals(imgSize)) {
+            if (!Objects.equals(set.getValue(), "none")) {
+                texture = Identifier.of("main", getImages().get(set.getValue()));
             }
         }
     }

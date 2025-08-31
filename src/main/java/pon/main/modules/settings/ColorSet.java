@@ -2,6 +2,8 @@ package pon.main.modules.settings;
 
 import pon.main.utils.ColorUtils;
 
+import java.awt.*;
+
 public class ColorSet extends Setting<Integer> {
     public boolean hasAlpha = true;
     public ColorSet(String name, int defaultValue) {
@@ -9,6 +11,13 @@ public class ColorSet extends Setting<Integer> {
     }
     public ColorSet(String name, int defaultValue, boolean hasAlpha) {
         super(name, defaultValue);
+        this.hasAlpha = hasAlpha;
+    }
+    public ColorSet(String name, Color defaultValue) {
+        super(name, defaultValue.getRGB());
+    }
+    public ColorSet(String name, Color defaultValue, boolean hasAlpha) {
+        super(name, defaultValue.getRGB());
         this.hasAlpha = hasAlpha;
     }
 

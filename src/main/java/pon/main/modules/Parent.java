@@ -57,7 +57,7 @@ public abstract class Parent {
         this.CATEGORY = category;
     }
 
-    public void onUpdate(Setting setting) {}
+    public void onSettingUpdate(Setting setting) {}
 
     protected void onEnable() {}
 
@@ -114,7 +114,7 @@ public abstract class Parent {
         CONFIG.set(key, value);
     }
 
-    public <T extends Object> T getValue(String name, T defaultValue) {
+    public <T> T getValue(String name, T defaultValue) {
         Object value = CONFIG.get(name, defaultValue);
         try {
             if (value != null && defaultValue instanceof Integer) {

@@ -61,7 +61,6 @@ public class ConfigsGui extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         animHandler();
         if (openFactor == 0) client.setScreen(null);
-        if (gui.oldScreen != null) gui.oldScreen.render(context, mouseX, mouseY, delta);
 
         context.fillGradient(
             0, 0,

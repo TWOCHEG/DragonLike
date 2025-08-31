@@ -6,7 +6,6 @@ import pon.main.events.impl.EventPostTick;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.BlockSelected;
 import pon.main.modules.settings.Header;
-import pon.main.modules.settings.SetsList;
 import pon.main.modules.settings.Setting;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.BlockState;
@@ -45,10 +44,13 @@ public class Nuker extends Parent {
         1f, 6f
     );
     private Header header = new Header("\"/nuker blocksList\"");
-    private SetsList<String> blockMode = new SetsList<>(
-        "block find mode",
-        Arrays.asList("blacklist", "whitelist")
+    private Setting<blockFindMode> blockMode = new Setting<>(
+        blockFindMode.blacklist
     );
+    public enum blockFindMode {
+        blacklist, whitelist
+    }
+
     private Setting<Integer> breakDelay = new Setting<>(
         "break delay",
         20,
@@ -159,7 +161,6 @@ public class Nuker extends Parent {
         }
 
         float range = breakRange.getValue();
-        String mode = blockMode.getValue();
         java.util.List<String> configured = targetBlocks.getValue();
         Vec3d eyePos = player.getCameraPosVec(1.0f);
 
@@ -189,8 +190,8 @@ public class Nuker extends Parent {
                     if (!fluid.isEmpty()) continue;
 
                     String idStr = Registries.BLOCK.getId(state.getBlock()).toString();
-                    if (mode.equals("whitelist") && !configured.contains(idStr)) continue;
-                    if (mode.equals("blacklist") && configured.contains(idStr)) continue;
+                    if (blockMode.getValue().equals(blockFindMode.whitelist) && !configured.contains(idStr)) continue;
+                    if (blockMode.getValue().equals(blockFindMode.blacklist) && configured.contains(idStr)) continue;
 
                     if (checkAvoid(pos)) continue;
                     if (!canReach(pos)) continue;

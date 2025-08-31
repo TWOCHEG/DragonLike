@@ -9,14 +9,12 @@ import java.util.List;
 import net.fabricmc.loader.api.FabricLoader;
 import org.lwjgl.glfw.GLFW;
 import pon.main.managers.Managers;
-import pon.main.managers.RotationManager;
-import pon.main.managers.ServerManager;
 import pon.main.modules.ModuleManager;
 
 import pon.main.modules.misc.*;
 import pon.main.modules.ui.*;
 import pon.main.modules.world.*;
-import pon.main.modules.client.*;
+// import pon.main.modules.client.*;
 
 public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
@@ -54,8 +52,7 @@ public class Main implements ModInitializer {
 			new Nuker(),
 			new Notify(),
 			new AutoResponser(),
-            new LagNotifier(),
-            new DiscordRPC()
+            new LagNotifier()
 		);
 	}
 

@@ -75,10 +75,7 @@ public class ModulesGui extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         frameCounter++;
-
         animHandler();
-
-        if (gui.oldScreen != null) gui.oldScreen.render(context, mouseX, mouseY, delta);
 
         LinkedList<CategoryArea> categories = gui.categories;
 

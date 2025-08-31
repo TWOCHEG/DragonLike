@@ -3,13 +3,13 @@ package pon.main.gui.components;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
-import pon.main.modules.settings.SetsList;
+import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
 public class SetsListArea extends RenderArea {
-    public final SetsList set;
+    public final Setting set;
 
     private boolean open = false;
     private float openFactor = 0;
@@ -18,7 +18,7 @@ public class SetsListArea extends RenderArea {
 
     private ListValue oldValue;
 
-    public SetsListArea(SetsList set, RenderArea parentArea) {
+    public SetsListArea(Setting set, RenderArea parentArea) {
         super(parentArea);
         this.showFactor = set.getVisible() ? 1 : 0;
         this.set = set;
@@ -98,13 +98,13 @@ public class SetsListArea extends RenderArea {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (checkHovered(mouseX, mouseY)) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && !open) {
-                int i = set.getOptions().indexOf(set.getValue()) + 1;
+                int i = set.getIndex() + 1;
                 if (i + 1 > set.getOptions().size()) i = 0;
                 delta = 0;
                 if (!oldValue.equals(getValueArea())) {
                     oldValue = getValueArea();
                 }
-                set.setValue(set.getOptions().get(i));
+                set.setIndex(i);
                 return true;
             } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                 open = !open;
