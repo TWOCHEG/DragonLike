@@ -79,7 +79,7 @@ public class Setting<T> {
 
     public T getValue() {
         if (isList()) {
-            return options.get(optionIndex);
+            return options.get(Math.clamp(optionIndex, 0, options.size() - 1));
         } else {
             return value != null ? value : defaultValue;
         }
