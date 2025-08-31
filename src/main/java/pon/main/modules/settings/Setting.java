@@ -6,6 +6,7 @@ import pon.main.utils.EnumConverter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Setting<T> {
@@ -15,6 +16,7 @@ public class Setting<T> {
     public Parent module;
     public Group group = null;
     private Predicate<T> visibility;
+    private Consumer<Setting<T>> onSet;
 
     public T defaultValue;
 
@@ -53,6 +55,19 @@ public class Setting<T> {
         this.optionIndex = options.indexOf(defaultValue);
         this.options = options;
     }
+    public Setting(String name, T... options) {
+        this.name = name;
+        List<T> lst = Arrays.stream(options).toList();
+        this.optionIndex = 0;
+        this.options = lst;
+    }
+    public Setting(String name, T defaultValue, T... options) {
+        this.name = name;
+        this.defaultValue = defaultValue;
+        List<T> lst = Arrays.stream(options).toList();
+        this.optionIndex = lst.indexOf(defaultValue);
+        this.options = lst;
+    }
 
     public Setting(String name, T defaultValue, T min, T max) {
         this(name, defaultValue);
@@ -81,6 +96,10 @@ public class Setting<T> {
                 this.value = value;
                 module.setValue(name, value);
             }
+
+            if (onSet != null) {
+                 onSet.accept(this);
+            }
         }
     }
 
@@ -105,8 +124,12 @@ public class Setting<T> {
         this.value = module.getValue(name, defaultValue);
     }
 
-    public Setting<T> visibleIf(Predicate<T> visibility) {
+    public Setting<T> visibleProvider(Predicate<T> visibility) {
         this.visibility = visibility;
+        return this;
+    }
+    public Setting<T> onSet(Consumer<Setting<T>> onSet) {
+        this.onSet = onSet;
         return this;
     }
 

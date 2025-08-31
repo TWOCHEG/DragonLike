@@ -7,14 +7,14 @@ import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
 
-public class SetsGroupArea extends RenderArea {
+public class SetsVGroupArea extends RenderArea {
     private final Group group;
 
     float visibleFactor;
 
     private final int titleHeight = textRenderer.fontHeight + padding * 2;
 
-    public SetsGroupArea(Group group, RenderArea parentArea) {
+    public SetsVGroupArea(Group group, RenderArea parentArea) {
         super(parentArea);
         this.group = group;
         this.visibleFactor = group.getVisible() ? 1 : 0;

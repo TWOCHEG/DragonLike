@@ -52,7 +52,8 @@ public class Main implements ModInitializer {
 			new Nuker(),
 			new Notify(),
 			new AutoResponser(),
-            new LagNotifier()
+            new LagNotifier(),
+            new DiscordPresence()
 		);
 	}
 

@@ -15,7 +15,6 @@ import pon.main.gui.components.ChoseGuiArea;
 import pon.main.gui.components.ConfigWindowArea;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.*;
-import pon.main.utils.ColorUtils;
 
 import java.awt.*;
 import java.util.*;
@@ -37,17 +36,21 @@ public class Gui extends Parent {
 
     public ColorSet theme = new ColorSet("theme", new Color(0, 0, 0), false);
     public ColorSet textColor = new ColorSet("text color", new Color(255, 255, 255), false);
-    public HGroup colors = new HGroup("colors", theme, theme, textColor);
+    public Group colors = new Group("colors", theme, textColor).setType(Group.GroupType.Horizontal);
 
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public Setting<String> image = new Setting<>(
         "image",
         new LinkedList<>(images.keySet())
-    );
+    ).onSet((Setting<String> set) -> {
+        if (!Objects.equals(set.getValue(), "none")) {
+            texture = Identifier.of("main", getImages().get(set.getValue()));
+        }
+    });
     public Setting<Float> imgSize = new Setting<>(
         "image size",
         0.5f, 0.1f, 2.0f
-    ).visibleIf(m -> !image.getValue().equals("none"));
+    ).visibleProvider(m -> !image.getValue().equals("none"));
 
     public final Setting<Float> animSpeed = new Setting<>("animations speed", 0.5f, 0f, 1f);
 
@@ -108,15 +111,6 @@ public class Gui extends Parent {
         if (code != -1) {
             CONFIG.set("keybind", code);
             keybindCode = code;
-        }
-    }
-
-    @Override
-    public void onSettingUpdate(Setting set) {
-        if (set.equals(image) || set.equals(imgSize)) {
-            if (!Objects.equals(set.getValue(), "none")) {
-                texture = Identifier.of("main", getImages().get(set.getValue()));
-            }
         }
     }
 

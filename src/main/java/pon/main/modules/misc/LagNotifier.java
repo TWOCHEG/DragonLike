@@ -1,7 +1,6 @@
 package pon.main.modules.misc;
 
 import meteordevelopment.orbit.EventHandler;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import pon.main.Main;
@@ -14,12 +13,11 @@ import pon.main.utils.math.Timer;
 
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.List;
 
 public class LagNotifier extends Parent {
     private final Setting<Boolean> rubberbandNotify = new Setting<>("rubber band", true);
     private final Setting<Boolean> serverResponseNotify = new Setting<>("server response", true);
-    private final Setting<Integer> responseTreshold = new Setting<>("response threshold", 5, 0, 15).visibleIf(v -> serverResponseNotify.getValue());
+    private final Setting<Integer> responseTreshold = new Setting<>("response threshold", 5, 0, 15).visibleProvider(v -> serverResponseNotify.getValue());
     private final Setting<Boolean> tpsNotify = new Setting<>("TPS", true);
 
     private Timer notifyTimer = new Timer();

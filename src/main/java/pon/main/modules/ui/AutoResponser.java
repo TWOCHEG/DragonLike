@@ -59,7 +59,7 @@ public class AutoResponser extends Parent {
     public Setting<String> modelId = new Setting<>("model id", "openai/gpt-oss-20b:free");
     public Setting<String> token = new Setting<>("token", "sk-...");
     public Setting<String> mentions = new Setting<>("mentions", "");
-    public HGroup hgroup = new HGroup("constants", modelId, modelId, token, mentions);
+    public Group hgroup = new Group("constants", modelId, token, mentions).setType(Group.GroupType.Horizontal);
     public Group constants = new Group(
         "constants",
         header,

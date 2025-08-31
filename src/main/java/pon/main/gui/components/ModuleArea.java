@@ -44,14 +44,16 @@ public class ModuleArea extends RenderArea {
     public static List<RenderArea> getAreas(List<Setting> sets, RenderArea parent) {
         List<RenderArea> areas = new LinkedList<>();
         for (Setting set : sets) {
-            if (!(parent instanceof SetsGroupArea || parent instanceof SetsHGroupArea)) {
+            if (!(parent instanceof SetsVGroupArea || parent instanceof SetsHGroupArea)) {
                 if (set.group != null) continue;
             }
 
-            if (set instanceof HGroup g) {
-                areas.add(new SetsHGroupArea(g, parent));
-            } else if (set instanceof Group g) {
-                areas.add(new SetsGroupArea(g, parent));
+            if (set instanceof Group g) {
+                if (g.groupType.equals(Group.GroupType.Vertical)) {
+                    areas.add(new SetsVGroupArea(g, parent));
+                } else if (g.groupType.equals(Group.GroupType.Horizontal)) {
+                    areas.add(new SetsHGroupArea(g, parent));
+                }
             } else if (set.isList()) {
                 areas.add(new SetsListArea(set, parent));
             } else if (set instanceof ColorSet c) {
@@ -167,7 +169,7 @@ public class ModuleArea extends RenderArea {
                     0,
                     mouseX, mouseY
                 );
-                if (area instanceof SetsGroupArea sga) {
+                if (area instanceof SetsVGroupArea sga) {
                     settingsStartY += sga.height + (bigPadding * sga.visibleFactor);
                 } else {
                     settingsStartY += area.height + (bigPadding * area.showFactor);

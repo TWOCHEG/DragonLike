@@ -28,7 +28,7 @@ public class Example extends Parent {
     );
 
     public Setting<Boolean> visible = new Setting<>("visible", false);
-    public Header header3 = (Header) new Header("ты видишь меня").visibleIf(m -> visible.getValue());
+    public Header header3 = (Header) new Header("ты видишь меня").visibleProvider(m -> visible.getValue());
 
     public Example() {
         super("example", Main.Categories.example);

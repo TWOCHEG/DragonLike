@@ -2,8 +2,8 @@ package pon.main.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
+import pon.main.modules.settings.Group;
 import pon.main.modules.settings.Setting;
-import pon.main.modules.settings.HGroup;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class SetsHGroupArea extends RenderArea {
-    private final HGroup hgroup;
+    private final Group group;
 
     public float showFa = 0;
 
@@ -21,10 +21,10 @@ public class SetsHGroupArea extends RenderArea {
 
     RenderArea currentArea;
 
-    public SetsHGroupArea(HGroup hgroup, RenderArea parentArea) {
+    public SetsHGroupArea(Group group, RenderArea parentArea) {
         super(parentArea);
-        this.showFactor = hgroup.getVisible() ? 1 : 0;
-        this.hgroup = hgroup;
+        this.showFactor = group.getVisible() ? 1 : 0;
+        this.group = group;
 
         Consumer<Object> onSetValue = (object) -> {
             if (object instanceof Setting<?> set) {
@@ -32,16 +32,16 @@ public class SetsHGroupArea extends RenderArea {
             }
         };
 
-        for (Setting s : hgroup.getOptions()) {
+        for (Setting s : group.getOptions()) {
             areas.add(new SelectValueArea(
-                s, this, onSetValue, () -> delta, hgroup::getValue, () -> oldSetting
+                s, this, onSetValue, () -> delta, group::getValue, () -> oldSetting
             ));
         }
-        for (RenderArea area : ModuleArea.getAreas(hgroup.getOptions(), this)) {
+        for (RenderArea area : ModuleArea.getAreas(group.getOptions(), this)) {
             areas.add(area);
         }
-        oldSetting = hgroup.getValue();
-        currentArea = getArea(hgroup.getValue());
+        oldSetting = group.getValue();
+        currentArea = getArea(group.getValue());
     }
 
     public RenderArea getArea(Setting setting) {
@@ -51,7 +51,7 @@ public class SetsHGroupArea extends RenderArea {
                 clearList.add(area);
             }
         }
-        return clearList.get(hgroup.getOptions().indexOf(setting));
+        return clearList.get(group.getOptions().indexOf(setting));
     }
     private SelectValueArea getSelectArea(Setting setting) {
         for (RenderArea area : areas) {
@@ -93,10 +93,10 @@ public class SetsHGroupArea extends RenderArea {
     }
 
     public void onSetValue(Setting setting) {
-        if (!Objects.equals(setting, hgroup.getValue())) {
+        if (!Objects.equals(setting, group.getValue())) {
             this.delta = 0;
-            this.oldSetting = hgroup.getValue();
-            hgroup.setValue(setting);
+            this.oldSetting = group.getValue();
+            group.setValue(setting);
         }
     }
 
@@ -109,7 +109,7 @@ public class SetsHGroupArea extends RenderArea {
     ) {
         showFa = showFactor * parentArea.showFactor;
 
-        SelectValueArea currentSVA = getSelectArea(hgroup.getValue());
+        SelectValueArea currentSVA = getSelectArea(group.getValue());
         SelectValueArea oldSVA = getSelectArea(oldSetting);
         Render2D.fill(
             context,
@@ -141,7 +141,7 @@ public class SetsHGroupArea extends RenderArea {
         }
         height += y + padding;
 
-        currentArea = getArea(hgroup.getValue());
+        currentArea = getArea(group.getValue());
         currentArea.render(
             context,
             (int) (startX + ((width + bigPadding) * (clearList.indexOf(oldSVA) > clearList.indexOf(currentSVA) ? -1 : 1) * (1 - delta))),
@@ -167,7 +167,7 @@ public class SetsHGroupArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        showFactor = AnimHelper.handle(hgroup.getVisible(), showFactor);
+        showFactor = AnimHelper.handle(group.getVisible(), showFactor);
         delta = AnimHelper.handle(true, delta);
     }
 }
