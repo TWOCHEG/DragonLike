@@ -120,7 +120,6 @@ public class ConfigWindowArea extends RenderArea {
 
     @EventHandler
     private void onChangeConfig(OnChangeConfig e) {
-        System.out.println(e.getCurrent());
         delta = 0;
         oldPath = e.getOld();
         currentPath = e.getCurrent();
@@ -144,7 +143,7 @@ public class ConfigWindowArea extends RenderArea {
             context, startX, startY,
             startX + windowWidth,
             startY + windowHeight,
-            CategoryArea.makeAColor(((150 + (30 * draggedFactor)) * showFactor) / 255),
+            CategoryArea.makeAColor((150 + (30 * draggedFactor)) * showFactor),
             radius, 3
         );
         Render2D.fillPart(
@@ -239,17 +238,13 @@ public class ConfigWindowArea extends RenderArea {
             setCM(new ContextMenu(
                 this, null, new int[]{x, y},
                 new ButtonArea[]{new ButtonArea(
-                    this, () -> {
-                    Managers.CONFIG.createCfg();
-                        resetCM();
-                    }, "+ create",
+                    this, Managers.CONFIG::createCfg, "+ create",
                     cmWidth - (padding * 2)
                 )},
                 cmWidth
-            ));
+            ).setCloseTask(this::resetCM));
             return true;
         }
-        resetCM();
         return false;
     }
 
@@ -404,7 +399,6 @@ public class ConfigWindowArea extends RenderArea {
             if (checkHovered(x, y + height - nameHeight, width, nameHeight, mouseX, mouseY)) {
                 inputText = getName(config);
                 inputting = true;
-                parentArea.resetCM();
                 return true;
             } else {
                 inputting = false;
@@ -420,14 +414,12 @@ public class ConfigWindowArea extends RenderArea {
                             this, () -> {
                                 inputting = true;
                                 inputText = getName(config);
-                                parentArea.resetCM();
                             }, "✏ rename",
                             parentArea.cmWidth - (padding * 2)
                         ),
                         new ButtonArea(
                             this, () -> {
                                 Managers.CONFIG.setCurrent(config);
-                                parentArea.resetCM();
                             }, "✔ set current",
                             parentArea.cmWidth - (padding * 2),
                             ColorUtils.fromRGB(240, 255, 240)
@@ -435,18 +427,16 @@ public class ConfigWindowArea extends RenderArea {
                         new ButtonArea(
                             this, () -> {
                                 Managers.CONFIG.deleteCfg(config);
-                                resetCM();
                             }, "❌ delete",
                             parentArea.cmWidth - (padding * 2),
                             ColorUtils.fromRGB(255, 240, 240)
                         ),
                     },
                     parentArea.cmWidth
-                ));
+                ).setCloseTask(parentArea::resetCM));
                 return true;
             } else if (hovered) {
                 Managers.CONFIG.setCurrent(config);
-                parentArea.resetCM();
                 return true;
             }
             return super.mouseClicked(mouseX, mouseY, button);

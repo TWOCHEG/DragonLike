@@ -50,7 +50,7 @@ public class SetsVGroupArea extends RenderArea {
             startY,
             startX + width,
             startY + height,
-            ColorUtils.fromRGB(100, 100, 100, (30 * visibleFa) + (30 * showFactor)),
+            CategoryArea.makeAColor((50 + (20 * showFactor)) * visibleFa, 0.2f, true),
             5, 2
         );
         int titleX = startX + (width / 2 - textRenderer.getWidth(group.getName()) / 2);

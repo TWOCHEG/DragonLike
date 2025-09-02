@@ -22,15 +22,15 @@ public class Setting<T> {
 
     private List<T> options = null;
     private int optionIndex;
+
     public Setting(T defaultValue) {
         this(
             defaultValue instanceof Enum
-                ? EnumConverter.getNameFromEnum((Enum<?>) defaultValue)
-                : defaultValue.toString(),
+                    ? EnumConverter.getNameFromEnum((Enum<?>) defaultValue)
+                    : defaultValue.toString(),
             defaultValue
         );
     }
-
     public Setting(String name, T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
@@ -42,31 +42,28 @@ public class Setting<T> {
             this.value = defaultValue;
         }
     }
-
     public Setting(String name, List<T> options) {
-        this.name = name;
-        this.optionIndex = 0;
-        this.options = options;
+        this(
+            options.getFirst(),
+            name,
+            options
+        );
     }
 
-    public Setting(String name, T defaultValue, List<T> options) {
+    public Setting(T defaultValue, String name, List<T> options) {
         this.name = name;
         this.defaultValue = defaultValue;
         this.optionIndex = options.indexOf(defaultValue);
         this.options = options;
     }
     public Setting(String name, T... options) {
-        this.name = name;
-        List<T> lst = Arrays.stream(options).toList();
-        this.optionIndex = 0;
-        this.options = lst;
+        this(
+            name,
+            Arrays.stream(options).toList()
+        );
     }
-    public Setting(String name, T defaultValue, T... options) {
-        this.name = name;
-        this.defaultValue = defaultValue;
-        List<T> lst = Arrays.stream(options).toList();
-        this.optionIndex = lst.indexOf(defaultValue);
-        this.options = lst;
+    public Setting(T defaultValue, String name, T... options) {
+        this(defaultValue, name, Arrays.stream(options).toList());
     }
 
     public Setting(String name, T defaultValue, T min, T max) {
@@ -98,7 +95,7 @@ public class Setting<T> {
             }
 
             if (onSet != null) {
-                 onSet.accept(this);
+                onSet.accept(this);
             }
         }
     }
@@ -121,7 +118,7 @@ public class Setting<T> {
 
     public void setModule(Parent module) {
         this.module = module;
-        this.value = module.getValue(name, defaultValue);
+        setValue(module.getConfig().get(name, defaultValue));
     }
 
     public Setting<T> visibleProvider(Predicate<T> visibility) {

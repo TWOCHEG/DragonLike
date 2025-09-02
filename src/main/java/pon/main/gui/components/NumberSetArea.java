@@ -66,7 +66,7 @@ public class NumberSetArea extends RenderArea {
             startY + (height / 2 - (titleHeight + padding * 2) / 2),
             startX + width,
             startY + (height / 2 + (titleHeight + padding * 2) / 2),
-            ColorUtils.fromRGB(0, 0, 0, 70 * showFa),
+            CategoryArea.makeAColor(70 * showFa, 0.25f),
             vertexRadius, 2
         );
         context.drawText(

@@ -13,7 +13,7 @@ public class Group extends Setting<Setting> {
         }
     }
     public Group(Setting defaultValue, String name, Setting... settings) {
-        super(name, defaultValue, settings);
+        super(defaultValue, name, settings);
         for (Setting s : getOptions()) {
             s.group = this;
         }

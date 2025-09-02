@@ -4,11 +4,13 @@ import net.minecraft.client.gui.DrawContext;
 import pon.main.Main;
 import pon.main.Main.Categories;
 import pon.main.modules.Parent;
+import pon.main.modules.settings.ColorSet;
 import pon.main.modules.ui.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
+import java.awt.*;
 import java.util.*;
 
 public class CategoryArea extends RenderArea {
@@ -28,11 +30,26 @@ public class CategoryArea extends RenderArea {
         this.name = name;
     }
 
-    public static int makeAColor(float opacity) {
-        return ColorUtils.applyOpacity(
-            Main.MODULE_MANAGER.getModule(Gui.class).theme.color(),
-            opacity
-        ).getRGB();
+    public static int makeAColor(float alpha, float darkness, boolean highlight) {
+        float diff;
+        if (highlight) {
+            diff = 255 * darkness;
+        } else {
+            diff = -(255 * darkness);
+        }
+        ColorSet c = Main.MODULE_MANAGER.getModule(Gui.class).theme;
+        return ColorUtils.fromRGB(
+            (int) (c.r() + diff),
+            (int) (c.g() + diff),
+            (int) (c.b() + diff),
+            c.a() * (alpha / 255)
+        );
+    }
+    public static int makeAColor(float alpha, float darkness) {
+        return makeAColor(alpha, darkness, false);
+    }
+    public static int makeAColor(float alpha) {
+        return makeAColor(alpha, 0, false);
     }
 
     @Override
@@ -57,7 +74,7 @@ public class CategoryArea extends RenderArea {
             startX, startY,
             startX + width,
             (startY + height),
-            makeAColor(((150 + (10 * hoverFactor)) * showFactor) / 255),
+            makeAColor((150 + (10 * hoverFactor)) * showFactor),
             radius, 3
         );
         Render2D.fillPart(
@@ -85,7 +102,7 @@ public class CategoryArea extends RenderArea {
             nameStartY - nameContainerPadding,
             startX + nameContainerPadding + (width / 2 + textRenderer.getWidth(name.name()) / 2),
             nameStartY + textRenderer.fontHeight + nameContainerPadding,
-            ColorUtils.fromRGB(0, 0, 0, 120 * showFactor),
+            makeAColor(100 * showFactor, 0.25f),
             5,
             2
         );

@@ -85,6 +85,19 @@ public abstract class RenderArea {
         return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
     }
 
+    public RenderArea getAreaFromPos(List<RenderArea> areas, double mouseX, double mouseY) {
+        for (RenderArea area : areas) {
+            if (checkHovered(area, mouseX, mouseY)) return area;
+        }
+        return null;
+    }
+    public RenderArea getAreaFromPos(double mouseX, double mouseY) {
+        for (RenderArea area : areas) {
+            if (checkHovered(area, mouseX, mouseY)) return area;
+        }
+        return null;
+    }
+
     public static boolean checkHovered(int x, int y, int width, int height, double mouseX, double mouseY) {
         return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
     }

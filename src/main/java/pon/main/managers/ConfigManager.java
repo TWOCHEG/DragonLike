@@ -18,14 +18,16 @@ import java.io.File;
 public class ConfigManager implements IManager {
     public final Path configDir = Path.of(System.getProperty("user.home"), ".dl");
     private static final Gson GSON = new GsonBuilder()
-        .disableHtmlEscaping()
-        .setPrettyPrinting()
-        .create();
+            .disableHtmlEscaping()
+            .setPrettyPrinting()
+            .create();
     private String moduleName = null;
 
     public static final String currentKeyName = "current";
     public static final String keybindKeyName = "keybind";
     public static final String enableKeyName = "enable";
+    public static final String fileExtension = ".json";
+    public static final String defaultFileName = "default";
 
     public ConfigManager() {}
     public ConfigManager(String moduleName) {
@@ -34,9 +36,9 @@ public class ConfigManager implements IManager {
 
     public <T> T get(String key, T defaultValue) {
         try {
-            Map<String, Object> config = readJson();
+            Map<String, Object> config = readJson(getCurrent());
             if (moduleName != null) {
-                config = (Map<String, Object>) config.getOrDefault(moduleName, new HashMap<>());
+                config = (Map<String, Object>) config.get(moduleName);
             }
 
             Object result = config.get(key);
@@ -100,10 +102,8 @@ public class ConfigManager implements IManager {
         } catch (IOException | RuntimeException ignored) {}
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> readJson() {
+    public Map<String, Object> readJson(Path path) {
         try {
-            Path path = getCurrent();
             if (Files.exists(path) && Files.isRegularFile(path)) {
                 String content = Files.readString(path, StandardCharsets.UTF_8);
                 if (!content.isBlank()) {
@@ -129,27 +129,21 @@ public class ConfigManager implements IManager {
         return value;
     }
 
-    public void setCurrent(Path activePath) {
+    public void setCurrent(Path path) {
         try {
             Path oldConfig = getCurrent();
 
-            if (!Files.exists(activePath)) {
+            if (!Files.exists(path)) {
                 return;
             }
 
-            Map<String, Object> activeData;
-            String content = Files.readString(activePath, StandardCharsets.UTF_8);
-            if (!content.isBlank()) {
-                activeData = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
-            } else {
-                activeData = new HashMap<>();
-            }
+            Map<String, Object> activeData = readJson(path);
             activeData.put(currentKeyName, true);
             String updatedActiveContent = GSON.toJson(activeData);
-            Files.writeString(activePath, updatedActiveContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(path, updatedActiveContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
             for (Path configFile : getFiles()) {
-                if (configFile.equals(activePath)) continue;
+                if (configFile.equals(path)) continue;
 
                 try {
                     String fileContent = Files.readString(configFile, StandardCharsets.UTF_8);
@@ -157,50 +151,42 @@ public class ConfigManager implements IManager {
 
                     Map<String, Object> fileData = GSON.fromJson(fileContent, new TypeToken<Map<String, Object>>() {}.getType());
                     if (fileData != null) {
-                        fileData.put("current", false);
+                        fileData.put(currentKeyName, false);
                         String updatedContent = GSON.toJson(fileData);
                         Files.writeString(configFile, updatedContent, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                     }
                 } catch (IOException | RuntimeException ignored) {}
             }
             Path active = getCurrent();
-            if (active != null) {
-                Main.EVENT_BUS.post(new OnChangeConfig(oldConfig, active));
-            }
+            Main.EVENT_BUS.post(new OnChangeConfig(oldConfig, active));
         } catch (IOException | RuntimeException ignored) {}
     }
 
     public List<Path> getFiles() {
         try {
             List<Path> list = Files.list(configDir)
-                .filter(p -> p.toString().endsWith(".json"))
-                .sorted(Comparator.comparing(p -> p.getFileName().toString()))
-                .collect(Collectors.toList());
+                    .filter(p -> p.toString().endsWith(fileExtension))
+                    .sorted(Comparator.comparing(p -> p.getFileName().toString()))
+                    .collect(Collectors.toList());
             if (list.isEmpty()) {
-                list.add(configDir.resolve("default.json"));
+                list.add(configDir.resolve(defaultFileName));
             }
             return list;
         } catch (IOException | RuntimeException e) {
-            return new ArrayList(List.of(configDir.resolve("default.json")));
+            return new ArrayList(List.of(configDir.resolve(defaultFileName)));
         }
     }
 
     public Path getCurrent() {
         List<Path> list = getFiles();
         for (Path p : list) {
-            if (Files.isRegularFile(p) && p.toString().endsWith(".json")) {
-                try {
-                    String content = Files.readString(p, StandardCharsets.UTF_8);
-                    if (!content.isBlank()) {
-                        Map<String, Object> loaded = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
-                        boolean value = (boolean) loaded.getOrDefault(currentKeyName, false);
-                        if (value) {
-                            return p;
-                        }
-                    }
-                } catch (IOException ignored) {}
+            Map<String, Object> loaded = readJson(p);
+            boolean value = (boolean) loaded.getOrDefault(currentKeyName, false);
+            if (value) {
+                return p;
             }
         }
+        setCurrent(list.getFirst());
         return list.getFirst();
     }
 
@@ -232,8 +218,12 @@ public class ConfigManager implements IManager {
 
     public boolean deleteCfg(Path path) {
         try {
-            if (path != null && Files.exists(path) && path.toString().endsWith(".json") && path.getParent().equals(configDir)) {
+            if (path != null && Files.exists(path) && path.toString().endsWith(fileExtension) && path.getParent().equals(configDir)) {
+                Path current = getCurrent();
                 Files.delete(path);
+                if (path.equals(current)) {
+                    Main.EVENT_BUS.post(new OnChangeConfig(null, getCurrent()));
+                }
                 return true;
             }
         } catch (IOException | RuntimeException ignored) {}
@@ -242,11 +232,11 @@ public class ConfigManager implements IManager {
 
     public Path createCfg() {
         String name = String.valueOf(getFiles().size() + 1);
-        while (getFiles().contains(configDir.resolve(name + ".json"))) {
-            name += "-c";
+        int i = 0;
+        while (getFiles().contains(configDir.resolve(name + (i != 0 ? i : "") + fileExtension))) {
+            i++;
         }
-
-        name += ".json";
+        name += (i != 0 ? i : "") + fileExtension;
 
         try {
             if (!Files.exists(configDir)) {
@@ -264,34 +254,42 @@ public class ConfigManager implements IManager {
 
             Files.writeString(filePath, json, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
             return filePath;
-        } catch (IOException | RuntimeException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException | RuntimeException ignored) {}
         return null;
     }
 
     public Path renameCfg(Path path, String newName) {
-        if (path == null || !Files.exists(path) || !path.toString().endsWith(".json") || !path.getParent().equals(configDir)) {
+        if (path == null || !Files.exists(path) || !path.toString().endsWith(fileExtension) || !path.getParent().equals(configDir)) {
             return null;
         }
-        String cleanedName = newName.replaceAll("[\\\\/:*?\"<>|]", "").trim();
-
-        if (cleanedName.isEmpty()) {
+        String name = newName.replaceAll("[\\\\/:*?\"<>|]", "").trim();
+        if (name.isEmpty()) {
             return null;
         }
-        if (!cleanedName.endsWith(".json")) {
-            cleanedName += ".json";
+
+        int i = 0;
+        while (getFiles().contains(configDir.resolve(name + (i != 0 ? i : "") + fileExtension))) {
+            i++;
+        }
+        name += (i != 0 ? i : "") + fileExtension;
+
+        if (!name.endsWith(fileExtension)) {
+            name += fileExtension;
         }
 
-        Path newPath = configDir.resolve(cleanedName);
+        Path current = getCurrent();
+
+        Path newPath = configDir.resolve(name);
 
         try {
             if (Files.exists(newPath)) {
                 return null;
             }
+            if (current.equals(path)) {
+                Main.EVENT_BUS.post(new OnChangeConfig(null, getCurrent()));
+            }
             return Files.move(path, newPath);
-        } catch (IOException | RuntimeException e) {
-            return null;
-        }
+        } catch (IOException | RuntimeException ignored) {}
+        return null;
     }
 }

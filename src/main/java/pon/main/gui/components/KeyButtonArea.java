@@ -44,7 +44,7 @@ public class KeyButtonArea extends RenderArea {
             startY + height,
             startX + textRenderer.getWidth(keyName) + (padding * 2),
             startY + height + textRenderer.fontHeight + (padding * 2),
-            ColorUtils.fromRGB(0, 0, 0, 100 * showFa),
+            CategoryArea.makeAColor(100 * showFa, 0.25f),
             bigPadding, 2
         );
         context.drawText(

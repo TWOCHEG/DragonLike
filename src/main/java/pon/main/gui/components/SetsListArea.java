@@ -58,7 +58,7 @@ public class SetsListArea extends RenderArea {
                 MathHelper.lerp(delta, oldValue.y, area.y),
                 MathHelper.lerp(delta, oldValue.x + oldValue.width, area.x + area.width),
                 MathHelper.lerp(delta, oldValue.y + oldValue.height, area.y + area.height),
-                ColorUtils.fromRGB(0, 0, 0, 70 * showFa),
+                CategoryArea.makeAColor(70 * showFa, 0.25f),
                 vertexRadius,
                 2
             );
@@ -98,13 +98,8 @@ public class SetsListArea extends RenderArea {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (checkHovered(mouseX, mouseY)) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && !open) {
-                int i = set.getIndex() + 1;
-                if (i + 1 > set.getOptions().size()) i = 0;
                 delta = 0;
-                if (!oldValue.equals(getValueArea())) {
-                    oldValue = getValueArea();
-                }
-                set.setIndex(i);
+                set.setIndex(set.getIndex() + 1);
                 return true;
             } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                 open = !open;

@@ -124,7 +124,7 @@ public class Notify extends Parent {
                 (int) y - (height - padding),
                 (int) ((screenWidth - (textPadding * animFactor)) + padding),
                 (int) y + textPadding,
-                CategoryArea.makeAColor((100 * animFactor) / 255),
+                CategoryArea.makeAColor(100 * animFactor),
                 5, 2
             );
             Render2D.drawTextWithTransfer(
@@ -158,7 +158,7 @@ public class Notify extends Parent {
                 (int) (y - padding * 2),
                 (int) (((screenWidth / 2 + textRenderer.getWidth(renderText) / 2f) + padding) + offset),
                 (int) (y + textRenderer.fontHeight + padding),
-                CategoryArea.makeAColor((100 * animFactor) / 255),
+                CategoryArea.makeAColor(100 * animFactor),
                 5,
                 2
             );

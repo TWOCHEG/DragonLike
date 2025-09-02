@@ -31,7 +31,7 @@ public abstract class Parent {
         this.CONFIG = new ConfigManager(NAME);
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
         this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.CATEGORY = category;
+        this.CATEGORY = category;;
     }
     public Parent(String name, Categories category) {
         this.NAME = name;
@@ -113,26 +113,20 @@ public abstract class Parent {
     public void setValue(String key, Object value) {
         CONFIG.set(key, value);
     }
-
     public <T> T getValue(String name, T defaultValue) {
-        Object value = CONFIG.get(name, defaultValue);
-        try {
-            if (value != null && defaultValue instanceof Integer) {
-                value = ((Float) value).intValue();
-            } else if (value instanceof Double) {
-                value = ((Double) value).floatValue();
-            }
-        } catch (Exception ignore) {}
-        return (T) value;
+        return CONFIG.get(name, defaultValue);
+    }
+    public <T> T getValue(String name) {
+        return CONFIG.get(name);
     }
 
     @EventHandler
     private void onChangeConfig(OnChangeConfig e) {
-        for (Setting s : getSettings()) {
-            s.setValue(getValue(s.getName(), s.defaultValue));
+        for (Setting<?> s : getSettings()) {
+            s.setModule(this);
         }
         setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
-        setEnable(getValue(ConfigManager.keybindKeyName, defaultEnable));
+        setEnable(getValue(ConfigManager.enableKeyName, defaultEnable));
     }
 
     public static boolean isRu() {
@@ -144,15 +138,10 @@ public abstract class Parent {
         return languageCode.startsWith("ru");
     }
 
-    public Object getValue(String name) {
-        return getValue(name, null);
-    }
-
     public List<Setting> getSettings() {
         if (!settings.isEmpty()) {
             return settings;
         }
-        List<Setting> settingList = new LinkedList<>();
         Class<?> currentSuperclass = getClass();
 
         while (currentSuperclass != null) {
@@ -162,17 +151,14 @@ public abstract class Parent {
 
                 try {
                     field.setAccessible(true);
-                    settingList.add((Setting) field.get(this));
+                    settings.add((Setting) field.get(this));
                 } catch (IllegalAccessException ignored) {}
             }
 
             currentSuperclass = currentSuperclass.getSuperclass();
         }
-
-        settingList.forEach(s -> s.setModule(this));
-
-        settings = settingList;
-        return settingList;
+        settings.forEach(s -> s.setModule(this));
+        return settings;
     }
 
     public ConfigManager getConfig() {

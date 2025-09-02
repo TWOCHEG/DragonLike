@@ -117,7 +117,7 @@ public class SetsHGroupArea extends RenderArea {
             MathHelper.lerp(delta, oldSVA.y, currentSVA.y),
             MathHelper.lerp(delta, oldSVA.x + oldSVA.width, currentSVA.x + currentSVA.width),
             MathHelper.lerp(delta, oldSVA.y + oldSVA.height, currentSVA.y + currentSVA.height),
-            ColorUtils.fromRGB(0, 0, 0, 100 * showFa),
+            CategoryArea.makeAColor(100 * showFa, 0.25f),
             bigPadding, 2
         );
 

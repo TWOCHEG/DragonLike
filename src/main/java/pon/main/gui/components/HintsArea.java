@@ -55,7 +55,7 @@ public class HintsArea extends RenderArea {
             startY - height,
             startX + width,
             startY,
-            CategoryArea.makeAColor((100 * gui.openFactor) / 255),
+            CategoryArea.makeAColor(100 * gui.openFactor),
             padding, 2
         );
         context.drawText(

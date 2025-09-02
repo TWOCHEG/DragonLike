@@ -13,6 +13,7 @@ public class ModuleManager {
 
         this.modules.forEach(m -> {
             Main.EVENT_BUS.subscribe(m);
+            m.getSettings();
         });
     }
 

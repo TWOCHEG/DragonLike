@@ -99,7 +99,7 @@ public class ChoseGuiArea extends RenderArea {
         Render2D.fill(
             context,
             startX, startY, startX + width, startY + height,
-            CategoryArea.makeAColor((100 * showFactor) / 255),
+            CategoryArea.makeAColor(100 * showFactor),
             bigPadding, 2
         );
 
@@ -112,7 +112,7 @@ public class ChoseGuiArea extends RenderArea {
             MathHelper.lerp(delta, oldSVA.y, currentSVA.y),
             MathHelper.lerp(delta, oldSVA.x + oldSVA.width, currentSVA.x + currentSVA.width),
             MathHelper.lerp(delta, oldSVA.y + oldSVA.height, currentSVA.y + currentSVA.height),
-            ColorUtils.fromRGB(0, 0, 0, 100 * showFactor),
+            CategoryArea.makeAColor(100 * showFactor, 0.25f),
             bigPadding, 2
         );
         int x = startX;
