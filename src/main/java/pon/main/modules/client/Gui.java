@@ -125,5 +125,6 @@ public class Gui extends Parent {
         configWindowArea.resetCM();
         friendsWindowArea.show = false;
         friendsWindowArea.showFactor = 0;
+        friendsWindowArea.resetCM();
     }
 }
