@@ -6,11 +6,9 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
-import pon.main.managers.ConfigManager;
 import pon.main.events.impl.OnChangeConfig;
 import pon.main.gui.ConfigsGui;
 import pon.main.managers.Managers;
-import pon.main.modules.ui.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
@@ -89,21 +87,12 @@ public class ConfigWindowArea extends RenderArea {
         this.cm = cm;
     }
 
-    public ConfigArea getConfigArea(Path path) {
-        for (RenderArea area : areas) {
-            if (area instanceof ConfigArea configArea) {
-                if (configArea.config.equals(path)) return configArea;
-            }
-        }
-        return null;
-    }
-
     public void updateConfigs() {
         List<Path> currentConfigs = Managers.CONFIG.getFiles();
 
         List<ConfigArea> newConfigAreas = new ArrayList<>();
         for (Path path : currentConfigs) {
-            ConfigArea existing = getConfigArea(path);
+            ConfigArea existing = getCfgArea(path);
             if (existing != null) {
                 newConfigAreas.add(existing);
             } else {
@@ -158,10 +147,19 @@ public class ConfigWindowArea extends RenderArea {
             startX + windowWidth, startY + radius + (titleHeight - radius),
             ColorUtils.fromRGB(0, 0, 0, 50 * showFactor)
         );
+        String name = "config window";
+        context.drawText(
+            textRenderer,
+            name,
+            (startX + width - bigPadding) - textRenderer.getWidth(name),
+            startY + ((titleHeight / 2) - (textRenderer.fontHeight / 2)),
+            ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
+            false
+        );
 
         buttonArea.render(
             context, startX + radius, startY + ((titleHeight / 2) - (buttonArea.height / 2)),
-            0, 0, mouseX, mouseY
+            -1, -1, mouseX, mouseY
         );
 
         int totalPadding = bigPadding * (maxCfgInLine + 1);
@@ -205,7 +203,7 @@ public class ConfigWindowArea extends RenderArea {
         context.disableScissor();
 
         if (cm != null) {
-            cm.render(context, 0, 0, 0, 0, mouseX, mouseY);
+            cm.render(context, -1, -1, cmWidth, -1, mouseX, mouseY);
         }
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);
@@ -238,10 +236,8 @@ public class ConfigWindowArea extends RenderArea {
             setCM(new ContextMenu(
                 this, null, new int[]{x, y},
                 new ButtonArea[]{new ButtonArea(
-                    this, Managers.CONFIG::createCfg, "+ create",
-                    cmWidth - (padding * 2)
-                )},
-                cmWidth
+                    this, Managers.CONFIG::createFile, "+ create"
+                )}
             ).setCloseTask(this::resetCM));
             return true;
         }
@@ -414,25 +410,21 @@ public class ConfigWindowArea extends RenderArea {
                             this, () -> {
                                 inputting = true;
                                 inputText = getName(config);
-                            }, "✏ rename",
-                            parentArea.cmWidth - (padding * 2)
+                            }, "✏ rename"
                         ),
                         new ButtonArea(
                             this, () -> {
                                 Managers.CONFIG.setCurrent(config);
                             }, "✔ set current",
-                            parentArea.cmWidth - (padding * 2),
                             ColorUtils.fromRGB(240, 255, 240)
                         ),
                         new ButtonArea(
                             this, () -> {
-                                Managers.CONFIG.deleteCfg(config);
+                                Managers.CONFIG.deleteFile(config);
                             }, "❌ delete",
-                            parentArea.cmWidth - (padding * 2),
                             ColorUtils.fromRGB(255, 240, 240)
                         ),
-                    },
-                    parentArea.cmWidth
+                    }
                 ).setCloseTask(parentArea::resetCM));
                 return true;
             } else if (hovered) {
@@ -460,7 +452,7 @@ public class ConfigWindowArea extends RenderArea {
                     inputting = false;
                 } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
                     inputting = false;
-                    Managers.CONFIG.renameCfg(config, inputText);
+                    Managers.CONFIG.renameFile(config, inputText);
                 }
                 return true;
             }

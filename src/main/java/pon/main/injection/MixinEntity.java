@@ -7,13 +7,18 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pon.main.Main;
 import pon.main.events.Event;
 import pon.main.events.impl.EventChangePlayerLook;
+import pon.main.events.impl.EventFixVelocity;
 import pon.main.events.impl.EventSetVelocity;
+import pon.main.modules.Parent;
+
+import static pon.main.modules.Parent.mc;
 
 
 @Mixin(Entity.class)
@@ -45,6 +50,17 @@ public abstract class MixinEntity {
         ci.cancel();
     }
 
+    @Inject(method = "updateVelocity", at = {@At("HEAD")}, cancellable = true)
+    public void updateVelocityHook(float speed, Vec3d movementInput, CallbackInfo ci) {
+        if(Parent.fullNullCheck()) return;
+        if ((Object) this == mc.player) {
+            ci.cancel();
+            EventFixVelocity event = new EventFixVelocity(movementInput, speed, mc.player.getYaw(), movementInputToVelocityC(movementInput, speed, mc.player.getYaw()));
+            Main.EVENT_BUS.post(event);
+            mc.player.setVelocity(mc.player.getVelocity().add(event.getVelocity()));
+        }
+    }
+
     @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("HEAD"), cancellable = true)
     @SuppressWarnings({"ConstantConditions", "UnreachableCode"})
     public void modifySetVelocityVec3d(Vec3d velocity, CallbackInfo ci) {
@@ -56,6 +72,18 @@ public abstract class MixinEntity {
         if (!event.isCancelled())
             this.velocity = event.getVelocity();
         ci.cancel();
+    }
+
+    @Unique
+    private static Vec3d movementInputToVelocityC(Vec3d movementInput, float speed, float yaw) {
+        double d = movementInput.lengthSquared();
+        if (d < 1.0E-7) {
+            return Vec3d.ZERO;
+        }
+        Vec3d vec3d = (d > 1.0 ? movementInput.normalize() : movementInput).multiply(speed);
+        float f = MathHelper.sin(yaw * ((float) Math.PI / 180));
+        float g = MathHelper.cos(yaw * ((float) Math.PI / 180));
+        return new Vec3d(vec3d.x * (double) g - vec3d.z * (double) f, vec3d.y, vec3d.z * (double) g + vec3d.x * (double) f);
     }
 
 //    @Inject(method = "isSprinting", at = @At("HEAD"), cancellable = true)

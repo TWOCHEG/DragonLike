@@ -1,18 +1,17 @@
-package pon.main.modules.ui;
+package pon.main.modules.client;
 
-import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
-import pon.main.events.impl.EventChangePlayerLook;
 import pon.main.gui.ConfigsGui;
 import pon.main.gui.FriendsGui;
 import pon.main.gui.ModulesGui;
 import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.ChoseGuiArea;
 import pon.main.gui.components.ConfigWindowArea;
+import pon.main.gui.components.FriendsWindowArea;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.*;
 
@@ -56,16 +55,17 @@ public class Gui extends Parent {
 
     public final Setting<Boolean> showAreas = new Setting<>("show areas (debug)", false);
 
-    public Identifier texture = Identifier.of("purr", images.get(image.getValue()));
+    public Identifier texture = Identifier.of("main", images.get(image.getValue()));
 
     // render components
     public LinkedList<CategoryArea> categories = null;
     public Screen oldScreen = null;
     public ChoseGuiArea choseGuiArea = new ChoseGuiArea(ModulesGui.class, ConfigsGui.class, FriendsGui.class);
     public ConfigWindowArea configWindowArea = new ConfigWindowArea();
+    public FriendsWindowArea friendsWindowArea = new FriendsWindowArea();
 
     public Gui() {
-        super("click gui", Main.Categories.ui, GLFW.GLFW_KEY_RIGHT_SHIFT);
+        super("click gui", Main.Categories.client, GLFW.GLFW_KEY_RIGHT_SHIFT);
         setEnable(false);
     }
 
@@ -85,7 +85,7 @@ public class Gui extends Parent {
                     categories.add(new CategoryArea(moduleList, entry.getKey()));
                 }
             } else {
-                closeGuiAnimComponents();
+                resetGuiAnimComponents();
             }
             oldScreen = mc.currentScreen;
             mc.setScreen(new ModulesGui());
@@ -114,20 +114,7 @@ public class Gui extends Parent {
         }
     }
 
-    @EventHandler
-    private void onChangeLook(EventChangePlayerLook e) {
-        if (!mouseMove.getValue()) return;
-        if (Parent.fullNullCheck()) return;
-        if (mc.currentScreen instanceof ModulesGui gui) {
-            gui.onChangeLook(e);
-        } else if (mc.currentScreen instanceof ConfigsGui configsGui) {
-            configsGui.onChangeLook(e);
-        } else if (mc.currentScreen instanceof FriendsGui friendsGui) {
-            friendsGui.onChangeLook(e);
-        }
-    }
-
-    public void closeGuiAnimComponents() {
+    public void resetGuiAnimComponents() {
         for (CategoryArea categoryArea : categories) {
             categoryArea.show = false;
             categoryArea.showFactor = 0;
@@ -136,5 +123,7 @@ public class Gui extends Parent {
         configWindowArea.showFactor = 0;
         configWindowArea.show = false;
         configWindowArea.resetCM();
+        friendsWindowArea.show = false;
+        friendsWindowArea.showFactor = 0;
     }
 }

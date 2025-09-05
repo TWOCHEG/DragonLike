@@ -1,6 +1,7 @@
 package pon.main.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
+import pon.main.Main;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
@@ -13,23 +14,31 @@ public class ContextMenu extends RenderArea {
 
     private float showFactor2 = 0;
     private boolean show = true;
-    private ButtonArea clickedButton;
 
-    public ContextMenu(RenderArea parentArea, RenderArea context, int[] position, RenderArea[] areas, int targetWidth) {
+    public ContextMenu(RenderArea parentArea, RenderArea context, int[] position, RenderArea[] areas) {
         super(parentArea);
         this.showFactor = 0;
         this.context = context;
 
         Collections.addAll(this.areas, areas);
 
-        for (RenderArea area : areas) {
+        for (RenderArea area : this.areas) {
             area.parentArea = this;
+            area.showFactor = 0;
         }
 
-        this.width = targetWidth;
+        this.width = 80;
 
         this.x = position[0];
         this.y = position[1];
+    }
+    public ContextMenu(RenderArea parentArea, RenderArea context, double[] position, RenderArea[] areas) {
+        this(
+            parentArea,
+            context,
+            new int[]{(int) position[0], (int) position[1]},
+            areas
+        );
     }
 
     public ContextMenu setCloseTask(Runnable closeTask) {
@@ -44,49 +53,35 @@ public class ContextMenu extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
+        startX = startX <= 0 ? this.x : startX;
+        startY = startY <= 0 ? this.y : startY;
+        width = width <= 0 ? 80 : width;
+
         if (!show && showFactor == 0 && closeTask != null) {
             closeTask.run();
         }
 
-        this.height = padding * 2;
+        height = padding * 2;
         for (RenderArea area : areas) {
-            this.height += area.height;
+            height += area.height;
         }
 
         Render2D.fill(
-            context, this.x, this.y,
-            this.x + this.width,
-            this.y + this.height,
+            context, startX, startY,
+            startX + width,
+            startY + height,
             CategoryArea.makeAColor(100 * showFactor),
             bigPadding, 2
         );
 
-        int clickedButtonY = -1;
-        if (clickedButton != null) {
-            int tempY = this.y + padding;
-            for (RenderArea area : areas) {
-                if (area.equals(clickedButton)) {
-                    clickedButtonY = tempY;
-                    break;
-                }
-                tempY += area.height;
-            }
-        }
 
-        int y = this.y + padding;
+        int y = startY + padding;
         for (RenderArea area : areas) {
-            int renderY;
-            if (clickedButton != null && !area.equals(clickedButton) && clickedButtonY != -1) {
-                renderY = y + (int) ((clickedButtonY - y) * (1 - showFactor));
-            } else {
-                renderY = y;
-            }
-
-            area.render(context, this.x + padding, renderY, 0, 0, mouseX, mouseY);
+            area.render(context, startX + padding, y, width - (padding * 2), -1, mouseX, mouseY);
             y += area.height;
         }
 
-        super.render(context, this.x, this.y, this.width, this.height, mouseX, mouseY);
+        super.render(context, startX, startY, width, height, mouseX, mouseY);
     }
 
     @Override
@@ -97,14 +92,24 @@ public class ContextMenu extends RenderArea {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (clickedButton == null && super.mouseClicked(mouseX, mouseY, button) && closeTask != null) {
-            clickedButton = (ButtonArea) getAreaFromPos(mouseX, mouseY);
-            show = false;
+        if (checkHovered(mouseX, mouseY)) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        } else {
+            onProgramEnd();
+            return false;
+        }
+    }
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (super.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (Main.cancelButtons.contains(keyCode)) {
+            onProgramEnd();
             return true;
         }
-        if (closeTask != null) {
-            show = false;
-        }
         return false;
+    }
+
+    @Override
+    public void onProgramEnd() {
+        show = false;
     }
 }

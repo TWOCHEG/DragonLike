@@ -4,8 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.math.MathHelper;
 import pon.main.Main;
-import pon.main.modules.ui.Gui;
-import pon.main.utils.ColorUtils;
+import pon.main.modules.client.Gui;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
@@ -62,7 +61,7 @@ public class ChoseGuiArea extends RenderArea {
                 delta = 0;
                 oldGuiClass = currentGuiClass;
                 currentGuiClass = guiClass;
-                Main.MODULE_MANAGER.getModule(Gui.class).closeGuiAnimComponents();
+                Main.MODULE_MANAGER.getModule(Gui.class).resetGuiAnimComponents();
             } catch (Exception ignore) {}
         }
     }

@@ -8,7 +8,9 @@
     "MixinClientPlayerEntity",
     "MixinScreen",
     "MixinClientConnection",
-    "MixinCamera"
+    "MixinCamera",
+    "accesors.IClientPlayerEntity",
+    "accesors.IInteractionManager"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,7 +1,7 @@
 package pon.main.utils.math;
 
 import pon.main.Main;
-import pon.main.modules.ui.Gui;
+import pon.main.modules.client.Gui;
 
 public class GetAnimDiff {
     public static float get() {

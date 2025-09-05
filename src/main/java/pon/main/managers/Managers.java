@@ -1,15 +1,20 @@
 package pon.main.managers;
 
-import pon.main.Main;
+import static pon.main.Main.EVENT_BUS;
 
 public class Managers {
-    public static final RotationManager ROTATIONS = new RotationManager();
-    public static final ServerManager SERVER_MANAGER = new ServerManager();
+    public static final ServerManager SERVER = new ServerManager();
     public static final FriendsManager FRIENDS = new FriendsManager();
+    public static final PlayerManager PLAYER = new PlayerManager();
+
     public static final ConfigManager CONFIG = new ConfigManager();
 
     public static void init() {
         FRIENDS.loadFriends();
-        Main.EVENT_BUS.subscribe(ROTATIONS);
+    }
+
+    public static void subscribe() {
+        EVENT_BUS.subscribe(SERVER);
+        EVENT_BUS.subscribe(PLAYER);
     }
 }

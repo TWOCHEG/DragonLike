@@ -1,7 +1,7 @@
 package pon.main.modules.settings;
 
 import pon.main.modules.Parent;
-import pon.main.utils.EnumConverter;
+import pon.main.utils.EnumHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +26,7 @@ public class Setting<T> {
     public Setting(T defaultValue) {
         this(
             defaultValue instanceof Enum
-                    ? EnumConverter.getNameFromEnum((Enum<?>) defaultValue)
+                    ? EnumHelper.getNameFromEnum((Enum<?>) defaultValue)
                     : defaultValue.toString(),
             defaultValue
         );
@@ -36,7 +36,7 @@ public class Setting<T> {
         this.defaultValue = defaultValue;
 
         if (defaultValue instanceof Enum) {
-            this.options = (List<T>) Arrays.asList(EnumConverter.getConstaints((Enum<?>) defaultValue));
+            this.options = (List<T>) Arrays.asList(EnumHelper.getConstaints((Enum<?>) defaultValue));
             this.optionIndex = this.options.indexOf(defaultValue);
         } else {
             this.value = defaultValue;
@@ -49,7 +49,6 @@ public class Setting<T> {
             options
         );
     }
-
     public Setting(T defaultValue, String name, List<T> options) {
         this.name = name;
         this.defaultValue = defaultValue;
@@ -65,7 +64,6 @@ public class Setting<T> {
     public Setting(T defaultValue, String name, T... options) {
         this(defaultValue, name, Arrays.stream(options).toList());
     }
-
     public Setting(String name, T defaultValue, T min, T max) {
         this(name, defaultValue);
         this.min = min;
@@ -105,6 +103,12 @@ public class Setting<T> {
     }
 
     public void setIndex(int i) {
+        if (i > options.size() - 1) {
+            i = 0;
+        } else if (i < 0) {
+            i = options.size() - 1;
+        }
+        i = Math.clamp(i, 0, options.size() - 1);
         setValue(getOptions().get(i));
     }
 
@@ -116,9 +120,14 @@ public class Setting<T> {
         return options;
     }
 
-    public void setModule(Parent module) {
+    public void init(Parent module) {
         this.module = module;
-        setValue(module.getConfig().get(name, defaultValue));
+        T v = (T) module.getConfig().get(name, isList() ? optionIndex : defaultValue);
+        if (isList()) {
+            setIndex((Integer) v);
+        } else {
+            setValue(v);
+        }
     }
 
     public Setting<T> visibleProvider(Predicate<T> visibility) {

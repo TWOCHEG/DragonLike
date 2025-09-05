@@ -75,7 +75,7 @@ public class MentionChecker {
         return rus.toString();
     }
 
-    public static String checkMention(String text, String mention, Boolean autoOut, String mentions) {
+    public static String checkMention(String text, String mention, boolean autoOut, String mentions) {
         Set<String> variations = new LinkedHashSet<>();
 
         String lowerText = text.toLowerCase();

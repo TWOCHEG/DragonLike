@@ -1,4 +1,4 @@
-package pon.main.modules.ui;
+package pon.main.modules.client;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.font.TextRenderer;
@@ -44,7 +44,7 @@ public class Notify extends Parent {
     }
 
     public Notify() {
-        super("notify", Main.Categories.ui, true);
+        super("notify", Main.Categories.client, true);
 
         HudRenderCallback.EVENT.register((context, tickDelta) -> {
             TextRenderer textRenderer = mc.textRenderer;

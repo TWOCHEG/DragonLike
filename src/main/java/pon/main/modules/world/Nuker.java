@@ -3,7 +3,10 @@ package pon.main.modules.world;
 import meteordevelopment.orbit.*;
 import pon.main.Main;
 import pon.main.events.impl.EventPostTick;
+import pon.main.events.impl.EventSync;
+import pon.main.modules.ModuleManager;
 import pon.main.modules.Parent;
+import pon.main.modules.client.Rotations;
 import pon.main.modules.settings.BlockSelected;
 import pon.main.modules.settings.Header;
 import pon.main.modules.settings.Setting;
@@ -20,7 +23,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
-import pon.main.utils.math.AnimHelper;
+import pon.main.utils.player.InteractionUtility;
 import pon.main.utils.render.Render3D;
 
 import java.util.*;
@@ -64,6 +67,9 @@ public class Nuker extends Parent {
     private long miningStartTime = 0;
     private long miningTime = 0;
     private int miningStage = 0;
+    private float progress = 0;
+
+    private float rotationYaw, rotationPitch;
 
     public Nuker() {
         super("nuker", Main.Categories.world);
@@ -83,7 +89,8 @@ public class Nuker extends Parent {
         });
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> {
             if (miningTarget != null && miningHit != null && enable && mc.player != null && mc.world != null) {
-                Render3D.highlightBlock(context, miningTarget, 1, 1, 1);
+                float a = 1 - progress;
+                Render3D.highlightBlock(context, miningTarget, 1, 1, 1, 1 * a);
             }
         });
     }
@@ -118,8 +125,11 @@ public class Nuker extends Parent {
                 miningStartTime = System.currentTimeMillis();
                 miningStage = 1;
 
-                // Начало разрушения
-                look(miningTarget);
+                float[] angle = InteractionUtility.calculateAngle(new Vec3d(miningTarget.getX(), miningTarget.getY(), miningTarget.getZ()));
+                rotationYaw = (angle[0]);
+                rotationPitch = (angle[1]);
+                Main.MODULE_MANAGER.getModule(Rotations.class).fixRotation = rotationYaw;
+
                 mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
                         PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, miningTarget, miningHit.getSide()
                 ));
@@ -132,7 +142,7 @@ public class Nuker extends Parent {
                 if (elapsed > miningTime) {
                     miningStage = 2;
                 } else {
-                    float progress = (float) elapsed / miningTime;
+                    progress = (float) elapsed / miningTime;
                     mc.interactionManager.updateBlockBreakingProgress(miningTarget, miningHit.getSide());
                     return;
                 }
@@ -269,33 +279,6 @@ public class Nuker extends Parent {
         return false;
     }
 
-    private void look(BlockPos pos) {
-        if (mc.player == null || mc.getNetworkHandler() == null) return;
-
-        Main.managers.ROTATIONS.track = false;
-
-        Vec3d eyesPos = mc.player.getCameraPosVec(1.0f);
-        Vec3d target = pos.toCenterPos();
-        Vec3d diff = target.subtract(eyesPos);
-
-        double diffX = diff.x;
-        double diffY = diff.y;
-        double diffZ = diff.z;
-        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-        float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
-        float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
-
-        float currentYaw = mc.player.getYaw();
-        float currentPitch = mc.player.getPitch();
-
-        yaw = currentYaw + MathHelper.wrapDegrees(yaw - currentYaw) * 0.4f;
-        pitch = currentPitch + (pitch - currentPitch) * 0.4f;
-        pitch = MathHelper.clamp(pitch, -90, 90);
-
-        Main.managers.ROTATIONS.rotate(yaw, pitch, true);
-    }
-
     private void abortMining() {
         if (miningTarget != null && miningHit != null) {
             mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
@@ -314,8 +297,12 @@ public class Nuker extends Parent {
         delayTimer = breakDelay.getValue();
     }
 
-    @Override
-    public void onDisable() {
-        Main.managers.ROTATIONS.track = true;
+    @EventHandler
+    public void onSync(EventSync e) {
+        if(rotationYaw != -999) {
+            mc.player.setYaw(rotationYaw);
+            mc.player.setPitch(rotationPitch);
+            rotationYaw = -999;
+        }
     }
 }

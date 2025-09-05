@@ -1,8 +1,5 @@
 package pon.main.utils.math;
 
-import pon.main.Main;
-import pon.main.modules.ui.Gui;
-
 public class AnimHelper {
     /**
      * @EaseInOut замедление в начале и в конце (по умолчанию)

@@ -62,46 +62,39 @@ public class ConfigManager implements IManager {
 
     public void set(String key, Object value) {
         try {
-            Path configPath = getCurrent();
-            Map<String, Object> root;
-
-            if (Files.exists(configPath) && Files.isRegularFile(configPath)) {
-                String content = Files.readString(configPath, StandardCharsets.UTF_8);
-                if (!content.isBlank()) {
-                    root = GSON.fromJson(content, new TypeToken<Map<String, Object>>() {
-                    }.getType());
-                } else {
-                    root = new HashMap<>();
-                }
-            } else {
-                root = new HashMap<>();
+            if (!Files.exists(configDir)) {
+                Files.createDirectories(configDir);
             }
+            saveJson(key, value);
+        } catch (IOException | RuntimeException ignored) {}
+    }
 
+    public void saveJson(Path path, Map<String, Object> map) {
+        try {
+            String jsonOutput = GSON.toJson(map);
+            Files.writeString(path, jsonOutput, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception ignore) {}
+    }
+    public void saveJson(String key, Object value) {
+        try {
+            Path configPath = getCurrent();
+            Map<String, Object> root = readJson(configPath);
             if (moduleName == null) {
                 root.put(key, value);
             } else {
                 Object moduleData = root.get(moduleName);
                 Map<String, Object> moduleMap;
-
                 if (moduleData instanceof Map) {
                     moduleMap = (Map<String, Object>) moduleData;
                 } else {
                     moduleMap = new HashMap<>();
                 }
-
                 moduleMap.put(key, value);
                 root.put(moduleName, moduleMap);
             }
-
-            if (!Files.exists(configDir)) {
-                Files.createDirectories(configDir);
-            }
-
-            String jsonOutput = GSON.toJson(root);
-            Files.writeString(configPath, jsonOutput, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException | RuntimeException ignored) {}
+            saveJson(configPath, root);
+        } catch (Exception ignore) {}
     }
-
     public Map<String, Object> readJson(Path path) {
         try {
             if (Files.exists(path) && Files.isRegularFile(path)) {
@@ -165,7 +158,7 @@ public class ConfigManager implements IManager {
     public List<Path> getFiles() {
         try {
             List<Path> list = Files.list(configDir)
-                    .filter(p -> p.toString().endsWith(fileExtension))
+                    .filter(p -> p.toString().endsWith(fileExtension) && !p.equals(FriendsManager.DATA_FILE_PATH))
                     .sorted(Comparator.comparing(p -> p.getFileName().toString()))
                     .collect(Collectors.toList());
             if (list.isEmpty()) {
@@ -216,7 +209,7 @@ public class ConfigManager implements IManager {
         } catch (IOException ignored) {}
     }
 
-    public boolean deleteCfg(Path path) {
+    public void deleteFile(Path path) {
         try {
             if (path != null && Files.exists(path) && path.toString().endsWith(fileExtension) && path.getParent().equals(configDir)) {
                 Path current = getCurrent();
@@ -224,13 +217,11 @@ public class ConfigManager implements IManager {
                 if (path.equals(current)) {
                     Main.EVENT_BUS.post(new OnChangeConfig(null, getCurrent()));
                 }
-                return true;
             }
         } catch (IOException | RuntimeException ignored) {}
-        return false;
     }
 
-    public Path createCfg() {
+    public void createFile() {
         String name = String.valueOf(getFiles().size() + 1);
         int i = 0;
         while (getFiles().contains(configDir.resolve(name + (i != 0 ? i : "") + fileExtension))) {
@@ -246,19 +237,17 @@ public class ConfigManager implements IManager {
             Path filePath = configDir.resolve(name);
 
             if (Files.exists(filePath)) {
-                return filePath;
+                return;
             }
 
             Map<String, Object> content = new HashMap<>();
             String json = GSON.toJson(content);
 
             Files.writeString(filePath, json, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
-            return filePath;
         } catch (IOException | RuntimeException ignored) {}
-        return null;
     }
 
-    public Path renameCfg(Path path, String newName) {
+    public Path renameFile(Path path, String newName) {
         if (path == null || !Files.exists(path) || !path.toString().endsWith(fileExtension) || !path.getParent().equals(configDir)) {
             return null;
         }

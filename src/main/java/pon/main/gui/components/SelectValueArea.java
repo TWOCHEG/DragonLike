@@ -1,7 +1,6 @@
 package pon.main.gui.components;
 
 import net.minecraft.client.gui.DrawContext;
-import pon.main.gui.ModulesGui;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 

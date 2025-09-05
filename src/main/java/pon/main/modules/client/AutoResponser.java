@@ -1,4 +1,4 @@
-package pon.main.modules.ui;
+package pon.main.modules.client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -18,9 +18,7 @@ import net.minecraft.text.Text;
 import com.mojang.authlib.GameProfile;
 
 import java.awt.*;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -77,7 +75,7 @@ public class AutoResponser extends Parent {
     private boolean cancelTask = false;
 
     public AutoResponser() {
-        super("auto responser", Main.Categories.ui);
+        super("auto responser", Main.Categories.client);
         // обычные сообщения
         ClientReceiveMessageEvents.CHAT.register(
             (Text message, SignedMessage signedMsg, GameProfile sender, Parameters params, Instant timestamp) -> {

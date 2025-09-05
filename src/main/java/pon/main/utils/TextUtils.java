@@ -27,8 +27,6 @@ public class TextUtils {
                         lines.add(currentLine.toString());
                         currentLine = new StringBuilder();
                     }
-
-                    // Если слово целиком не влезает, разбиваем по символам
                     if (widthCalculator.apply(word) > maxWidth) {
                         for (char c : word.toCharArray()) {
                             String charStr = String.valueOf(c);

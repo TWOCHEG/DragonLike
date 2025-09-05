@@ -200,7 +200,7 @@ public class ModuleArea extends RenderArea {
             binding = false;
         }
         if (checkHovered(x, y, width, textRenderer.fontHeight + padding * 2, mouseX, mouseY)) {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && module.isToggleable()) {
                 module.toggle();
             } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
                 pressKey = -1;

@@ -5,12 +5,11 @@ import pon.main.Main;
 import pon.main.Main.Categories;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.ColorSet;
-import pon.main.modules.ui.Gui;
+import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
-import java.awt.*;
 import java.util.*;
 
 public class CategoryArea extends RenderArea {
@@ -54,7 +53,7 @@ public class CategoryArea extends RenderArea {
 
     @Override
     public void render(DrawContext context, int startX, int startY, int width, int height, double mouseX, double mouseY) {
-        Float offset = 100 * (1 - showFactor);
+        float offset = 100 * (1 - showFactor);
 
         startY -= offset;
 
@@ -103,8 +102,7 @@ public class CategoryArea extends RenderArea {
             startX + nameContainerPadding + (width / 2 + textRenderer.getWidth(name.name()) / 2),
             nameStartY + textRenderer.fontHeight + nameContainerPadding,
             makeAColor(100 * showFactor, 0.25f),
-            5,
-            2
+            5, 2
         );
         context.drawText(
             textRenderer,

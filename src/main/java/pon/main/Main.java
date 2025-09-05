@@ -12,14 +12,13 @@ import pon.main.managers.Managers;
 import pon.main.modules.ModuleManager;
 
 import pon.main.modules.misc.*;
-import pon.main.modules.ui.*;
+import pon.main.modules.client.*;
 import pon.main.modules.world.*;
 // import pon.main.modules.client.*;
 
 public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
 	public static ModuleManager MODULE_MANAGER = null;
-	public static Managers managers = new Managers();
     public static final String VERSION = "0.0.1";
 
 	public static List<Integer> cancelButtons = java.util.List.of(
@@ -29,11 +28,10 @@ public class Main implements ModInitializer {
 
 	public enum Categories {
 		combat,
-		ui,
+        client,
 		world,
 		example,
         render,
-        client,
         misc
 	}
 
@@ -44,6 +42,7 @@ public class Main implements ModInitializer {
 			(lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup())
 		);
 		Managers.init();
+        Managers.subscribe();
 
 		MODULE_MANAGER = new ModuleManager(
 			new Gui(),
@@ -53,7 +52,8 @@ public class Main implements ModInitializer {
 			new Notify(),
 			new AutoResponser(),
             new LagNotifier(),
-            new DiscordPresence()
+            new DiscordPresence(),
+            new Rotations()
 		);
 	}
 

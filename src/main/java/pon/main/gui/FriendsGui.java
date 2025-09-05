@@ -6,11 +6,11 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
+import pon.main.gui.components.FriendsWindowArea;
 import pon.main.gui.components.RenderArea;
 import pon.main.modules.Parent;
-import pon.main.modules.ui.Gui;
+import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
-import pon.main.utils.TextUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
@@ -25,6 +25,8 @@ public class FriendsGui extends Screen {
 
     public boolean dragged = false;
 
+    private FriendsWindowArea fwa;
+
     public List<RenderArea> areas = new ArrayList<>();
 
     private double windowX = 100;
@@ -33,8 +35,9 @@ public class FriendsGui extends Screen {
     public FriendsGui() {
         super(Text.literal("friends"));
         this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
+        this.fwa = gui.friendsWindowArea;
         areas.add(gui.choseGuiArea);
-        areas.add(gui.configWindowArea);
+        areas.add(gui.friendsWindowArea);
     }
 
     @Override
@@ -66,18 +69,10 @@ public class FriendsGui extends Screen {
             ColorUtils.fromRGB(0, 0, 0, 0)
         );
 
-        Render2D.drawBuildScreen(context, textRenderer, openFactor);
-
         gui.choseGuiArea.render(context, width / 2, 0, 0, 0, mouseX, mouseY);
-    }
 
-    public void onChangeLook(EventChangePlayerLook e) {
-        if (Parent.fullNullCheck()) return;
-
-        Main.managers.ROTATIONS.rotate(
-            (float) (client.player.getYaw() + e.cursorDeltaY),
-            (float) (client.player.getPitch() + e.cursorDeltaX)
-        );
+        fwa.textRenderer = textRenderer;
+        fwa.render(context, (int) windowX, (int) windowY, 0, 0, mouseX, mouseY);
     }
 
     @Override
@@ -85,10 +80,10 @@ public class FriendsGui extends Screen {
         for (RenderArea area : areas) {
             if (area.mouseClicked(mouseX, mouseY, button)) return true;
         }
-//        if (RenderArea.checkHovered(cwa.x, cwa.y, cwa.width, cwa.titleHeight, mouseX, mouseY)) {
-//            dragged = true;
-//            return true;
-//        }
+        if (RenderArea.checkHovered(fwa.x, fwa.y, fwa.width, fwa.titleHeight, mouseX, mouseY)) {
+            dragged = true;
+            return true;
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
     @Override
@@ -134,6 +129,7 @@ public class FriendsGui extends Screen {
 
     private void animHandler() {
         openFactor = AnimHelper.handle(open, openFactor, AnimHelper.AnimMode.EaseOut);
+        fwa.show = open;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package pon.main.gui;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -9,7 +8,7 @@ import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
 import pon.main.gui.components.*;
 import pon.main.modules.Parent;
-import pon.main.modules.ui.Gui;
+import pon.main.modules.client.Gui;
 import pon.main.utils.math.GetAnimDiff;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
@@ -112,11 +111,6 @@ public class ModulesGui extends Screen {
 
     public void onChangeLook(EventChangePlayerLook e) {
         if (Parent.fullNullCheck()) return;
-
-        Main.managers.ROTATIONS.rotate(
-                (float) (client.player.getYaw() + e.cursorDeltaY),
-                (float) (client.player.getPitch() + e.cursorDeltaX)
-        );
     }
 
     @Override

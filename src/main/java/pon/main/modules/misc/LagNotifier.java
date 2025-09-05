@@ -6,9 +6,10 @@ import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import pon.main.Main;
 import pon.main.events.impl.EventTick;
 import pon.main.events.impl.PacketEvent;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
-import pon.main.modules.ui.Notify;
+import pon.main.modules.client.Notify;
 import pon.main.utils.math.Timer;
 
 import java.awt.*;
@@ -43,6 +44,8 @@ public class LagNotifier extends Parent {
 
     @EventHandler
     private void onTick(EventTick e) {
+        if (!getEnable()) return;
+
         if (rubberbandTimer != null && !rubberbandTimer.passedMs(5000)) {
             DecimalFormat decimalFormat = new DecimalFormat("#.#");
             if (!isRubberband && rubberbandNotify.getValue()) {
@@ -73,7 +76,7 @@ public class LagNotifier extends Parent {
             }
         }
 
-        if (Main.managers.SERVER_MANAGER.getTPS() < 10 && notifyTimer.passedMs(60000) && tpsNotify.getValue()) {
+        if (Managers.SERVER.getTPS() < 10 && notifyTimer.passedMs(60000) && tpsNotify.getValue()) {
             if (!isLagging) {
                 Notify.NotifyData n = new Notify.NotifyData(
                         "! server TPS is below 10 !",
@@ -89,7 +92,7 @@ public class LagNotifier extends Parent {
             notifyTimer.reset();
         }
 
-        if (Main.managers.SERVER_MANAGER.getTPS() > 15 && isLagging) {
+        if (Managers.SERVER.getTPS() > 15 && isLagging) {
             notify(new Notify.NotifyData(
                 "server TPS has stabilized!",
                 Notify.NotifyType.Important

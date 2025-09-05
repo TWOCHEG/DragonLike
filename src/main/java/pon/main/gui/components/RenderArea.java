@@ -4,8 +4,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import pon.main.Main;
-import pon.main.modules.ui.Gui;
+import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
+import pon.main.utils.math.AnimHelper;
 import pon.main.utils.math.Hover;
 import pon.main.utils.math.MathUtils;
 
@@ -38,6 +39,8 @@ public abstract class RenderArea {
     public final int bigPadding = 5;
     public final int vertexRadius = 4;
 
+    protected float hoveredFactor = 0;
+
     public RenderArea() {}
     public RenderArea(RenderArea parentArea) {
         this.parentArea = parentArea;
@@ -55,11 +58,15 @@ public abstract class RenderArea {
         this.height = height;
         this.animHandler();
 
+        hoveredFactor = AnimHelper.handle(checkHovered(mouseX, mouseY), hoveredFactor);
+
         Gui gui = Main.MODULE_MANAGER.getModule(Gui.class);
         if (gui.showAreas.getValue()) {
             lightArea(context);
         }
     }
+
+    public void onProgramEnd() {}
 
     public void lightArea(DrawContext context) {
         context.fill(

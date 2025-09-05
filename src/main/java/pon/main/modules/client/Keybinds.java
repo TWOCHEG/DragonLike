@@ -1,4 +1,4 @@
-package pon.main.modules.ui;
+package pon.main.modules.client;
 
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.screen.TitleScreen;

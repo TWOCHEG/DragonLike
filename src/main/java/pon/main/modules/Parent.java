@@ -8,7 +8,7 @@ import pon.main.Main.Categories;
 import pon.main.managers.ConfigManager;
 import pon.main.events.impl.OnChangeConfig;
 import pon.main.modules.settings.Setting;
-import pon.main.modules.ui.Notify;
+import pon.main.modules.client.Notify;
 import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.Field;
@@ -76,7 +76,9 @@ public abstract class Parent {
     }
 
     public void toggle() {
-        setEnable(!getEnable());
+        if (isToggleable()) {
+            setEnable(!getEnable());
+        }
     }
 
     public void setEnable(boolean value, boolean showNotify) {
@@ -123,7 +125,7 @@ public abstract class Parent {
     @EventHandler
     private void onChangeConfig(OnChangeConfig e) {
         for (Setting<?> s : getSettings()) {
-            s.setModule(this);
+            s.init(this);
         }
         setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
         setEnable(getValue(ConfigManager.enableKeyName, defaultEnable));
@@ -157,7 +159,7 @@ public abstract class Parent {
 
             currentSuperclass = currentSuperclass.getSuperclass();
         }
-        settings.forEach(s -> s.setModule(this));
+        settings.forEach(s -> s.init(this));
         return settings;
     }
 

@@ -6,11 +6,11 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
-import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.ConfigWindowArea;
 import pon.main.gui.components.RenderArea;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
-import pon.main.modules.ui.Gui;
+import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 
@@ -73,15 +73,6 @@ public class ConfigsGui extends Screen {
 
         cwa.textRenderer = textRenderer;
         cwa.render(context, (int) windowX, (int) windowY, 0, 0, mouseX, mouseY);
-    }
-
-    public void onChangeLook(EventChangePlayerLook e) {
-        if (Parent.fullNullCheck()) return;
-
-        Main.managers.ROTATIONS.rotate(
-            (float) (client.player.getYaw() + e.cursorDeltaY),
-            (float) (client.player.getPitch() + e.cursorDeltaX)
-        );
     }
 
     @Override
