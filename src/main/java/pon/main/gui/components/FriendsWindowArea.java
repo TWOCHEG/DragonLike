@@ -126,7 +126,7 @@ public class FriendsWindowArea extends RenderArea {
         );
 
         float textVFactor = !areas.isEmpty() && areas.getLast() instanceof FriendArea ? 1 - areas.getLast().showFactor : 1;
-        if (textVFactor != 0) {
+        if (FriendsManager.friends.isEmpty()) {
             String t = "у тебя нет друзей :)";
             int eHeight = ((textRenderer.fontHeight + padding) * TextUtils.splitForRender(
                 t, width - (bigPadding * 2), textRenderer::getWidth
