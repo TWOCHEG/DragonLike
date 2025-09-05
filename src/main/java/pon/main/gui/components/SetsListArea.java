@@ -18,6 +18,8 @@ public class SetsListArea extends RenderArea {
 
     private ListValue oldValue;
 
+    public float lowShowFactor = 0;
+
     public SetsListArea(Setting set, RenderArea parentArea) {
         super(parentArea);
         this.showFactor = set.getVisible() ? 1 : 0;
@@ -38,7 +40,7 @@ public class SetsListArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showFa = showFactor * parentArea.showFactor;
+        lowShowFactor = showFactor * parentArea.showFactor;
 
         height += Render2D.drawTextWithTransfer(
             set.getName(),
@@ -48,7 +50,7 @@ public class SetsListArea extends RenderArea {
             startY,
             width,
             padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor)
         );
         ListValue area = getValueArea();
         if (oldValue != null) {
@@ -58,7 +60,7 @@ public class SetsListArea extends RenderArea {
                 MathHelper.lerp(delta, oldValue.y, area.y),
                 MathHelper.lerp(delta, oldValue.x + oldValue.width, area.x + area.width),
                 MathHelper.lerp(delta, oldValue.y + oldValue.height, area.y + area.height),
-                CategoryArea.makeAColor(70 * showFa, 0.25f),
+                CategoryArea.makeAColor(70 * lowShowFactor, 0.25f),
                 vertexRadius,
                 2
             );
@@ -133,15 +135,13 @@ public class SetsListArea extends RenderArea {
             int width, int height,
             double mouseX, double mouseY
         ) {
-            float showFa = showFactor * lst.showFactor;
-
             boolean oldValue = this.equals(lst.oldValue);
             boolean currentValue = this.equals(lst.getValueArea());
             int color = 180;
             int colorDiff = 255 - color;
             int alpha = (int) ((
-                (color + (oldValue || currentValue ? colorDiff * (oldValue && !currentValue ? 1 - lst.delta : lst.delta) * lst.openFactor : 0)) * (currentValue ? showFa : lst.openFactor)
-            ) * showFa);
+                (color + (oldValue || currentValue ? colorDiff * (oldValue && !currentValue ? 1 - lst.delta : lst.delta) * lst.openFactor : 0)) * (currentValue ? lowShowFactor : lst.openFactor)
+            ) * lst.lowShowFactor);
             context.drawText(
                 textRenderer,
                 value.toString(),

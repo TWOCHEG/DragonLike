@@ -4,7 +4,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import pon.main.Main;
 import pon.main.events.impl.EventFixVelocity;
-import pon.main.events.impl.EventKey;
+import pon.main.events.impl.EventKeyboardInput;
 import pon.main.events.impl.EventPlayerJump;
 import pon.main.events.impl.EventSetVelocity;
 import pon.main.modules.Parent;
@@ -56,7 +56,7 @@ public class Rotations extends Parent {
         }
     }
 
-    public void onKeyInput(EventKey e) {
+    public void onKeyInput(EventKeyboardInput e) {
         if (fullNullCheck()) return;
 
         if (moveFix.getValue() == MoveFix.free) {

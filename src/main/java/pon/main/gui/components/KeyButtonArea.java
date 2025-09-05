@@ -28,12 +28,12 @@ public class KeyButtonArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showFa = showFactor * parentArea.showFactor;
+        float lowShowFactor = showFactor * parentArea.showFactor;
 
         height += Render2D.drawTextWithTransfer(
             keyButton.getName(), context, textRenderer,
             startX, startY, width, padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor)
         );
         height += padding;
         String keyName = (keyButton.getValue() != -1 ? KeyName.get(keyButton.getValue()) : "none").toLowerCase();
@@ -44,14 +44,14 @@ public class KeyButtonArea extends RenderArea {
             startY + height,
             startX + textRenderer.getWidth(keyName) + (padding * 2),
             startY + height + textRenderer.fontHeight + (padding * 2),
-            CategoryArea.makeAColor(100 * showFa, 0.25f),
+            CategoryArea.makeAColor(100 * lowShowFactor, 0.25f),
             bigPadding, 2
         );
         context.drawText(
             textRenderer,
             keyName,
             startX + padding, startY + height + padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa),
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor),
             false
         );
         height += textRenderer.fontHeight + (padding * 2);

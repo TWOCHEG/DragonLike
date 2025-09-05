@@ -162,7 +162,10 @@ public class ConfigManager implements IManager {
                     .sorted(Comparator.comparing(p -> p.getFileName().toString()))
                     .collect(Collectors.toList());
             if (list.isEmpty()) {
-                list.add(configDir.resolve(defaultFileName));
+                list.add(configDir.resolve(defaultFileName + fileExtension));
+                Map<String, Object> map = new HashMap<>();
+                map.put(currentKeyName, true);
+                saveJson(list.getFirst(), map);
             }
             return list;
         } catch (IOException | RuntimeException e) {

@@ -34,7 +34,7 @@ public class StringSetArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showFa = showFactor * parentArea.showFactor;
+        float lowShowFactor = showFactor * parentArea.showFactor;
 
         String strValue = activate ? inputText + (lightFactor > 0.5f ? "|" : "") : set.getValue();
         strValue = strValue.isEmpty() ? "..." : strValue;
@@ -48,7 +48,7 @@ public class StringSetArea extends RenderArea {
             startY,
             width,
             padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor)
         );
 
         int vHeight = 0;
@@ -63,7 +63,7 @@ public class StringSetArea extends RenderArea {
             startY + height - padding,
             startX + width,
             startY + height + vHeight,
-            ColorUtils.fromRGB(color, color, color, 70 * showFa),
+            ColorUtils.fromRGB(color, color, color, 70 * lowShowFactor),
             vertexRadius, 2
         );
 
@@ -81,7 +81,7 @@ public class StringSetArea extends RenderArea {
             startY + height,
             width - padding * 2,
             padding,
-            ColorUtils.fromRGB(255, 255, 255, 255 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 255 * lowShowFactor)
         );
         context.disableScissor();
 

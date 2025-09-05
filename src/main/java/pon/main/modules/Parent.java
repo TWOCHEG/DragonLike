@@ -1,7 +1,11 @@
 package pon.main.modules;
 
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.network.PendingUpdateManager;
+import net.minecraft.client.network.SequencedPacketCreator;
 import net.minecraft.client.resource.language.LanguageManager;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.Main.Categories;
@@ -178,7 +182,12 @@ public abstract class Parent {
         }
     }
 
-    public void onThread() {
+    protected void sendSequencedPacket(SequencedPacketCreator packetCreator) {
+        if (mc.getNetworkHandler() == null || mc.world == null) return;
+
+        int sequence = Math.toIntExact(mc.world.getTime());
+
+        mc.getNetworkHandler().sendPacket(packetCreator.predict(sequence));
     }
 
     public static boolean fullNullCheck() {

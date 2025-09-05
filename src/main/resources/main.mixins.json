@@ -9,6 +9,11 @@
     "MixinScreen",
     "MixinClientConnection",
     "MixinCamera",
+    "MixinKeyboardInput",
+    "MixinMouse",
+    "MixinGameRenderer",
+    "MixinWorldChunk",
+    "MixinClientPlayerInteractionManager",
     "accesors.IClientPlayerEntity",
     "accesors.IInteractionManager"
   ],

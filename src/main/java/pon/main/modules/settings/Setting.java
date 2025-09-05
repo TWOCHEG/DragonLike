@@ -16,7 +16,7 @@ public class Setting<T> {
     public Parent module;
     public Group group = null;
     private Predicate<T> visibility;
-    private Consumer<Setting<T>> onSet;
+    public Consumer<Setting<T>> onSet;
 
     public T defaultValue;
 
@@ -78,6 +78,16 @@ public class Setting<T> {
         } else {
             return value != null ? value : defaultValue;
         }
+    }
+
+    public float getPow2Value() {
+        if (value instanceof Float)
+            return (float) value * (float) value;
+
+        if (value instanceof Integer)
+            return (int) value * (int) value;
+
+        return 0;
     }
 
     public void setValue(T value) {

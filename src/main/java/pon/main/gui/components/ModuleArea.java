@@ -54,14 +54,16 @@ public class ModuleArea extends RenderArea {
                 } else if (g.groupType.equals(Group.GroupType.Horizontal)) {
                     areas.add(new SetsHGroupArea(g, parent));
                 }
+            } else if (set instanceof BlockSelectCmd) {
+                areas.add(new HeaderSetArea(set, parent));
             } else if (set.isList()) {
                 areas.add(new SetsListArea(set, parent));
             } else if (set instanceof ColorSet c) {
                 areas.add(new ColorSetArea(c, parent));
             } else if (set instanceof KeyButton kb) {
                 areas.add(new KeyButtonArea(kb, parent));
-            } else if (set instanceof Header h) {
-                areas.add(new HeaderSetArea(h, parent));
+            } else if (set instanceof Header) {
+                areas.add(new HeaderSetArea(set, parent));
             } else if (set.getValue() instanceof Boolean) {
                 areas.add(new BooleanSetArea(set, parent));
             } else if (set.getValue() instanceof String) {

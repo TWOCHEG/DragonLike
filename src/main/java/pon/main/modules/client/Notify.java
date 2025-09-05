@@ -62,7 +62,7 @@ public class Notify extends Parent {
         Iterator<NotifyData> iterator = notifications.iterator();
         while (iterator.hasNext()) {
             NotifyData n = iterator.next();
-            if (n.visibleFactor == 0 && n.reverseFactor) {
+            if (n.visibleFactor == 0 && n.animForward) {
                 Main.EVENT_BUS.unsubscribe(n);
                 iterator.remove();
             }
@@ -148,7 +148,7 @@ public class Notify extends Parent {
             Text renderText = Text.literal(c.getNotifyText());
             float animFactor = c.visibleFactor;
             float screenWidth = context.getScaledWindowWidth();
-            float offset = c.reverseFactor ?
+            float offset = c.animForward ?
             (-textRenderer.getWidth(renderText) / 2f) * (1 - animFactor) :
             (textRenderer.getWidth(renderText) / 2f) * (1 - animFactor);
 
@@ -188,9 +188,9 @@ public class Notify extends Parent {
         private String notifyText;
 
         public float visibleFactor = 0f;
-        public boolean reverseFactor = false;
+        public boolean animForward = true;
 
-        private Supplier<Boolean> reverseProvider = null;
+        private Supplier<Boolean> animForwardProvider = null;
         private Supplier<String> notifyTextProvider = null;
 
         int totalTickDelta = 0;
@@ -207,8 +207,8 @@ public class Notify extends Parent {
             this.notifyTextProvider = notifyTextProvider;
             return this;
         }
-        public NotifyData setReverseProvider(Supplier<Boolean> reverseProvider) {
-            this.reverseProvider = reverseProvider;
+        public NotifyData setAnimForwardProvider(Supplier<Boolean> animForwardProvider) {
+            this.animForwardProvider = animForwardProvider;
             return this;
         }
 
@@ -247,10 +247,10 @@ public class Notify extends Parent {
         private void onTick(EventTick e) {
             totalTickDelta ++;
 
-            if (liveTime > 0 && reverseProvider == null) {
+            if (liveTime > 0 && animForwardProvider == null) {
                 liveTime--;
                 if (liveTime < 1) {
-                    reverseFactor = true;
+                    animForward = false;
                 }
             }
         }
@@ -264,10 +264,10 @@ public class Notify extends Parent {
 
         @EventHandler
         private void onRender(EventOnRender e) {
-            if (reverseProvider != null) {
-                reverseFactor = reverseProvider.get();
+            if (animForwardProvider != null) {
+                animForward = animForwardProvider.get();
             }
-            visibleFactor = AnimHelper.handle(reverseFactor, visibleFactor);
+            visibleFactor = AnimHelper.handle(animForward, visibleFactor);
         }
     }
 }

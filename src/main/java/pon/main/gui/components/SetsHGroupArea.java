@@ -4,7 +4,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.math.MathHelper;
 import pon.main.modules.settings.Group;
 import pon.main.modules.settings.Setting;
-import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
@@ -14,7 +13,7 @@ import java.util.function.Consumer;
 public class SetsHGroupArea extends RenderArea {
     private final Group group;
 
-    public float showFa = 0;
+    public float lowShowFactor = 0;
 
     private float delta = 1;
     private Setting oldSetting;
@@ -107,7 +106,7 @@ public class SetsHGroupArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        showFa = showFactor * parentArea.showFactor;
+        lowShowFactor = showFactor * parentArea.showFactor;
 
         SelectValueArea currentSVA = getSelectArea(group.getValue());
         SelectValueArea oldSVA = getSelectArea(oldSetting);
@@ -117,7 +116,7 @@ public class SetsHGroupArea extends RenderArea {
             MathHelper.lerp(delta, oldSVA.y, currentSVA.y),
             MathHelper.lerp(delta, oldSVA.x + oldSVA.width, currentSVA.x + currentSVA.width),
             MathHelper.lerp(delta, oldSVA.y + oldSVA.height, currentSVA.y + currentSVA.height),
-            CategoryArea.makeAColor(100 * showFa, 0.25f),
+            CategoryArea.makeAColor(100 * lowShowFactor, 0.25f),
             bigPadding, 2
         );
 

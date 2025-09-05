@@ -13,8 +13,8 @@ import pon.main.modules.ModuleManager;
 
 import pon.main.modules.misc.*;
 import pon.main.modules.client.*;
+import pon.main.modules.render.*;
 import pon.main.modules.world.*;
-// import pon.main.modules.client.*;
 
 public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
@@ -53,7 +53,8 @@ public class Main implements ModInitializer {
 			new AutoResponser(),
             new LagNotifier(),
             new DiscordPresence(),
-            new Rotations()
+            new Rotations(),
+            new FreeCam()
 		);
 	}
 

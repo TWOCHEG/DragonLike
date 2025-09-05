@@ -1,7 +1,5 @@
 package pon.main.modules.settings;
 
-import pon.main.managers.ConfigManager;
-import pon.main.modules.Parent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -16,19 +14,16 @@ import net.minecraft.util.Identifier;
 
 import java.util.*;
 
-public class BlockSelected {
-    private ConfigManager config;
-    private String moduleName;
-    private String key;
-
-    public BlockSelected(Parent module) {
-        this.config = module.getConfig();
-        this.moduleName = module.getName();
-        this.key = "target_blocks";
+public class BlockSelectCmd extends Setting<List<String>> {
+    public BlockSelectCmd(String name, String cmdName) {
+        this(name, cmdName, new ArrayList());
+    }
+    public BlockSelectCmd(String name, String cmdName, List<String> defaultValues) {
+        super(name, defaultValues);
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(
-                ClientCommandManager.literal(moduleName)
+                ClientCommandManager.literal(cmdName)
                     .then(ClientCommandManager.literal("blocksList")
                         .then(ClientCommandManager.literal("clear")
                             .executes(context -> {
@@ -41,9 +36,9 @@ public class BlockSelected {
                         )
                         .then(ClientCommandManager.literal("list")
                             .executes(context -> {
-                                List<String> ids =  config.get(key);
+                                List<String> ids = getValue();
                                 if (!ids.isEmpty()) {
-                                    for (String blockId : (List<String>) config.get(key)) {
+                                    for (String blockId : getValue()) {
                                         Text blockName = getBlockName(blockId);
                                         if (blockName != null) {
                                             MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(blockName);
@@ -111,38 +106,23 @@ public class BlockSelected {
         }
     }
 
-    private void onBlocksAdd(ArrayList<String> ids) {
-        ArrayList<String> listOne = config.get(key, new ArrayList<>());
-
-        Set<String> set = new LinkedHashSet<>(listOne);
-        set.addAll(ids);
-
-        ArrayList<String> combinedList = new ArrayList<>(set);
-
-        config.set(key, combinedList);
+    public void onBlocksAdd(ArrayList<String> ids) {
+        List<String> newList = new ArrayList<>(getValue());
+        newList.addAll(ids);
+        setValue(newList);
     }
 
     private void onBlocksRemove(ArrayList<String> ids) {
-        ArrayList<String> blocks = config.get(key, new ArrayList<>());
-
-        for (String id : ids) {
-            if (blocks.contains(id)) {
-                blocks.remove(id);
-            }
-        }
-
-        config.set(key, blocks);
+        List<String> newList = new ArrayList<>(getValue());
+        newList.removeAll(ids);
+        setValue(newList);
     }
 
     private void onBlocksClear() {
-        config.set(key, new ArrayList<>());
+        setValue(new ArrayList<>());
     }
 
-    public List<String> getValue() {
-        return config.get(key, new ArrayList<>());
-    }
-
-    private String convertId(String id) {
+    public static String convertId(String id) {
         return id.replace("block.", "").replace(".", ":");
     }
 }

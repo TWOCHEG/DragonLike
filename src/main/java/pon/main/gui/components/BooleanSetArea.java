@@ -26,7 +26,7 @@ public class BooleanSetArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showFa = showFactor * parentArea.showFactor;
+        float lowShowFactor = showFactor * parentArea.showFactor;
 
         height += Render2D.drawTextWithTransfer(
             set.getName(),
@@ -36,7 +36,7 @@ public class BooleanSetArea extends RenderArea {
             startY,
             width - buttonWidth - padding * 2,
             padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor)
         );
 
         Render2D.fill(
@@ -45,7 +45,7 @@ public class BooleanSetArea extends RenderArea {
             startY + ((height - padding) / 2 - buttonHeight / 2),
             startX + width,
             startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight,
-            ColorUtils.fromRGB(100, 100, (int) (100 + (200 * enableFactor)), 200 * showFa),
+            ColorUtils.fromRGB(100, 100, (int) (100 + (200 * enableFactor)), 200 * lowShowFactor),
             3, 2
         );
         int buttonX = (int) (startX + width - buttonWidth + 1 + (buttonWidth / 2 * enableFactor));
@@ -55,7 +55,7 @@ public class BooleanSetArea extends RenderArea {
             startY + ((height - padding) / 2 - buttonHeight / 2) + 1,
             (buttonX + buttonWidth / 2) - 1,
             startY + ((height - padding) / 2 - buttonHeight / 2) + buttonHeight - 1,
-            ColorUtils.fromRGB(200, 200, 200, 200 * showFa),
+            ColorUtils.fromRGB(200, 200, 200, 200 * lowShowFactor),
             3, 2
         );
 

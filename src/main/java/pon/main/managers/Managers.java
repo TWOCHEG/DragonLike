@@ -7,6 +7,8 @@ public class Managers {
     public static final FriendsManager FRIENDS = new FriendsManager();
     public static final PlayerManager PLAYER = new PlayerManager();
 
+    public static final AsyncManager ASYNC = new AsyncManager();
+
     public static final ConfigManager CONFIG = new ConfigManager();
 
     public static void init() {
@@ -16,5 +18,6 @@ public class Managers {
     public static void subscribe() {
         EVENT_BUS.subscribe(SERVER);
         EVENT_BUS.subscribe(PLAYER);
+        EVENT_BUS.subscribe(ASYNC);
     }
 }

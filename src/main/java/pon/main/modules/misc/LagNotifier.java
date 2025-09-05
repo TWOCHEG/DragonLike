@@ -51,7 +51,7 @@ public class LagNotifier extends Parent {
             if (!isRubberband && rubberbandNotify.getValue()) {
                 Notify.NotifyData n = new Notify.NotifyData("", Notify.NotifyType.Important)
                         .setNotifyTextProvider(() -> ("rubber band detected! " + decimalFormat.format((5000f - (rubberbandTimer != null ? rubberbandTimer.getTimeMs() : 5000f)) / 1000f)))
-                        .setReverseProvider(() -> (5000f - (rubberbandTimer != null ? rubberbandTimer.getTimeMs() : 5000f)) / 1000f < 0);
+                        .setAnimForwardProvider(() -> (5000f - (rubberbandTimer != null ? rubberbandTimer.getTimeMs() : 5000f)) / 1000f > 0);
                 n.colors.add(new Color(255, 0, 0).getRGB());
                 n.colors.add(new Color(255, 255, 0).getRGB());
                 n.liveTime = 100;
@@ -69,7 +69,7 @@ public class LagNotifier extends Parent {
             if (!isLagging) {
                 Notify.NotifyData n = new Notify.NotifyData("", Notify.NotifyType.Important)
                         .setNotifyTextProvider(() -> ("the server stopped responding " + decimalFormat.format((float) packetTimer.getTimeMs() / 1000f)))
-                        .setReverseProvider(() -> (isLagging));
+                        .setAnimForwardProvider(() -> isLagging);
                 n.colors.add(new Color(255, 0, 0).getRGB());
                 n.colors.add(new Color(255, 255, 0).getRGB());
                 n.liveTime = 100;
@@ -79,8 +79,8 @@ public class LagNotifier extends Parent {
         if (Managers.SERVER.getTPS() < 10 && notifyTimer.passedMs(60000) && tpsNotify.getValue()) {
             if (!isLagging) {
                 Notify.NotifyData n = new Notify.NotifyData(
-                        "! server TPS is below 10 !",
-                        Notify.NotifyType.Important
+                    "! server TPS is below 10 !",
+                    Notify.NotifyType.Important
                 );
                 n.colors.add(new Color(255, 0, 0).getRGB());
                 n.colors.add(new Color(255, 255, 0).getRGB());

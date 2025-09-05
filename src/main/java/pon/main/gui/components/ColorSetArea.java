@@ -31,13 +31,13 @@ public class ColorSetArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showFa = showFactor * parentArea.showFactor;
+        float lowShowFactor = showFactor * parentArea.showFactor;
         int colorWidth = 20;
 
         int headerHeight = padding + Render2D.drawTextWithTransfer(
             color.getName(), context, textRenderer,
             startX, startY, width, padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor)
         );
         height += headerHeight;
 
@@ -50,12 +50,12 @@ public class ColorSetArea extends RenderArea {
         Color c = ColorUtils.reverseColor(new Color(color.getValue(), false));
         Render2D.fill(
             context, (startX + width) - colorWidth, startY + headerHeight, (startX + width), startY + height,
-            ColorUtils.fromRGB(c.getRed(), c.getGreen(), c.getBlue(), 50 * showFa),
+            ColorUtils.fromRGB(c.getRed(), c.getGreen(), c.getBlue(), 50 * lowShowFactor),
             padding, 2
         );
         Render2D.fill(
             context, (startX + width) - colorWidth + 1, startY + headerHeight + 1, (startX + width - 1), startY + height - 1,
-            ColorUtils.fromRGB(color.r(), color.g(), color.b(), color.a() * showFa),
+            ColorUtils.fromRGB(color.r(), color.g(), color.b(), color.a() * lowShowFactor),
             padding, 2
         );
 

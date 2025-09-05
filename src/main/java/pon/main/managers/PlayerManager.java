@@ -113,7 +113,7 @@ public class PlayerManager implements IManager {
     }
 
     @EventHandler
-    public void onKeyInput(EventKey e) {
+    public void onKeyInput(EventKeyboardInput e) {
         Rotations rotations = Main.MODULE_MANAGER.getModule(Rotations.class);
         Main.MODULE_MANAGER.getModule(Rotations.class).onKeyInput(e);
     }

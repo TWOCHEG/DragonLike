@@ -45,7 +45,7 @@ public class NumberSetArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float showFa = showFactor * parentArea.showFactor;
+        float lowShowFactor = showFactor * parentArea.showFactor;
 
         String value = inputting ? inputText : set.getValue().toString();
         int valueWidth = textRenderer.getWidth(value);
@@ -57,7 +57,7 @@ public class NumberSetArea extends RenderArea {
             startY,
             width - (valueWidth - padding * 2) - bigPadding,
             padding,
-            ColorUtils.fromRGB(255, 255, 255, 200 * showFa)
+            ColorUtils.fromRGB(255, 255, 255, 200 * lowShowFactor)
         );
         height += titleHeight;
         Render2D.fill(
@@ -66,7 +66,7 @@ public class NumberSetArea extends RenderArea {
             startY + (height / 2 - (titleHeight + padding * 2) / 2),
             startX + width,
             startY + (height / 2 + (titleHeight + padding * 2) / 2),
-            CategoryArea.makeAColor(70 * showFa, 0.25f),
+            CategoryArea.makeAColor(70 * lowShowFactor, 0.25f),
             vertexRadius, 2
         );
         context.drawText(
@@ -74,7 +74,7 @@ public class NumberSetArea extends RenderArea {
             value,
             startX + width - (valueWidth + padding),
             startY + (height / 2 - (titleHeight + padding * 2) / 2) + padding,
-            ColorUtils.fromRGB(255, 255, 255, (200 - (100 * lightFactor)) * showFa),
+            ColorUtils.fromRGB(255, 255, 255, (200 - (100 * lightFactor)) * lowShowFactor),
             false
         );
         height += padding;
@@ -90,7 +90,7 @@ public class NumberSetArea extends RenderArea {
             startY + height,
             startX + width,
             startY + height + sHeight,
-            ColorUtils.fromRGB(100, 100, 100, (70 + 50 * draggedFactor) * showFa),
+            ColorUtils.fromRGB(100, 100, 100, (70 + 50 * draggedFactor) * lowShowFactor),
             vertexRadius / 2, 2
         );
         int panelWidth = (int) ((width - 1) * lineFactor);
@@ -100,7 +100,7 @@ public class NumberSetArea extends RenderArea {
             startY + height + 1,
             startX + (panelWidth <= vertexRadius + 1 ? vertexRadius + 1 : panelWidth),
             startY + height + sHeight - 1,
-            ColorUtils.fromRGB(200, 200, 200, 70 * showFa),
+            ColorUtils.fromRGB(200, 200, 200, 70 * lowShowFactor),
             vertexRadius / 2, 2
         );
         height += sHeight;

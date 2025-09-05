@@ -30,7 +30,7 @@ public class SetsVGroupArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        float visibleFa = visibleFactor * parentArea.showFactor;
+        float lowShowFactor = visibleFactor * parentArea.showFactor;
 
         for (RenderArea area : areas) {
             height += area.height + bigPadding;
@@ -50,7 +50,7 @@ public class SetsVGroupArea extends RenderArea {
             startY,
             startX + width,
             startY + height,
-            CategoryArea.makeAColor((50 + (20 * showFactor)) * visibleFa, 0.2f, true),
+            CategoryArea.makeAColor((50 + (20 * showFactor)) * lowShowFactor, 0.2f, true),
             5, 2
         );
         int titleX = startX + (width / 2 - textRenderer.getWidth(group.getName()) / 2);
@@ -59,7 +59,7 @@ public class SetsVGroupArea extends RenderArea {
             group.getName() + " " + (group.open ? "+" : "-"),
             titleX,
             startY + padding,
-            ColorUtils.fromRGB(200, 200, 200, 200 * visibleFa),
+            ColorUtils.fromRGB(200, 200, 200, 200 * lowShowFactor),
             false
         );
 
