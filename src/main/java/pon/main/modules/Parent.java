@@ -128,8 +128,8 @@ public abstract class Parent {
 
     @EventHandler
     private void onChangeConfig(OnChangeConfig e) {
-        for (Setting<?> s : getSettings()) {
-            s.init(this);
+        for (Setting s : getSettings()) {
+            s.setValue(getValue(s.getName(), s.defaultValue));
         }
         setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
         setEnable(getValue(ConfigManager.enableKeyName, defaultEnable));
