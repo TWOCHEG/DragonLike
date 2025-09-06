@@ -24,40 +24,28 @@ public abstract class Parent {
     protected final ConfigManager CONFIG;
     protected boolean enable;
     protected int keybindCode;
-    private int defaultKeybind = -1;
-    private boolean defaultEnable = false;
+    private int defaultKeybind;
+    private boolean defaultEnable;
     public static MinecraftClient mc = MinecraftClient.getInstance();
 
     public List<Setting> settings = new LinkedList();
 
-    public Parent(Categories category) {
-        this.NAME = this.getClass().getName();
-        this.CONFIG = new ConfigManager(NAME);
-        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
-        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.CATEGORY = category;;
-    }
     public Parent(String name, Categories category) {
-        this.NAME = name;
-        this.CONFIG = new ConfigManager(name);
-        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
-        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.CATEGORY = category;
+        this(name, category, false);
     }
     public Parent(String name, Categories category, int keybind) {
-        this.NAME = name;
-        this.defaultKeybind = keybind;
-        this.CONFIG = new ConfigManager(name);
-        this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
-        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
-        this.CATEGORY = category;
+        this(name, category, false, keybind);
     }
     public Parent(String name, Categories category, boolean enable) {
+        this(name, category, enable, -1);
+    }
+    public Parent(String name, Categories category, boolean enable, int keybind) {
         this.NAME = name;
+        this.defaultKeybind = keybind;
         this.defaultEnable = enable;
         this.CONFIG = new ConfigManager(name);
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
-        this.keybindCode = getValue(ConfigManager.keybindKeyName, defaultKeybind);
+        setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
         this.CATEGORY = category;
     }
 
@@ -86,11 +74,6 @@ public abstract class Parent {
     }
 
     public void setEnable(boolean value, boolean showNotify) {
-        if (value) {
-            onEnable();
-        } else {
-            onDisable();
-        }
         if (showNotify) {
             String text = value ? "enable" : "disable";
             notify(
@@ -102,6 +85,12 @@ public abstract class Parent {
         }
         CONFIG.set(ConfigManager.enableKeyName, value);
         enable = value;
+
+        if (getEnable()) {
+            onEnable();
+        } else {
+            onDisable();
+        }
     }
     public void setEnable(boolean value) {
         setEnable(value, true);
@@ -191,7 +180,7 @@ public abstract class Parent {
     }
 
     public static boolean fullNullCheck() {
-        return mc.player == null || mc.world == null;
+        return mc.player == null || mc.world == null || Main.MODULE_MANAGER == null;
     }
 
     public boolean isKeyPressed(int button) {

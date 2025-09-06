@@ -52,7 +52,7 @@ public class Nuker extends Parent {
         });
     }
 
-    private final BlockSelectCmd targetBlocks = (BlockSelectCmd) new BlockSelectCmd("/nuker block list", "nuker").onSet(
+    private final BlockSelectCmd targetBlocks = (BlockSelectCmd) new BlockSelectCmd("/nuker block list", "nuker").onChange(
         (s) -> {
             if (mc.world != null) {
                 mc.setScreen(new ChatScreen("/nuker blocksList"));

@@ -42,7 +42,7 @@ public class AutoResponser extends Parent {
     public Setting<Integer> sendDelay = new Setting<>("send delay", 4, 1, 6);
     public Setting<Integer> maxTokens = new Setting<>("max tokens", 3000, 100, 10000);
 
-    public Header header = (Header) new Header("this module works on https://openrouter.ai").onSet((s) -> {
+    public Header header = (Header) new Header("this module works on https://openrouter.ai").onChange((s) -> {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
                 Desktop.getDesktop().browse(new URI("https://openrouter.ai"));

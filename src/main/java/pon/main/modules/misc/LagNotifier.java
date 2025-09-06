@@ -18,7 +18,7 @@ import java.text.DecimalFormat;
 public class LagNotifier extends Parent {
     private final Setting<Boolean> rubberbandNotify = new Setting<>("rubber band", true);
     private final Setting<Boolean> serverResponseNotify = new Setting<>("server response", true);
-    private final Setting<Integer> responseTreshold = new Setting<>("response threshold", 5, 0, 15).visibleProvider(v -> serverResponseNotify.getValue());
+    private final Setting<Integer> responseTreshold = new Setting<>("response threshold", 5, 0, 15).visible(v -> serverResponseNotify.getValue());
     private final Setting<Boolean> tpsNotify = new Setting<>("TPS", true);
 
     private Timer notifyTimer = new Timer();

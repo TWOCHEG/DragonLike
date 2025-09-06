@@ -24,7 +24,7 @@ public class HeaderSetArea extends RenderArea {
     ) {
         float lowShowFactor = showFactor * parentArea.showFactor;
 
-        if (set.onSet != null) {
+        if (set.onChange != null) {
             Render2D.fill(
                 context, startX, startY - padding,
                 startX + width, startY + this.height,
@@ -50,8 +50,8 @@ public class HeaderSetArea extends RenderArea {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (checkHovered(mouseX, mouseY) && set.onSet != null) {
-            set.onSet.accept(set);
+        if (checkHovered(mouseX, mouseY) && set.onChange != null) {
+            set.onChange.accept(set);
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

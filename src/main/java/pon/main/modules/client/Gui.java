@@ -41,7 +41,7 @@ public class Gui extends Parent {
     public Setting<String> image = new Setting<>(
         "image",
         new LinkedList<>(images.keySet())
-    ).onSet((Setting<String> set) -> {
+    ).onChange((Setting<String> set) -> {
         if (!Objects.equals(set.getValue(), "none")) {
             texture = Identifier.of("main", getImages().get(set.getValue()));
         }
@@ -49,7 +49,7 @@ public class Gui extends Parent {
     public Setting<Float> imgSize = new Setting<>(
         "image size",
         0.5f, 0.1f, 2.0f
-    ).visibleProvider(m -> !image.getValue().equals("none"));
+    ).visible(m -> !image.getValue().equals("none"));
 
     public final Setting<Float> animSpeed = new Setting<>("animations speed", 0.5f, 0f, 1f);
 
@@ -66,7 +66,7 @@ public class Gui extends Parent {
 
     public Gui() {
         super("click gui", Main.Categories.client, GLFW.GLFW_KEY_RIGHT_SHIFT);
-        setEnable(false);
+        setEnable(false, false);
     }
 
     public Map<String, String> getImages() {

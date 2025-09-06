@@ -16,7 +16,7 @@ public class Setting<T> {
     public Parent module;
     public Group group = null;
     private Predicate<T> visibility;
-    public Consumer<Setting<T>> onSet;
+    public Consumer<Setting<T>> onChange;
 
     public T defaultValue;
 
@@ -102,8 +102,8 @@ public class Setting<T> {
                 module.setValue(name, value);
             }
 
-            if (onSet != null) {
-                onSet.accept(this);
+            if (onChange != null) {
+                onChange.accept(this);
             }
         }
     }
@@ -140,12 +140,12 @@ public class Setting<T> {
         }
     }
 
-    public Setting<T> visibleProvider(Predicate<T> visibility) {
+    public Setting<T> visible(Predicate<T> visibility) {
         this.visibility = visibility;
         return this;
     }
-    public Setting<T> onSet(Consumer<Setting<T>> onSet) {
-        this.onSet = onSet;
+    public Setting<T> onChange(Consumer<Setting<T>> onChange) {
+        this.onChange = onChange;
         return this;
     }
 
