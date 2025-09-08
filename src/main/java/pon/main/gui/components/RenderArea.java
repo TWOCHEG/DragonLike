@@ -7,17 +7,14 @@ import pon.main.Main;
 import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
-import pon.main.utils.math.Hover;
+import pon.main.utils.math.MouseUtils;
 import pon.main.utils.math.MathUtils;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public abstract class RenderArea {
-    public int x = 0;
-    public int y = 0;
-    public int width = 0;
-    public int height = 0;
+    public int x = 0, y = 0, width = 0, height = 0;
 
     protected RenderArea parentArea = null;
 
@@ -28,7 +25,7 @@ public abstract class RenderArea {
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public TextRenderer textRenderer = mc.textRenderer;
 
-    private final int lightColor = ColorUtils.fromRGB(
+    protected final int lightColor = ColorUtils.fromRGB(
         MathUtils.random(0, 255),
         MathUtils.random(0, 255),
         MathUtils.random(0, 255),
@@ -60,8 +57,7 @@ public abstract class RenderArea {
 
         hoveredFactor = AnimHelper.handle(checkHovered(mouseX, mouseY), hoveredFactor);
 
-        Gui gui = Main.MODULE_MANAGER.getModule(Gui.class);
-        if (gui.showAreas.getValue()) {
+        if (Main.MODULE_MANAGER.getModule(Gui.class).showAreas.getValue()) {
             lightArea(context);
         }
     }
@@ -88,10 +84,6 @@ public abstract class RenderArea {
         );
     }
 
-    public boolean checkHovered(double mouseX, double mouseY) {
-        return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
-    }
-
     public RenderArea getAreaFromPos(List<RenderArea> areas, double mouseX, double mouseY) {
         for (RenderArea area : areas) {
             if (checkHovered(area, mouseX, mouseY)) return area;
@@ -105,11 +97,14 @@ public abstract class RenderArea {
         return null;
     }
 
+    public boolean checkHovered(double mouseX, double mouseY) {
+        return checkHovered(x, y, width, height, mouseX, mouseY);
+    }
     public static boolean checkHovered(int x, int y, int width, int height, double mouseX, double mouseY) {
-        return Hover.hoverCheck(x, y, width, height, mouseX, mouseY);
+        return MouseUtils.hoverCheck(x, y, width, height, mouseX, mouseY);
     }
     public static boolean checkHovered(RenderArea ra, double mouseX, double mouseY) {
-        return Hover.hoverCheck(ra.x, ra.y, ra.width, ra.height, mouseX, mouseY);
+        return checkHovered(ra.x, ra.y, ra.width, ra.height, mouseX, mouseY);
     }
 
     public void animHandler() {}

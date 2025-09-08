@@ -13,18 +13,16 @@ public class AnimHelper {
         Linear;
 
         public float getDiff(float factor, float diff) {
-            if (this.equals(EaseIn)) {
-                return diff * factor;
-            } else if (this.equals(EaseOut)) {
-                return diff * (1 - factor);
-            } else if (this.equals(EaseInOut)) {
-                if (factor < 0.5f) {
+            switch (this) {
+                case EaseIn -> {
                     return diff * factor;
-                } else {
+                } case EaseOut -> {
                     return diff * (1 - factor);
+                } case EaseInOut -> {
+                    return factor < 0.5f ? diff * factor : diff * (1 - factor);
+                } default -> {
+                    return diff;
                 }
-            } else {
-                return diff;
             }
         }
     }

@@ -8,6 +8,7 @@ import pon.main.Main;
 import pon.main.events.impl.EventOnRender;
 import pon.main.events.impl.EventTick;
 import pon.main.gui.components.CategoryArea;
+import pon.main.modules.ModuleManager;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
 import meteordevelopment.orbit.EventHandler;
@@ -43,18 +44,21 @@ public class Notify extends Parent {
         }
     }
 
+    public List<NotifyData> toDelete = new ArrayList<>();
+
     public Notify() {
         super("notify", Main.Categories.client, true);
 
         HudRenderCallback.EVENT.register((context, tickDelta) -> {
+            for (NotifyData notifyData : toDelete) {
+                notifications.remove(notifyData);
+            }
+            toDelete.clear();
+
             TextRenderer textRenderer = mc.textRenderer;
-            // норм
             renderImportant(context, textRenderer);
-            clearList();
             renderSystem(context, textRenderer);
-            clearList();
             renderModule(context, textRenderer);
-            clearList();
         });
     }
 
@@ -268,6 +272,13 @@ public class Notify extends Parent {
                 animForward = animForwardProvider.get();
             }
             visibleFactor = AnimHelper.handle(animForward, visibleFactor);
+
+            if (visibleFactor == 0 && !animForward) {
+                Notify notify = Main.MODULE_MANAGER.getModule(Notify.class);
+                if (!notify.toDelete.contains(this)) {
+                    notify.toDelete.add(this);
+                }
+            }
         }
     }
 }

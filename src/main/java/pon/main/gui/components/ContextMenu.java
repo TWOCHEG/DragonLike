@@ -6,6 +6,8 @@ import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class ContextMenu extends RenderArea {
     private RenderArea context;
@@ -15,6 +17,14 @@ public class ContextMenu extends RenderArea {
     private float showFactor2 = 0;
     private boolean show = true;
 
+    private Supplier<Float> showFactorProvider;
+
+    public ContextMenu(RenderArea context, int[] position, List<RenderArea> areas) {
+        this(null, context, position, areas.toArray(new RenderArea[0]));
+    }
+    public ContextMenu(RenderArea parentArea, RenderArea context, int[] position, List<RenderArea> areas) {
+        this(parentArea, context, position, areas.toArray(new RenderArea[0]));
+    }
     public ContextMenu(RenderArea parentArea, RenderArea context, int[] position, RenderArea[] areas) {
         super(parentArea);
         this.showFactor = 0;
@@ -41,7 +51,12 @@ public class ContextMenu extends RenderArea {
         );
     }
 
-    public ContextMenu setCloseTask(Runnable closeTask) {
+    public ContextMenu showFactorProvider(Supplier<Float> showFactorProvider) {
+        this.showFactorProvider = showFactorProvider;
+        return this;
+    }
+
+    public ContextMenu closeTask(Runnable closeTask) {
         this.closeTask = closeTask;
         return this;
     }
@@ -87,7 +102,11 @@ public class ContextMenu extends RenderArea {
     @Override
     public void animHandler() {
         showFactor2 = AnimHelper.handle(show, showFactor2);
-        showFactor = showFactor2 * parentArea.showFactor;
+        showFactor = showFactor2 * (showFactorProvider != null ? showFactorProvider.get() : parentArea.showFactor);
+
+        if (!show && showFactor == 0 && closeTask != null) {
+            closeTask.run();
+        }
     }
 
     @Override

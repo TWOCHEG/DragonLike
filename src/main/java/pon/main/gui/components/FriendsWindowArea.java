@@ -12,9 +12,7 @@ import pon.main.utils.math.AnimHelper;
 import pon.main.utils.math.Timer;
 import pon.main.utils.render.Render2D;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class FriendsWindowArea extends RenderArea {
     public boolean show = false;
@@ -272,7 +270,7 @@ public class FriendsWindowArea extends RenderArea {
                         }, "+ add"
                     )
                 }
-            ).setCloseTask(this::resetCM));
+            ).closeTask(this::resetCM));
             return true;
         }
         return false;
@@ -416,7 +414,7 @@ public class FriendsWindowArea extends RenderArea {
                             }, "+ add new"
                         )
                     }
-                ).setCloseTask(fwa::resetCM));
+                ).closeTask(fwa::resetCM));
                 return true;
             }
             return super.mouseClicked(mouseX, mouseY, button);

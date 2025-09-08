@@ -73,4 +73,8 @@ public class Render3D {
                 .color(r, g, b, Math.max(a, 0.2f))
                 .normal(0, 1, 0);
     }
+
+    public static double getScaleFactor() {
+        return mc.getWindow().getScaleFactor();
+    }
 }

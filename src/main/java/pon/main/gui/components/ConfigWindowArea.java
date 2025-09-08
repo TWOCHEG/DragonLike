@@ -238,7 +238,7 @@ public class ConfigWindowArea extends RenderArea {
                 new ButtonArea[]{new ButtonArea(
                     this, Managers.CONFIG::createFile, "+ create"
                 )}
-            ).setCloseTask(this::resetCM));
+            ).closeTask(this::resetCM));
             return true;
         }
         return false;
@@ -425,7 +425,7 @@ public class ConfigWindowArea extends RenderArea {
                             ColorUtils.fromRGB(255, 240, 240)
                         ),
                     }
-                ).setCloseTask(parentArea::resetCM));
+                ).closeTask(parentArea::resetCM));
                 return true;
             } else if (hovered) {
                 Managers.CONFIG.setCurrent(config);

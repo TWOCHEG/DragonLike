@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFW;
 import pon.main.managers.Managers;
 import pon.main.modules.ModuleManager;
 
+import pon.main.modules.hud.Hud;
 import pon.main.modules.misc.*;
 import pon.main.modules.client.*;
 import pon.main.modules.render.*;
@@ -54,7 +55,8 @@ public class Main implements ModInitializer {
             new LagNotifier(),
             new DiscordPresence(),
             new Rotations(),
-            new FreeCam()
+            new FreeCam(),
+            new Hud()
 		);
 	}
 

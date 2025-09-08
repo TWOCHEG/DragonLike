@@ -12,11 +12,11 @@ import pon.main.modules.client.Gui;
 import pon.main.utils.math.GetAnimDiff;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
+import pon.main.utils.math.Timer;
 
 import java.util.LinkedList;
 
 public class ModulesGui extends Screen {
-    private int frameCounter;
     private final Gui gui;
 
     private float scrollVelocityY = 0f;
@@ -40,7 +40,8 @@ public class ModulesGui extends Screen {
     private final int categoryPadding = 20;
     private float startY = 40;
     private float startX = 0;
-    private final int categoriesShow;
+
+    private Timer timer = new Timer();
 
     private final HintsArea hints = new HintsArea(
         "RIGHT SHIFT - show keybinds\nMOUSE MIDDLE - bind module\n ⬅ ⬆ ⬇ ⮕ - move gui",
@@ -50,13 +51,12 @@ public class ModulesGui extends Screen {
     public ModulesGui() {
         super(Text.literal("modules"));
         this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
-        this.categoriesShow = 130 * this.gui.categories.size();
     }
 
     @Override
     public void close() {
         open = false;
-        frameCounter = 0;
+        timer.reset();
     }
 
     @Override
@@ -73,7 +73,6 @@ public class ModulesGui extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        frameCounter++;
         animHandler();
 
         LinkedList<CategoryArea> categories = gui.categories;
@@ -92,7 +91,7 @@ public class ModulesGui extends Screen {
         int closeCount = 0;
         for (int i = 0; i < categories.size(); i++) {
             CategoryArea c = categories.get(i);
-            if (frameCounter > (categoriesShow / GetAnimDiff.get100X() / categories.size()) * i) {
+            if (timer.getTimeMs() > ((100L * this.gui.categories.size()) / categories.size()) * i) {
                 c.show = open;
             }
 
@@ -107,10 +106,6 @@ public class ModulesGui extends Screen {
             client.setScreen(null);
         }
         hints.render(context, 5,  context.getScaledWindowHeight() - 5, 0, 0, mouseX, mouseY);
-    }
-
-    public void onChangeLook(EventChangePlayerLook e) {
-        if (Parent.fullNullCheck()) return;
     }
 
     @Override

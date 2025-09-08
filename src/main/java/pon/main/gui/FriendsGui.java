@@ -91,7 +91,7 @@ public class FriendsGui extends Screen {
         for (RenderArea area : areas) {
             if (area.keyPressed(keyCode, scanCode, modifiers)) return true;
         }
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE  ||keyCode == gui.getKeybind()) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE || keyCode == gui.getKeybind()) {
             gui.onDisable();
             return true;
         }

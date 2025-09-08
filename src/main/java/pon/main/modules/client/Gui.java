@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.gui.ConfigsGui;
 import pon.main.gui.FriendsGui;
+import pon.main.gui.HudGui;
 import pon.main.gui.ModulesGui;
 import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.ChoseGuiArea;
@@ -60,7 +61,7 @@ public class Gui extends Parent {
     // render components
     public LinkedList<CategoryArea> categories = null;
     public Screen oldScreen = null;
-    public ChoseGuiArea choseGuiArea = new ChoseGuiArea(ModulesGui.class, ConfigsGui.class, FriendsGui.class);
+    public ChoseGuiArea choseGuiArea = new ChoseGuiArea(ModulesGui.class, ConfigsGui.class, FriendsGui.class, HudGui.class);
     public ConfigWindowArea configWindowArea = new ConfigWindowArea();
     public FriendsWindowArea friendsWindowArea = new FriendsWindowArea();
 

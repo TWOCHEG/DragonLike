@@ -23,11 +23,17 @@ public class ButtonArea extends RenderArea {
     private boolean clicked = false;
     private float clickedFactor = 0;
     private int color = ColorUtils.fromRGB(255, 255, 255);
-
+    // самый ебанутый ряд конструкторов
     public ButtonArea(RenderArea parentArea, Runnable onClick, String name) {
         super(parentArea);
         this.onClick = onClick;
         this.name = name;
+    }
+    public ButtonArea(RenderArea parentArea, Runnable onClick, String name, Supplier<Float> showFactorProvider) {
+        super(parentArea);
+        this.onClick = onClick;
+        this.name = name;
+        this.showFactorProvider = showFactorProvider;
     }
     public ButtonArea(RenderArea parentArea, Runnable onClick, String name, int color) {
         super(parentArea);
