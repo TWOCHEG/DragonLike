@@ -90,38 +90,49 @@ public class HudGui extends Screen {
             List<RenderArea> list = new LinkedList<>();
             for (HudArea area : Hud.areas) {
                 if (area.checkHovered(mouseX, mouseY)) {
-                    list.add(new ButtonArea(
-                        null, () -> {
-                            hud.setStatusHud(area, false);
-                        }, "🗑 delete"
-                    ));
+                    list.add(
+                        new ButtonArea.ButtonBuilder("🗑 delete")
+                            .onClick(() -> {
+                                hud.setStatusHud(area, false);
+                            })
+                            .build()
+                    );
                     break;
                 }
             }
+
             if (list.isEmpty()) {
                 for (HudArea area : Hud.areas) {
                     if (hud.checkEnable(area)) {
-                        ButtonArea buttonArea = new ButtonArea(
-                            null, () -> {
+                        ButtonArea buttonArea = new ButtonArea.ButtonBuilder("- " + hud.getName(area))
+                            .onClick(() -> {
                                 hud.setStatusHud(area, false);
-                            }, "- " + hud.getName(area), ColorUtils.fromRGB(255, 220, 200)
-                        );
+                            })
+                            .color(ColorUtils.fromRGB(255, 220, 200))
+                            .build();
                         list.add(buttonArea);
                     } else {
-                        ButtonArea buttonArea = new ButtonArea(
-                            null, () -> {
+                        ButtonArea buttonArea = new ButtonArea.ButtonBuilder("+ " + hud.getName(area))
+                            .onClick(() -> {
                                 hud.setStatusHud(area, true);
-                            }, "+ " + hud.getName(area)
-                        );
+                            })
+                            .build();
+
                         list.add(buttonArea);
                     }
                 }
             }
             if (!list.isEmpty()) {
-                setCM(new ContextMenu(
-                    null, new int[]{(int) mouseX, (int) mouseY}, list
-                ).closeTask(this::resetCM).showFactorProvider(() -> openFactor));
+                setCM(
+                    new ContextMenu.CMBuilder()
+                        .areas(list)
+                        .position(new double[]{mouseX, mouseY})
+                        .closeTask(this::resetCM)
+                        .showFactorProvider(() -> openFactor)
+                        .build()
+                );
             }
+
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

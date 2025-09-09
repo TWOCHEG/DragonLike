@@ -10,6 +10,7 @@ import pon.main.utils.math.AnimHelper;
 import pon.main.utils.math.MouseUtils;
 import pon.main.utils.math.MathUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,9 +19,9 @@ public abstract class RenderArea {
 
     protected RenderArea parentArea = null;
 
-    public float showFactor = 1f; // the value does not always change
+    public float showFactor = 1f;
 
-    public List<RenderArea> areas = new LinkedList<>();
+    public List<RenderArea> areas = new ArrayList<>();
 
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public TextRenderer textRenderer = mc.textRenderer;

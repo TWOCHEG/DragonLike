@@ -52,12 +52,10 @@ public class ConfigWindowArea extends RenderArea {
         super();
         Main.EVENT_BUS.subscribe(this);
 
-        this.buttonArea = new ButtonArea(
-                this, () -> {
-            Managers.CONFIG.openFilesDir();
-        },
-                "open in explorer"
-        );
+        this.buttonArea = new ButtonArea.ButtonBuilder("open in explorer")
+            .onClick(Managers.CONFIG::openFilesDir)
+            .build();
+
         for (Path path : Managers.CONFIG.getFiles()) {
             areas.add(new ConfigArea(
                     this, path
@@ -233,12 +231,18 @@ public class ConfigWindowArea extends RenderArea {
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && checkHovered(mouseX, mouseY)) {
             int x = (int) mouseX;
             int y = (int) mouseY;
-            setCM(new ContextMenu(
-                this, null, new int[]{x, y},
-                new ButtonArea[]{new ButtonArea(
-                    this, Managers.CONFIG::createFile, "+ create"
-                )}
-            ).closeTask(this::resetCM));
+            setCM(
+                new ContextMenu.CMBuilder()
+                    .position(new int[]{x, y})
+                    .parentArea(this)
+                    .areas(new ButtonArea[]{
+                        new ButtonArea.ButtonBuilder("+ create")
+                            .onClick(Managers.CONFIG::createFile)
+                            .build()
+                    })
+                    .build()
+            );
+
             return true;
         }
         return false;
@@ -403,29 +407,32 @@ public class ConfigWindowArea extends RenderArea {
             if (hovered && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                 int x = (int) mouseX;
                 int y = (int) mouseY;
-                setCM(new ContextMenu(
-                    parentArea, this, new int[]{x, y},
-                    new ButtonArea[]{
-                        new ButtonArea(
-                            this, () -> {
-                                inputting = true;
-                                inputText = getName(config);
-                            }, "✏ rename"
-                        ),
-                        new ButtonArea(
-                            this, () -> {
-                                Managers.CONFIG.setCurrent(config);
-                            }, "✔ set current",
-                            ColorUtils.fromRGB(240, 255, 240)
-                        ),
-                        new ButtonArea(
-                            this, () -> {
-                                Managers.CONFIG.deleteFile(config);
-                            }, "❌ delete",
-                            ColorUtils.fromRGB(255, 240, 240)
-                        ),
-                    }
-                ).closeTask(parentArea::resetCM));
+                setCM(
+                    new ContextMenu.CMBuilder()
+                        .position(new int[]{x, y})
+                        .parentArea(parentArea)
+                        .areas(new ButtonArea[]{
+                            new ButtonArea.ButtonBuilder("✏ rename")
+                                .onClick(() -> {
+                                    inputting = true;
+                                    inputText = getName(config);
+                                })
+                                .build(),
+                            new ButtonArea.ButtonBuilder("✔ set current")
+                                .onClick(() -> {
+                                    Managers.CONFIG.setCurrent(config);
+                                })
+                                .build(),
+                            new ButtonArea.ButtonBuilder("❌ delete")
+                                .onClick(() -> {
+                                    Managers.CONFIG.deleteFile(config);
+                                })
+                                .color(ColorUtils.fromRGB(255, 230, 230))
+                                .build(),
+                        })
+                        .build()
+                );
+
                 return true;
             } else if (hovered) {
                 Managers.CONFIG.setCurrent(config);

@@ -49,23 +49,26 @@ public class Hud extends Parent {
                 a.y + a.height + areasOffset > b.y;
     }
 
-    private void resolveCollision(HudArea a, HudArea b) {
+    private int[] resolveCollision(HudArea a, HudArea b) {
+        int x = a.x;
+        int y = a.y;
         double overlapX = Math.min(a.x + a.width + areasOffset, b.x + b.width + areasOffset) - Math.max(a.x, b.x);
         double overlapY = Math.min(a.y + a.height + areasOffset, b.y + b.height + areasOffset) - Math.max(a.y, b.y);
 
         if (overlapX < overlapY) {
-            if (a.x < b.x) {
-                a.x -= overlapX;
+            if (x < b.x) {
+                x -= overlapX;
             } else {
-                a.x += overlapX;
+                x += overlapX;
             }
         } else {
-            if (a.y < b.y) {
-                a.y -= overlapY;
+            if (y < b.y) {
+                y -= overlapY;
             } else {
-                a.y += overlapY;
+                y += overlapY;
             }
         }
+        return new int[] {x, y};
     }
 
     public void render(DrawContext context) {
@@ -73,25 +76,23 @@ public class Hud extends Parent {
             LinkedTreeMap<String, Object> map = getValue(getName(hudArea), new LinkedTreeMap<>());
             if ((boolean) map.getOrDefault("enable", false) && (map.get("x") != null && map.get("y") != null)) {
                 double[] pos = MouseUtils.getPos();
+                int x = hudArea.x;
+                int y = hudArea.y;
 
                 for (HudArea other : areas) {
                     if (hudArea.equals(other)) continue;
                     if (isColliding(hudArea, other)) {
-                        resolveCollision(hudArea, other);
-                        context.drawBorder(
-                            other.x - areasOffset,
-                            other.y - areasOffset,
-                            other.width + areasOffset,
-                            other.height + areasOffset,
-                            ColorUtils.fromRGB(255, 255, 255, 150 * hudArea.draggedFactor)
-                        );
+                        int[] hudPos = resolveCollision(hudArea, other);
+                        x = hudPos[0];
+                        y = hudPos[1];
+                        other.showColisionBorders();
                     }
                 }
 
                 hudArea.render(
                     context,
-                    Math.clamp(hudArea.x, offset, context.getScaledWindowWidth() - hudArea.width - offset),
-                    Math.clamp(hudArea.y, offset, context.getScaledWindowHeight() - hudArea.height - offset),
+                    Math.clamp(x, offset, context.getScaledWindowWidth() - hudArea.width - offset),
+                    Math.clamp(y, offset, context.getScaledWindowHeight() - hudArea.height - offset),
                     -1, -1,
                     pos[0], pos[1]
                 );

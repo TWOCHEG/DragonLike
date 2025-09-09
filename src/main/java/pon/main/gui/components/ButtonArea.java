@@ -7,74 +7,18 @@ import pon.main.utils.math.AnimHelper;
 import pon.main.utils.math.GetAnimDiff;
 import pon.main.utils.render.Render2D;
 
-import java.awt.*;
 import java.util.function.Supplier;
 
 public class ButtonArea extends RenderArea {
-    private Runnable onClick;
-    private String name;
-
-    private Supplier<String> nameProvider;
-    private Supplier<Integer> colorProvider;
-    private Supplier<Float> showFactorProvider;
-    private boolean backgroundColor = false;
-    private boolean centered = false;
+    private ButtonBuilder params;
 
     private boolean clicked = false;
     private float clickedFactor = 0;
-    private int color = ColorUtils.fromRGB(255, 255, 255);
-    // самый ебанутый ряд конструкторов
-    public ButtonArea(RenderArea parentArea, Runnable onClick, String name) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.name = name;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, String name, Supplier<Float> showFactorProvider) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.name = name;
-        this.showFactorProvider = showFactorProvider;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, String name, int color) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.name = name;
-        this.color = color;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, Supplier<String> nameProvider) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.nameProvider = nameProvider;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, Supplier<String> nameProvider, Supplier<Integer> colorProvider) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.nameProvider = nameProvider;
-        this.colorProvider = colorProvider;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, Supplier<String> nameProvider, Supplier<Integer> colorProvider, Supplier<Float> showFactorProvider) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.nameProvider = nameProvider;
-        this.colorProvider = colorProvider;
-        this.showFactorProvider = showFactorProvider;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, Supplier<String> nameProvider, Supplier<Integer> colorProvider, Supplier<Float> showFactorProvider, boolean backgroundColor) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.nameProvider = nameProvider;
-        this.colorProvider = colorProvider;
-        this.showFactorProvider = showFactorProvider;
-        this.backgroundColor = backgroundColor;
-    }
-    public ButtonArea(RenderArea parentArea, Runnable onClick, Supplier<String> nameProvider, Supplier<Integer> colorProvider, Supplier<Float> showFactorProvider, boolean backgroundColor, boolean centered) {
-        super(parentArea);
-        this.onClick = onClick;
-        this.nameProvider = nameProvider;
-        this.colorProvider = colorProvider;
-        this.showFactorProvider = showFactorProvider;
-        this.backgroundColor = backgroundColor;
-        this.centered = centered;
+
+    public ButtonArea(ButtonBuilder params) {
+        super(params.parentArea);
+        this.showFactor = 0;
+        this.params = params;
     }
 
     @Override
@@ -84,32 +28,41 @@ public class ButtonArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        width = width <= 0 ? mc.textRenderer.getWidth(name) + (padding * 2) : width;
+        width = width <= 0 ? mc.textRenderer.getWidth(params.name) + (padding * 2) : width;
         height = height <= 0 ? mc.textRenderer.fontHeight + (padding * 2): height;
-        int bgColor;
-        if (backgroundColor) {
-            bgColor = ColorUtils.applyOpacity(colorProvider.get(), ((80 + (30 * clickedFactor) + (30 * hoveredFactor)) * showFactor) / 255);
-        } else {
-            bgColor = ColorUtils.fromRGB(0, 0, 0, (80 + (30 * clickedFactor) + (30 * hoveredFactor)) * showFactor);
+        if (params.bgRenderType.equals(ButtonBuilder.bgType.full)) {
+            int bgColor;
+            if (params.backgroundColor) {
+                bgColor = ColorUtils.applyOpacity(params.colorProvider.get(), ((80 + (30 * clickedFactor) + (30 * hoveredFactor)) * showFactor) / 255);
+            } else {
+                bgColor = ColorUtils.fromRGB(0, 0, 0, (80 + (30 * clickedFactor) + (30 * hoveredFactor)) * showFactor);
+            }
+            Render2D.fill(
+                    context, startX, startY,
+                    startX + width,
+                    startY + height,
+                    bgColor,
+                    bigPadding, 2
+            );
+        } else if (params.bgRenderType.equals(ButtonBuilder.bgType.noBgHover)) {
+            context.fill(
+                startX, startY,
+                startX + width,
+                startY + height,
+                ColorUtils.fromRGB(0, 0, 0, ((30 * clickedFactor) + (30 * hoveredFactor)) * showFactor)
+            );
         }
-        Render2D.fill(
-            context, startX, startY,
-            startX + width,
-            startY + height,
-            bgColor,
-            bigPadding, 2
-        );
-        if (colorProvider != null && !backgroundColor) {
-            color = colorProvider.get();
+        if (params.colorProvider != null && !params.backgroundColor) {
+            params.color = params.colorProvider.get();
         }
-        if (nameProvider != null) {
-            name = nameProvider.get();
+        if (params.nameProvider != null) {
+            params.name = params.nameProvider.get();
         }
-        int textX = centered ? startX + ((width / 2) - (mc.textRenderer.getWidth(name) / 2)) : startX + padding;
-        int textY = centered ? startY + ((height / 2) - (mc.textRenderer.fontHeight / 2)) : startY + padding;
+        int textX = params.centered ? startX + ((width / 2) - (mc.textRenderer.getWidth(params.name) / 2)) : startX + padding;
+        int textY = params.centered ? startY + ((height / 2) - (mc.textRenderer.fontHeight / 2)) : startY + padding;
         context.drawText(
-            mc.textRenderer, name, textX, textY,
-            ColorUtils.applyOpacity(color, ((200 - (50 * clickedFactor)) * showFactor) / 255),
+            mc.textRenderer, params.name, textX, textY,
+            ColorUtils.applyOpacity(params.color, ((200 - (50 * clickedFactor)) * showFactor) / 255),
             false
         );
 
@@ -120,7 +73,7 @@ public class ButtonArea extends RenderArea {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (checkHovered(mouseX, mouseY) && button == GLFW.GLFW_MOUSE_BUTTON_LEFT && showFactor > 0.9f) {
             clicked = true;
-            onClick.run();
+            params.onClick.run();
             parentArea.onProgramEnd();
             return true;
         }
@@ -136,11 +89,91 @@ public class ButtonArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        if (showFactorProvider != null) {
-            showFactor = showFactorProvider.get();
+        if (params.showFactorProvider != null) {
+            showFactor = params.showFactorProvider.get();
         } else {
-            showFactor = parentArea.showFactor;
+            showFactor = parentArea != null ? parentArea.showFactor : 0;
         }
         clickedFactor = AnimHelper.handle(clicked, clickedFactor, GetAnimDiff.get() * 2);
+    }
+
+    public static class ButtonBuilder {
+        private Runnable onClick;
+
+        private String name;
+        private Supplier<String> nameProvider;
+
+        private Supplier<Integer> colorProvider;
+        private int color = ColorUtils.fromRGB(255, 255, 255);
+
+        private Supplier<Float> showFactorProvider;
+
+        private boolean backgroundColor = false;
+        private boolean centered = false;
+
+        private bgType bgRenderType = bgType.full;
+
+        private RenderArea parentArea;
+
+        public enum bgType {
+            full, noBgHover, noBg
+        }
+
+        public ButtonBuilder(String name) {
+            this.name = name;
+        }
+        public ButtonBuilder() {}
+
+        public ButtonArea build() {
+            return new ButtonArea(this);
+        }
+
+        public ButtonBuilder parentArea(RenderArea parentArea) {
+            this.parentArea = parentArea;
+            return this;
+        }
+
+        public ButtonBuilder centered(boolean centered) {
+            this.centered = centered;
+            return this;
+        }
+
+        public ButtonBuilder bgRenderType(bgType bgRenderType) {
+            this.bgRenderType = bgRenderType;
+            return this;
+        }
+
+        public ButtonBuilder onClick(Runnable onClick) {
+            this.onClick = onClick;
+            return this;
+        }
+
+        public ButtonBuilder nameProvider(Supplier<String> nameProvider) {
+            this.nameProvider = nameProvider;
+            return this;
+        }
+
+        public ButtonBuilder colorProvider(Supplier<Integer> colorProvider) {
+            return colorProvider(colorProvider, false);
+        }
+        public ButtonBuilder colorProvider(Supplier<Integer> colorProvider, boolean backgroundColor) {
+            this.colorProvider = colorProvider;
+            this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public ButtonBuilder color(int color) {
+            return color(color, backgroundColor);
+        }
+        public ButtonBuilder color(int color, boolean backgroundColor) {
+            this.color = color;
+            this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public ButtonBuilder showFactorProvider(Supplier<Float> showFactorProvider) {
+            this.showFactorProvider = showFactorProvider;
+            return this;
+        }
     }
 }

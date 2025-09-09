@@ -5,32 +5,22 @@ import pon.main.Main;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
 public class ContextMenu extends RenderArea {
-    private RenderArea context;
-
-    private Runnable closeTask;
-
     private float showFactor2 = 0;
     private boolean show = true;
 
-    private Supplier<Float> showFactorProvider;
+    private CMBuilder params;
 
-    public ContextMenu(RenderArea context, int[] position, List<RenderArea> areas) {
-        this(null, context, position, areas.toArray(new RenderArea[0]));
-    }
-    public ContextMenu(RenderArea parentArea, RenderArea context, int[] position, List<RenderArea> areas) {
-        this(parentArea, context, position, areas.toArray(new RenderArea[0]));
-    }
-    public ContextMenu(RenderArea parentArea, RenderArea context, int[] position, RenderArea[] areas) {
-        super(parentArea);
+    public ContextMenu(CMBuilder params) {
+        super(params.parentArea);
+        this.params = params;
         this.showFactor = 0;
-        this.context = context;
-
-        Collections.addAll(this.areas, areas);
+        this.areas.addAll(params.areas);
 
         for (RenderArea area : this.areas) {
             area.parentArea = this;
@@ -39,26 +29,8 @@ public class ContextMenu extends RenderArea {
 
         this.width = 80;
 
-        this.x = position[0];
-        this.y = position[1];
-    }
-    public ContextMenu(RenderArea parentArea, RenderArea context, double[] position, RenderArea[] areas) {
-        this(
-            parentArea,
-            context,
-            new int[]{(int) position[0], (int) position[1]},
-            areas
-        );
-    }
-
-    public ContextMenu showFactorProvider(Supplier<Float> showFactorProvider) {
-        this.showFactorProvider = showFactorProvider;
-        return this;
-    }
-
-    public ContextMenu closeTask(Runnable closeTask) {
-        this.closeTask = closeTask;
-        return this;
+        this.x = params.position[0];
+        this.y = params.position[1];
     }
 
     @Override
@@ -72,8 +44,8 @@ public class ContextMenu extends RenderArea {
         startY = startY <= 0 ? this.y : startY;
         width = width <= 0 ? 80 : width;
 
-        if (!show && showFactor == 0 && closeTask != null) {
-            closeTask.run();
+        if (!show && showFactor == 0 && params.closeTask != null) {
+            params.closeTask.run();
         }
 
         height = padding * 2;
@@ -102,10 +74,10 @@ public class ContextMenu extends RenderArea {
     @Override
     public void animHandler() {
         showFactor2 = AnimHelper.handle(show, showFactor2);
-        showFactor = showFactor2 * (showFactorProvider != null ? showFactorProvider.get() : parentArea.showFactor);
+        showFactor = showFactor2 * (params.showFactorProvider != null ? params.showFactorProvider.get() : parentArea.showFactor);
 
-        if (!show && showFactor == 0 && closeTask != null) {
-            closeTask.run();
+        if (!show && showFactor == 0 && params.closeTask != null) {
+            params.closeTask.run();
         }
     }
 
@@ -130,5 +102,58 @@ public class ContextMenu extends RenderArea {
     @Override
     public void onProgramEnd() {
         show = false;
+    }
+
+    public static class CMBuilder {
+        private List<RenderArea> areas = new ArrayList<>();
+        private RenderArea context;
+        private RenderArea parentArea;
+        private int[] position;
+        private Runnable closeTask;
+        private Supplier<Float> showFactorProvider;
+
+        public CMBuilder(RenderArea context) {
+            this.context = context;
+        }
+        public CMBuilder() {}
+
+        public ContextMenu build() {
+            return new ContextMenu(this);
+        }
+
+        public CMBuilder areas(List<RenderArea> renderAreas) {
+            this.areas = renderAreas;
+            return this;
+        }
+        public CMBuilder areas(RenderArea[] renderAreas) {
+            this.areas = Arrays.stream(renderAreas).toList();
+            return this;
+        }
+        public CMBuilder areas(RenderArea renderAreas) {
+            return areas(List.of(renderAreas));
+        }
+
+        public CMBuilder parentArea(RenderArea parentArea) {
+            this.parentArea = parentArea;
+            return this;
+        }
+
+        public CMBuilder position(int[] position) {
+            this.position = position;
+            return this;
+        }
+        public CMBuilder position(double[] position) {
+            return position(new int[]{(int) position[0], (int) position[1]});
+        }
+
+        public CMBuilder closeTask(Runnable closeTask) {
+            this.closeTask = closeTask;
+            return this;
+        }
+
+        public CMBuilder showFactorProvider(Supplier<Float> showFactorProvider) {
+            this.showFactorProvider = showFactorProvider;
+            return this;
+        }
     }
 }

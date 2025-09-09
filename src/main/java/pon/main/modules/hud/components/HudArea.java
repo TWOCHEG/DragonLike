@@ -9,6 +9,7 @@ import pon.main.modules.client.Gui;
 import pon.main.modules.hud.Hud;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
+import pon.main.utils.math.Timer;
 
 public abstract class HudArea extends RenderArea {
     protected Hud hud;
@@ -17,6 +18,11 @@ public abstract class HudArea extends RenderArea {
     public float draggedFactor = 0;
 
     public double areaClickX, areaClickY;
+
+    private Timer timer = new Timer();
+
+    private float colisionBorderFactor = 0;
+    private boolean colisionBorderShow = false;
 
     public HudArea(Hud hud) {
         super();
@@ -37,8 +43,23 @@ public abstract class HudArea extends RenderArea {
         animHandler();
         draggedFactor = AnimHelper.handle(dragged, draggedFactor);
 
+        if (timer.getTimeMs() > 250 && colisionBorderShow) {
+            colisionBorderShow = false;
+        }
+        colisionBorderFactor = AnimHelper.handle(colisionBorderShow, colisionBorderFactor);
+
         if (Main.MODULE_MANAGER.getModule(Gui.class).showAreas.getValue()) {
             lightArea(context);
+        }
+
+        if (colisionBorderFactor > 0) {
+            context.drawBorder(
+                x - hud.areasOffset,
+                y - hud.areasOffset,
+                width + hud.areasOffset,
+                height + hud.areasOffset,
+                ColorUtils.fromRGB(255, 255, 255, (150 * colisionBorderFactor) * showFactor)
+            );
         }
 
         if (draggedFactor != 0) {
@@ -90,5 +111,10 @@ public abstract class HudArea extends RenderArea {
             setPos(x, y);
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    public void showColisionBorders() {
+        timer.reset();
+        colisionBorderShow = true;
     }
 }

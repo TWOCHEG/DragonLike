@@ -11,49 +11,18 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ButtonInputArea extends RenderArea {
-    private String name;
-
-    private Supplier<String> nameProvider;
-    private Supplier<Integer> colorProvider;
-    private Supplier<Float> showFactorProvider;
-    private Consumer<String> onFinal;
-
     private boolean inputting = false;
     private String inputText = "";
     private float inputFactor = 0;
     private float lightFactor = 0;
     private boolean light = false;
 
-    private int color = ColorUtils.fromRGB(255, 255, 255);
+    private ButtonInputBuilder params;
 
-    public ButtonInputArea(RenderArea parentArea, Consumer<String> onFinal, String name) {
-        super(parentArea);
-        this.onFinal = onFinal;
-        this.name = name;
-    }
-    public ButtonInputArea(RenderArea parentArea, Consumer<String> onFinal, String name, int color) {
-        super(parentArea);
-        this.onFinal = onFinal;
-        this.name = name;
-        this.color = color;
-    }
-    public ButtonInputArea(RenderArea parentArea, Consumer<String> onFinal, Supplier<String> nameProvider) {
-        super(parentArea);
-        this.onFinal = onFinal;
-        this.nameProvider = nameProvider;
-    }
-    public ButtonInputArea(RenderArea parentArea, Consumer<String> onFinal, Supplier<String> nameProvider, Supplier<Integer> colorProvider) {
-        super(parentArea);
-        this.onFinal = onFinal;
-        this.nameProvider = nameProvider;
-        this.colorProvider = colorProvider;
-    }
-    public ButtonInputArea(RenderArea parentArea, Consumer<String> onFinal, Supplier<String> nameProvider, Supplier<Integer> colorProvider, Supplier<Float> showFactorProvider) {
-        super(parentArea);
-        this.onFinal = onFinal;
-        this.nameProvider = nameProvider;
-        this.colorProvider = colorProvider;
-        this.showFactorProvider = showFactorProvider;
+    public ButtonInputArea(ButtonInputBuilder params) {
+        super(params.parentArea);
+        this.showFactor = 0;
+        this.params = params;
     }
 
     @Override
@@ -63,28 +32,44 @@ public class ButtonInputArea extends RenderArea {
         int width, int height,
         double mouseX, double mouseY
     ) {
-        width = width <= 0 ? mc.textRenderer.getWidth(name) + (padding * 2) : width;
+        width = width <= 0 ? mc.textRenderer.getWidth(params.name) + (padding * 2) : width;
         height = inputting ? this.height : mc.textRenderer.fontHeight + (padding * 2);
 
-        Render2D.fill(
-            context, startX, startY,
-            startX + width,
-            startY + height,
-            ColorUtils.fromRGB(0, 0, 0, (80 + (30 * hoveredFactor)) * parentArea.showFactor),
-            bigPadding, 2
-        );
-        if (colorProvider != null) {
-            color = colorProvider.get();
+        if (params.bgRenderType.equals(ButtonInputBuilder.bgType.full)) {
+            int bgColor;
+            if (params.backgroundColor) {
+                bgColor = ColorUtils.applyOpacity(params.colorProvider.get(), ((80 + (30 * hoveredFactor)) * showFactor) / 255);
+            } else {
+                bgColor = ColorUtils.fromRGB(0, 0, 0, (80 + (30 * hoveredFactor)) * showFactor);
+            }
+            Render2D.fill(
+                context, startX, startY,
+                startX + width,
+                startY + height,
+                bgColor,
+                bigPadding, 2
+            );
+        } else if (params.bgRenderType.equals(ButtonInputBuilder.bgType.noBgHover)) {
+            context.fill(
+                startX, startY,
+                startX + width,
+                startY + height,
+                ColorUtils.fromRGB(0, 0, 0, ((30 * hoveredFactor)) * showFactor)
+            );
         }
-        if (nameProvider != null) {
-            name = nameProvider.get();
+
+        if (params.colorProvider != null) {
+            params.color = params.colorProvider.get();
+        }
+        if (params.nameProvider != null) {
+            params.name = params.nameProvider.get();
         }
         String input = (inputText.isEmpty() ? "..." : inputText) + (lightFactor > 0.5f ? "|" : "");
 
         context.enableScissor(startX, startY, startX + width, startY + height);
         context.drawText(
-            mc.textRenderer, name, (int) (startX + padding - (width * inputFactor)), startY + padding,
-            ColorUtils.applyOpacity(color, ((200 * (1 - inputFactor)) * parentArea.showFactor) / 255),
+            mc.textRenderer, params.name, (int) (startX + padding - (width * inputFactor)), startY + padding,
+            ColorUtils.applyOpacity(params.color, ((200 * (1 - inputFactor)) * parentArea.showFactor) / 255),
             false
         );
 
@@ -122,7 +107,7 @@ public class ButtonInputArea extends RenderArea {
                 inputting = false;
             } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
                 inputting = false;
-                onFinal.accept(inputText);
+                params.onEnter.accept(inputText);
                 parentArea.onProgramEnd();
             }
             return true;
@@ -151,10 +136,92 @@ public class ButtonInputArea extends RenderArea {
         }
         lightFactor = AnimHelper.handle(light, lightFactor);
         inputFactor = AnimHelper.handle(inputting, inputFactor);
-        if (showFactorProvider != null) {
-            showFactor = showFactorProvider.get();
+        if (params.showFactorProvider != null) {
+            showFactor = params.showFactorProvider.get();
         } else {
-            showFactor = parentArea.showFactor;
+            showFactor = parentArea != null ? parentArea.showFactor : 0;
+        }
+    }
+
+    public static class ButtonInputBuilder {
+        private Consumer<String> onEnter;
+
+        private String name;
+        private Supplier<String> nameProvider;
+
+        private Supplier<Integer> colorProvider;
+        private int color = ColorUtils.fromRGB(255, 255, 255);
+
+        private Supplier<Float> showFactorProvider;
+
+        private boolean backgroundColor = false;
+        private boolean centered = false;
+
+        private bgType bgRenderType = bgType.full;
+
+        private RenderArea parentArea;
+
+        private String inputHeader;
+
+        public enum bgType {
+            full, noBgHover, noBg
+        }
+
+        public ButtonInputBuilder(String name) {
+            this.name = name;
+        }
+        public ButtonInputBuilder() {}
+
+        public ButtonInputArea build() {
+            return new ButtonInputArea(this);
+        }
+
+        public ButtonInputBuilder parentArea(RenderArea parentArea) {
+            this.parentArea = parentArea;
+            return this;
+        }
+
+        public ButtonInputBuilder inputHeader(String inputHeader) {
+            this.inputHeader = inputHeader;
+            return this;
+        }
+
+        public ButtonInputBuilder bgRenderType(bgType bgRenderType) {
+            this.bgRenderType = bgRenderType;
+            return this;
+        }
+
+        public ButtonInputBuilder onEnter(Consumer<String> onEnter) {
+            this.onEnter = onEnter;
+            return this;
+        }
+
+        public ButtonInputBuilder nameProvider(Supplier<String> nameProvider) {
+            this.nameProvider = nameProvider;
+            return this;
+        }
+
+        public ButtonInputBuilder colorProvider(Supplier<Integer> colorProvider) {
+            return colorProvider(colorProvider, false);
+        }
+        public ButtonInputBuilder colorProvider(Supplier<Integer> colorProvider, boolean backgroundColor) {
+            this.colorProvider = colorProvider;
+            this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public ButtonInputBuilder color(int color) {
+            return color(color, backgroundColor);
+        }
+        public ButtonInputBuilder color(int color, boolean backgroundColor) {
+            this.color = color;
+            this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public ButtonInputBuilder showFactorProvider(Supplier<Float> showFactorProvider) {
+            this.showFactorProvider = showFactorProvider;
+            return this;
         }
     }
 }

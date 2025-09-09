@@ -242,15 +242,16 @@ public class FriendsWindowArea extends RenderArea {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (super.mouseClicked(mouseX, mouseY, button)) return true;
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            setCM(new ContextMenu(
-                this, this, new double[] {mouseX, mouseY},
-                new RenderArea[] {
-                    new ButtonInputArea(
-                        this, (s) -> {
+            setCM(
+            new ContextMenu.CMBuilder()
+                .position(new double[] {mouseX, mouseY})
+                .areas(
+                    new ButtonInputArea.ButtonInputBuilder("+ add")
+                        .onEnter((s) -> {
                             if (!FriendsManager.friends.contains(s)) {
                                 Managers.FRIENDS.addFriend(s);
                                 addFriendArea(new FriendArea(
-                                    this, s
+                                        this, s
                                 ));
                             } else {
                                 FriendArea fa = getFriendArea(s);
@@ -267,10 +268,14 @@ public class FriendsWindowArea extends RenderArea {
                                 changeFriendsY(factor);
                                 fa.light();
                             }
-                        }, "+ add"
-                    )
-                }
-            ).closeTask(this::resetCM));
+                        })
+                        .build()
+                )
+                .parentArea(this)
+                .closeTask(this::resetCM)
+                .build()
+            );
+
             return true;
         }
         return false;
@@ -291,21 +296,22 @@ public class FriendsWindowArea extends RenderArea {
             this.showFactor = 0;
 
             areas.add(
-                new ButtonArea(
-                    this,
-                    () -> {
+                new ButtonArea.ButtonBuilder()
+                    .nameProvider(() -> Managers.FRIENDS.isDisable(name) ? "0" : "1")
+                    .colorProvider(() -> Managers.FRIENDS.isDisable(name) ? ColorUtils.fromRGB(255, 230, 230) : ColorUtils.fromRGB(230, 252, 230))
+                    .showFactorProvider(() -> hoveredFactor * showFactor)
+                    .onClick(() -> {
                         if (Managers.FRIENDS.isDisable(name)) {
                             Managers.FRIENDS.enableFriend(name);
                         } else {
                             Managers.FRIENDS.disableFriend(name);
                         }
-                    },
-                    () -> Managers.FRIENDS.isDisable(name) ? "0" : "1",
-                    () -> Managers.FRIENDS.isDisable(name) ? ColorUtils.fromRGB(25, 0, 0) : ColorUtils.fromRGB(0, 25, 0),
-                    () -> hoveredFactor * showFactor,
-                    true, true
-                )
+                    })
+                    .parentArea(this)
+                    .centered(true)
+                    .build()
             );
+
         }
 
         @Override
@@ -367,54 +373,56 @@ public class FriendsWindowArea extends RenderArea {
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && checkHovered(mouseX, mouseY) && parentArea instanceof FriendsWindowArea fwa) {
-                fwa.setCM(new ContextMenu(
-                    this, this, new double[] {mouseX, mouseY},
-                    new RenderArea[] {
-                        new ButtonArea(
-                            this,
-                            () -> {
-                                if (Managers.FRIENDS.isDisable(name)) {
-                                    Managers.FRIENDS.enableFriend(name);
-                                } else {
-                                    Managers.FRIENDS.disableFriend(name);
-                                }
-                            },
-                            () -> Managers.FRIENDS.isDisable(name) ? "enable" : "disable"
-                        ),
-                        new ButtonArea(
-                            this,
-                            () -> {
-                                delete = true;
-                                Managers.FRIENDS.removeFriend(name);
-                            }, "🗑 delete",
-                            ColorUtils.fromRGB(255, 230, 230)
-                        ),
-                        new ButtonInputArea(
-                            this, (s) -> {
-                                if (!FriendsManager.friends.contains(s)) {
-                                    Managers.FRIENDS.addFriend(s);
-                                    fwa.addFriendArea(new FriendArea(
-                                        fwa, s
-                                    ));
-                                } else {
-                                    FriendArea fa = fwa.getFriendArea(s);
-
-                                    float totalHeight = fwa.calculateTotalContentHeight();
-                                    float availableHeight = fwa.windowHeight - fwa.titleHeight - 2 * bigPadding;
-                                    float maxScrollable = Math.max(0, totalHeight - availableHeight);
-
-                                    float factor = 0;
-                                    if (maxScrollable > 0) {
-                                        factor = MathHelper.clamp(fa.y / maxScrollable, 0, 1);
+                fwa.setCM(
+                    new ContextMenu.CMBuilder()
+                        .position(new double[] {mouseX, mouseY})
+                        .closeTask(fwa::resetCM)
+                        .areas(new RenderArea[] {
+                            new ButtonArea.ButtonBuilder()
+                                .nameProvider(() -> Managers.FRIENDS.isDisable(name) ? "enable" : "disable")
+                                .onClick(() -> {
+                                    if (Managers.FRIENDS.isDisable(name)) {
+                                        Managers.FRIENDS.enableFriend(name);
+                                    } else {
+                                        Managers.FRIENDS.disableFriend(name);
                                     }
+                                })
+                                .build(),
+                            new ButtonArea.ButtonBuilder("🗑 delete")
+                                .onClick(() -> {
+                                    delete = true;
+                                    Managers.FRIENDS.removeFriend(name);
+                                })
+                                .color(ColorUtils.fromRGB(255, 230, 230))
+                                .build(),
+                            new ButtonInputArea.ButtonInputBuilder("+ add new")
+                                .onEnter((s) -> {
+                                    if (!FriendsManager.friends.contains(s)) {
+                                        Managers.FRIENDS.addFriend(s);
+                                        fwa.addFriendArea(new FriendArea(
+                                                fwa, s
+                                        ));
+                                    } else {
+                                        FriendArea fa = fwa.getFriendArea(s);
 
-                                    fwa.changeFriendsY(factor);
-                                    fa.light();
-                                }
-                            }, "+ add new"
-                        )
-                    }
-                ).closeTask(fwa::resetCM));
+                                        float totalHeight = fwa.calculateTotalContentHeight();
+                                        float availableHeight = fwa.windowHeight - fwa.titleHeight - 2 * bigPadding;
+                                        float maxScrollable = Math.max(0, totalHeight - availableHeight);
+
+                                        float factor = 0;
+                                        if (maxScrollable > 0) {
+                                            factor = MathHelper.clamp(fa.y / maxScrollable, 0, 1);
+                                        }
+
+                                        fwa.changeFriendsY(factor);
+                                        fa.light();
+                                    }
+                                })
+                                .build()
+                        })
+                        .parentArea(this)
+                        .build()
+                );
                 return true;
             }
             return super.mouseClicked(mouseX, mouseY, button);
