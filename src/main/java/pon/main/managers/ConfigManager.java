@@ -124,6 +124,7 @@ public class ConfigManager implements IManager {
     }
 
     public void setCurrent(Path path) {
+        if (Objects.equals(getCurrent(), path)) return;
         try {
             Path oldConfig = getCurrent();
 

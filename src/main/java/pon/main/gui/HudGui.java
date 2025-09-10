@@ -11,6 +11,7 @@ import pon.main.gui.components.RenderArea;
 import pon.main.modules.client.Gui;
 import pon.main.modules.hud.Hud;
 import pon.main.modules.hud.components.HudArea;
+import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 
@@ -90,6 +91,19 @@ public class HudGui extends Screen {
             List<RenderArea> list = new LinkedList<>();
             for (HudArea area : Hud.areas) {
                 if (area.checkHovered(mouseX, mouseY)) {
+
+                    for (Setting set : area.getSettings()) {
+                        if (!(set.getValue() instanceof Boolean)) continue;
+                        list.add(
+                            new ButtonArea.Builder()
+                                .onClick(() -> {
+                                   set.setValue(!((boolean) set.getValue()));
+                                })
+                                .nameProvider(() -> set.getName() + " " + ((boolean) set.getValue() ? "1" : "0"))
+                                .colorProvider(() -> (boolean) set.getValue() ? ColorUtils.fromRGB(220, 255, 220) : ColorUtils.fromRGB(255, 220, 220))
+                                .build()
+                        );
+                    }
                     list.add(
                         new ButtonArea.Builder("🗑 delete")
                             .onClick(() -> {

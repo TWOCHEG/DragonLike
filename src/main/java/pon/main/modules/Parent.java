@@ -149,7 +149,7 @@ public abstract class Parent {
 
             currentSuperclass = currentSuperclass.getSuperclass();
         }
-        settings.forEach(s -> s.init(this));
+        settings.forEach(s -> s.init(CONFIG));
         return settings;
     }
 

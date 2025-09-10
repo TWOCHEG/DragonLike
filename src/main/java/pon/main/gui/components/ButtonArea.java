@@ -21,6 +21,10 @@ public class ButtonArea extends RenderArea {
         this.params = params;
     }
 
+    public String getName() {
+        return params.name;
+    }
+
     @Override
     public void render(
         DrawContext context,

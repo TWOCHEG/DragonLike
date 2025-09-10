@@ -48,6 +48,20 @@ public class ContextMenu extends RenderArea {
             params.closeTask.run();
         }
 
+        for (RenderArea area : areas) {
+            if (area instanceof ButtonArea buttonArea) {
+                int buttonWidth = mc.textRenderer.getWidth(buttonArea.getName());
+                if (buttonWidth + (padding * 6) > width) {
+                    width = buttonWidth + (padding * 6);
+                }
+            } else if (area instanceof ButtonInputArea buttonArea) {
+                int buttonWidth = mc.textRenderer.getWidth(buttonArea.getName());
+                if (buttonWidth + (padding * 6) > width) {
+                    width = buttonWidth + (padding * 6);
+                }
+            }
+        }
+
         height = padding * 2;
         for (RenderArea area : areas) {
             height += area.height;

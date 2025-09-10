@@ -2,6 +2,7 @@ package pon.main.utils.render;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -71,10 +72,8 @@ public class Render2D {
             );
         }
         context.fill(
-            x1,
-            y1 + r,
-            x2,
-            y2 - r,
+            x1, y1 + r,
+            x2, y2 - r,
             c
         );
         for (int i = 0; i < s; i++) {

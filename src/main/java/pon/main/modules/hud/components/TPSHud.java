@@ -20,17 +20,17 @@ public class TPSHud extends HudArea {
         height = mc.textRenderer.fontHeight + (padding * 2);
 
         Render2D.fill(
-                context,
-                x, y, x + width, y + height,
-                CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
-                bigPadding, 2
+            context,
+            x, y, x + width, y + height,
+            CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
+            bigPadding, 2
         );
         context.drawText(
-                mc.textRenderer, text,
-                x + padding,
-                y + padding,
-                ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
-                false
+            mc.textRenderer, text,
+            x + padding,
+            y + padding,
+            ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
+            false
         );
 
         super.render(context, x, y, width, height, mouseX, mouseY);

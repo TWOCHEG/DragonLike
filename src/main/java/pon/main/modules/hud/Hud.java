@@ -8,12 +8,9 @@ import org.lwjgl.glfw.GLFW;
 import pon.main.events.impl.EventMouseKey;
 import pon.main.events.impl.EventMouseMove;
 import pon.main.events.impl.EventMouseScroll;
+import pon.main.events.impl.EventResizeScreen;
 import pon.main.modules.Parent;
-import pon.main.modules.hud.components.CordsHud;
-import pon.main.modules.hud.components.FPSHud;
-import pon.main.modules.hud.components.HudArea;
-import pon.main.modules.hud.components.TPSHud;
-import pon.main.utils.ColorUtils;
+import pon.main.modules.hud.components.*;
 import pon.main.utils.math.MouseUtils;
 
 import java.util.ArrayList;
@@ -30,6 +27,7 @@ public class Hud extends Parent {
         areas.add(new FPSHud(this));
         areas.add(new CordsHud(this));
         areas.add(new TPSHud(this));
+        areas.add(new ArmorHud(this));
 
         for (HudArea hudArea : areas) {
             LinkedTreeMap<String, Object> map = getValue(getName(hudArea), new LinkedTreeMap<>());
@@ -40,6 +38,15 @@ public class Hud extends Parent {
         HudRenderCallback.EVENT.register((context, tickDelta) -> {
             render(context);
         });
+    }
+
+    @EventHandler
+    private void onResize(EventResizeScreen e) {
+        for (HudArea hudArea : areas) {
+            LinkedTreeMap<String, Object> map = getValue(getName(hudArea), new LinkedTreeMap<>());
+
+            hudArea.setPos((double) map.getOrDefault("x", 300.0), (double) map.getOrDefault("x", 200.0));
+        }
     }
 
     private boolean isColliding(HudArea a, HudArea b) {

@@ -5,14 +5,22 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import pon.main.Main;
 import pon.main.gui.HudGui;
 import pon.main.gui.components.RenderArea;
+import pon.main.managers.ConfigManager;
 import pon.main.modules.client.Gui;
 import pon.main.modules.hud.Hud;
+import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.math.Timer;
 
+import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.List;
+
 public abstract class HudArea extends RenderArea {
     protected Hud hud;
+
+    protected final ConfigManager CONFIG;
 
     public boolean dragged = false;
     public float draggedFactor = 0;
@@ -24,9 +32,12 @@ public abstract class HudArea extends RenderArea {
     private float colisionBorderFactor = 0;
     private boolean colisionBorderShow = false;
 
+    public List<Setting> settings = new LinkedList();
+
     public HudArea(Hud hud) {
         super();
         this.hud = hud;
+        this.CONFIG = new ConfigManager(hud.getName(this));
     }
 
     public void setPos(double x, double y) {
@@ -116,5 +127,28 @@ public abstract class HudArea extends RenderArea {
     public void showColisionBorders() {
         timer.reset();
         colisionBorderShow = true;
+    }
+
+    public List<Setting> getSettings() {
+        if (!settings.isEmpty()) {
+            return settings;
+        }
+        Class<?> currentSuperclass = getClass();
+
+        while (currentSuperclass != null) {
+            for (Field field : currentSuperclass.getDeclaredFields()) {
+                if (!Setting.class.isAssignableFrom(field.getType()))
+                    continue;
+
+                try {
+                    field.setAccessible(true);
+                    settings.add((Setting) field.get(this));
+                } catch (IllegalAccessException ignored) {}
+            }
+
+            currentSuperclass = currentSuperclass.getSuperclass();
+        }
+        settings.forEach(s -> s.init(CONFIG));
+        return settings;
     }
 }

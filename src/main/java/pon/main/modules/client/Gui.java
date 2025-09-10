@@ -28,19 +28,18 @@ public class Gui extends Parent {
     public static final Map<String, String> images = new LinkedHashMap<>();
     static {
         images.put("none", "none");
-        images.put("furry", "textures/gui/furry.png");
-        images.put("billy", "textures/gui/billy.png");
-        images.put("nya", "textures/gui/nya.png");
-        images.put("sonic", "textures/gui/sonic.png");
-        images.put("shayrma", "textures/gui/shayrma.png");
-        images.put("furry2", "textures/gui/furry2.png");
-        images.put("skala", "textures/gui/skala.png");
-        images.put("smalik", "textures/gui/smalik.png");
+        images.put("furry", "textures/modules_gui/furry.png");
+        images.put("billy", "textures/modules_gui/billy.png");
+        images.put("nya", "textures/modules_gui/nya.png");
+        images.put("sonic", "textures/modules_gui/sonic.png");
+        images.put("shayrma", "textures/modules_gui/shayrma.png");
+        images.put("furry2", "textures/modules_gui/furry2.png");
+        images.put("skala", "textures/modules_gui/skala.png");
+        images.put("smalik", "textures/modules_gui/smalik.png");
     }
 
     public ColorSet theme = new ColorSet("theme", new Color(0, 0, 0), false);
 
-    public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public Setting<String> image = new Setting<>(
         "image",
         new LinkedList<>(images.keySet())

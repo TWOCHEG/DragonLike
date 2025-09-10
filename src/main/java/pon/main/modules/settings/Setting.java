@@ -1,6 +1,6 @@
 package pon.main.modules.settings;
 
-import pon.main.modules.Parent;
+import pon.main.managers.ConfigManager;
 import pon.main.utils.EnumHelper;
 
 import java.util.Arrays;
@@ -13,7 +13,7 @@ public class Setting<T> {
     private final String name;
     protected T value = null;
     public T min, max;
-    public Parent module;
+    public ConfigManager CONFIG;
     public Group group = null;
     private Predicate<T> visibility;
     public Consumer<Setting<T>> onChange;
@@ -91,15 +91,13 @@ public class Setting<T> {
     }
 
     public void setValue(T value) {
-        if (this.module != null && !Objects.equals(value, getValue())) {
-            module.onSettingUpdate(this);
-
+        if (CONFIG != null && !Objects.equals(value, getValue())) {
             if (isList()) {
                 this.optionIndex = options.indexOf(value);
-                module.setValue(name, optionIndex);
+                CONFIG.set(name, optionIndex);
             } else {
                 this.value = value;
-                module.setValue(name, value);
+                CONFIG.set(name, value);
             }
 
             if (onChange != null) {
@@ -130,9 +128,9 @@ public class Setting<T> {
         return options;
     }
 
-    public void init(Parent module) {
-        this.module = module;
-        T v = (T) module.getConfig().get(name, isList() ? optionIndex : defaultValue);
+    public void init(ConfigManager config) {
+        this.CONFIG = config;
+        T v = (T) config.get(name, isList() ? optionIndex : defaultValue);
         if (isList()) {
             setIndex((Integer) v);
         } else {
