@@ -1,10 +1,14 @@
 package pon.main.modules.client;
 
+import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
+import pon.main.events.impl.EventResizeScreen;
 import pon.main.gui.ConfigsGui;
 import pon.main.gui.FriendsGui;
 import pon.main.gui.HudGui;
@@ -43,20 +47,25 @@ public class Gui extends Parent {
         "image",
         new LinkedList<>(images.keySet())
     ).onChange((Setting<String> set) -> {
-        if (!Objects.equals(set.getValue(), "none")) {
+        if (!Objects.equals(set.getValue(), images.keySet().stream().toList().getFirst())) {
             texture = Identifier.of("main", getImages().get(set.getValue()));
+            updateImageSize();
+        } else {
+            texture = null;
         }
     });
-    public Setting<Float> imgSize = new Setting<>(
-        "image size",
-        0.5f, 0.1f, 2.0f
-    ).visible(m -> !image.getValue().equals("none"));
+    public Setting<Float> imgScale = new Setting<>(
+        "image scale",
+        0.5f, 0.1f, 1.0f
+    ).visible(m -> !image.getValue().equals("none"))
+    .onChange((s) -> updateImageSize());
 
     public final Setting<Float> animSpeed = new Setting<>("animations speed", 0.5f, 0f, 1f);
 
     public final Setting<Boolean> showAreas = new Setting<>("show areas (debug)", false);
 
     public Identifier texture = Identifier.of("main", images.get(image.getValue()));
+    public int imageWidth = 0, imageHeight = 0;
 
     // render components
     public LinkedList<CategoryArea> categories = null;
@@ -76,6 +85,9 @@ public class Gui extends Parent {
 
     @Override
     public void onEnable() {
+        if (imageWidth == 0 || imageHeight == 0) {
+            updateImageSize();
+        }
         if (mc.currentScreen instanceof TitleScreen || mc.currentScreen == null) {
             choseGuiArea.show = true;
             if (categories == null) {
@@ -127,5 +139,26 @@ public class Gui extends Parent {
         friendsWindowArea.show = false;
         friendsWindowArea.showFactor = 0;
         friendsWindowArea.resetCM();
+    }
+
+    @EventHandler
+    private void onResize(EventResizeScreen e) {
+        updateImageSize();
+    }
+
+    public void updateImageSize() {
+        if (texture == null) return;
+        try {
+            Optional<Resource> resource = mc.getResourceManager().getResource(texture);
+            try (NativeImage nativeImage = NativeImage.read(resource.get().getInputStream())) {
+
+                float targetHeight = mc.getWindow().getHeight() / 2f;
+                float baseScale = targetHeight / nativeImage.getHeight();
+                float scale = baseScale * imgScale.getValue();
+
+                this.imageWidth = (int) (nativeImage.getWidth() * scale);
+                this.imageHeight = (int) (nativeImage.getHeight() * scale);
+            }
+        } catch (Exception ignored) {}
     }
 }

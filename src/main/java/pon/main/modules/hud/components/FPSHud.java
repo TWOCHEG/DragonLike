@@ -17,6 +17,7 @@ public class FPSHud extends HudArea {
         String text = "fps " + FrameRateCounter.INSTANCE.getFps();
 
         width = mc.textRenderer.getWidth(text) + (padding * 2);
+
         height = mc.textRenderer.fontHeight + (padding * 2);
 
         Render2D.fill(

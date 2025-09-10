@@ -1,5 +1,6 @@
 package pon.main.gui;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -87,6 +88,19 @@ public class ModulesGui extends Screen {
         );
 
         gui.choseGuiArea.render(context, width / 2, 0, 0, 0, mouseX, mouseY);
+
+        if (gui.texture != null) {
+            context.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                gui.texture,
+                width - gui.imageWidth,
+                (int) (height - (gui.imageHeight * openFactor)),
+                0, 0,
+                gui.imageWidth, gui.imageHeight,
+                gui.imageWidth, gui.imageHeight,
+                ColorUtils.fromRGB(255, 255, 255, 255 * openFactor)
+            );
+        }
 
         int closeCount = 0;
         for (int i = 0; i < categories.size(); i++) {

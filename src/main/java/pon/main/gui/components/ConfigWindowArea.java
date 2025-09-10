@@ -2,7 +2,9 @@ package pon.main.gui.components;
 
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
@@ -47,6 +49,8 @@ public class ConfigWindowArea extends RenderArea {
     private float delta = 1;
     private Path oldPath;
     private Path currentPath;
+
+    public Identifier folderTexture = Identifier.of("main", "textures/configs_gui/folder_icon.png");
 
     public ConfigWindowArea() {
         super();
@@ -329,6 +333,17 @@ public class ConfigWindowArea extends RenderArea {
             double mouseX, double mouseY
         ) {
             TextRenderer textRenderer = mc.textRenderer;
+
+            int imgHeight = width - (mc.textRenderer.fontHeight + (padding * 3));
+            context.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                parentArea.folderTexture,
+                (width / 2) - (imgHeight / 2), startY,
+                0, 0,
+                imgHeight, imgHeight,
+                imgHeight, imgHeight,
+                ColorUtils.fromRGB(255, 255, 255, 255 * showFactor)
+            );
 
             Render2D.fill(
                 context,
