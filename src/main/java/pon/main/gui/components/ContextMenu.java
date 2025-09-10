@@ -14,9 +14,9 @@ public class ContextMenu extends RenderArea {
     private float showFactor2 = 0;
     private boolean show = true;
 
-    private CMBuilder params;
+    private Builder params;
 
-    public ContextMenu(CMBuilder params) {
+    public ContextMenu(Builder params) {
         super(params.parentArea);
         this.params = params;
         this.showFactor = 0;
@@ -104,7 +104,7 @@ public class ContextMenu extends RenderArea {
         show = false;
     }
 
-    public static class CMBuilder {
+    public static class Builder {
         private List<RenderArea> areas = new ArrayList<>();
         private RenderArea context;
         private RenderArea parentArea;
@@ -112,46 +112,46 @@ public class ContextMenu extends RenderArea {
         private Runnable closeTask;
         private Supplier<Float> showFactorProvider;
 
-        public CMBuilder(RenderArea context) {
+        public Builder(RenderArea context) {
             this.context = context;
         }
-        public CMBuilder() {}
+        public Builder() {}
 
         public ContextMenu build() {
             return new ContextMenu(this);
         }
 
-        public CMBuilder areas(List<RenderArea> renderAreas) {
+        public Builder areas(List<RenderArea> renderAreas) {
             this.areas = renderAreas;
             return this;
         }
-        public CMBuilder areas(RenderArea[] renderAreas) {
+        public Builder areas(RenderArea[] renderAreas) {
             this.areas = Arrays.stream(renderAreas).toList();
             return this;
         }
-        public CMBuilder areas(RenderArea renderAreas) {
+        public Builder areas(RenderArea renderAreas) {
             return areas(List.of(renderAreas));
         }
 
-        public CMBuilder parentArea(RenderArea parentArea) {
+        public Builder parentArea(RenderArea parentArea) {
             this.parentArea = parentArea;
             return this;
         }
 
-        public CMBuilder position(int[] position) {
+        public Builder position(int[] position) {
             this.position = position;
             return this;
         }
-        public CMBuilder position(double[] position) {
+        public Builder position(double[] position) {
             return position(new int[]{(int) position[0], (int) position[1]});
         }
 
-        public CMBuilder closeTask(Runnable closeTask) {
+        public Builder closeTask(Runnable closeTask) {
             this.closeTask = closeTask;
             return this;
         }
 
-        public CMBuilder showFactorProvider(Supplier<Float> showFactorProvider) {
+        public Builder showFactorProvider(Supplier<Float> showFactorProvider) {
             this.showFactorProvider = showFactorProvider;
             return this;
         }

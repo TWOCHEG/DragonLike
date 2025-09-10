@@ -50,14 +50,15 @@ public class ConfigWindowArea extends RenderArea {
     private Path oldPath;
     private Path currentPath;
 
-    public Identifier folderTexture = Identifier.of("main", "textures/configs_gui/folder_icon.png");
+    public Identifier folderTexture = Identifier.of("main", "textures/config_gui/folder_icon.png");
 
     public ConfigWindowArea() {
         super();
         Main.EVENT_BUS.subscribe(this);
 
-        this.buttonArea = new ButtonArea.ButtonBuilder("open in explorer")
+        this.buttonArea = new ButtonArea.Builder("open in explorer")
             .onClick(Managers.CONFIG::openFilesDir)
+            .parentArea(this)
             .build();
 
         for (Path path : Managers.CONFIG.getFiles()) {
@@ -236,11 +237,11 @@ public class ConfigWindowArea extends RenderArea {
             int x = (int) mouseX;
             int y = (int) mouseY;
             setCM(
-                new ContextMenu.CMBuilder()
+                new ContextMenu.Builder()
                     .position(new int[]{x, y})
                     .parentArea(this)
                     .areas(new ButtonArea[]{
-                        new ButtonArea.ButtonBuilder("+ create")
+                        new ButtonArea.Builder("+ create")
                             .onClick(Managers.CONFIG::createFile)
                             .build()
                     })
@@ -338,11 +339,11 @@ public class ConfigWindowArea extends RenderArea {
             context.drawTexture(
                 RenderPipelines.GUI_TEXTURED,
                 parentArea.folderTexture,
-                (width / 2) - (imgHeight / 2), startY,
+                startX + ((width / 2) - (imgHeight / 2)), startY,
                 0, 0,
                 imgHeight, imgHeight,
                 imgHeight, imgHeight,
-                ColorUtils.fromRGB(255, 255, 255, 255 * showFactor)
+                ColorUtils.fromRGB(255, 255, 255, 170 * showFactor)
             );
 
             Render2D.fill(
@@ -423,22 +424,22 @@ public class ConfigWindowArea extends RenderArea {
                 int x = (int) mouseX;
                 int y = (int) mouseY;
                 setCM(
-                    new ContextMenu.CMBuilder()
+                    new ContextMenu.Builder()
                         .position(new int[]{x, y})
                         .parentArea(parentArea)
                         .areas(new ButtonArea[]{
-                            new ButtonArea.ButtonBuilder("✏ rename")
+                            new ButtonArea.Builder("✏ rename")
                                 .onClick(() -> {
                                     inputting = true;
                                     inputText = getName(config);
                                 })
                                 .build(),
-                            new ButtonArea.ButtonBuilder("✔ set current")
+                            new ButtonArea.Builder("✔ set current")
                                 .onClick(() -> {
                                     Managers.CONFIG.setCurrent(config);
                                 })
                                 .build(),
-                            new ButtonArea.ButtonBuilder("❌ delete")
+                            new ButtonArea.Builder("❌ delete")
                                 .onClick(() -> {
                                     Managers.CONFIG.deleteFile(config);
                                 })

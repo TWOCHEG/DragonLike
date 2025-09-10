@@ -91,7 +91,7 @@ public class HudGui extends Screen {
             for (HudArea area : Hud.areas) {
                 if (area.checkHovered(mouseX, mouseY)) {
                     list.add(
-                        new ButtonArea.ButtonBuilder("🗑 delete")
+                        new ButtonArea.Builder("🗑 delete")
                             .onClick(() -> {
                                 hud.setStatusHud(area, false);
                             })
@@ -104,7 +104,7 @@ public class HudGui extends Screen {
             if (list.isEmpty()) {
                 for (HudArea area : Hud.areas) {
                     if (hud.checkEnable(area)) {
-                        ButtonArea buttonArea = new ButtonArea.ButtonBuilder("- " + hud.getName(area))
+                        ButtonArea buttonArea = new ButtonArea.Builder("- " + hud.getName(area))
                             .onClick(() -> {
                                 hud.setStatusHud(area, false);
                             })
@@ -112,7 +112,7 @@ public class HudGui extends Screen {
                             .build();
                         list.add(buttonArea);
                     } else {
-                        ButtonArea buttonArea = new ButtonArea.ButtonBuilder("+ " + hud.getName(area))
+                        ButtonArea buttonArea = new ButtonArea.Builder("+ " + hud.getName(area))
                             .onClick(() -> {
                                 hud.setStatusHud(area, true);
                             })
@@ -124,7 +124,7 @@ public class HudGui extends Screen {
             }
             if (!list.isEmpty()) {
                 setCM(
-                    new ContextMenu.CMBuilder()
+                    new ContextMenu.Builder()
                         .areas(list)
                         .position(new double[]{mouseX, mouseY})
                         .closeTask(this::resetCM)

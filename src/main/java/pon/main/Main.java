@@ -21,6 +21,7 @@ public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
 	public static ModuleManager MODULE_MANAGER = null;
     public static final String VERSION = "0.0.1";
+    public static final String NAME_SPACE = "main";
 
 	public static List<Integer> cancelButtons = java.util.List.of(
         GLFW.GLFW_KEY_ESCAPE,

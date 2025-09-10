@@ -1,12 +1,23 @@
 package pon.main.utils.render;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.texture.TextureManager;
+import net.minecraft.util.Identifier;
+import pon.main.Main;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.TextUtils;
 import pon.main.utils.math.AnimHelper;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.AbstractMap;
 import java.util.LinkedList;
+import java.util.concurrent.CompletableFuture;
 
 public class Render2D {
     /**
@@ -217,5 +228,35 @@ public class Render2D {
         );
 
         context.getMatrices().popMatrix();
+    }
+
+    public static CompletableFuture<Identifier> textureFromUrl(String imageUrl) {
+        String hash = Integer.toHexString(imageUrl.hashCode());
+        Identifier textureIdentifier = Identifier.of(Main.NAME_SPACE, "dynamic_texture_" + hash);
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                URL url = new URL(imageUrl);
+                try (InputStream inputStream = url.openStream()) {
+                    NativeImage image = NativeImage.read(inputStream);
+                    return new AbstractMap.SimpleImmutableEntry<>(textureIdentifier, image);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }).thenApplyAsync(result -> {
+            if (result == null) return null;
+
+            Identifier id = result.getKey();
+            NativeImage image = result.getValue();
+
+            MinecraftClient.getInstance().execute(() -> {
+                TextureManager textureManager = MinecraftClient.getInstance().getTextureManager();
+                NativeImageBackedTexture texture = new NativeImageBackedTexture(() -> Main.NAME_SPACE, image);
+                textureManager.registerTexture(id, texture);
+            });
+            return id;
+        });
     }
 }

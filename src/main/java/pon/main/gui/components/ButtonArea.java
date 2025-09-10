@@ -10,12 +10,12 @@ import pon.main.utils.render.Render2D;
 import java.util.function.Supplier;
 
 public class ButtonArea extends RenderArea {
-    private ButtonBuilder params;
+    private Builder params;
 
     private boolean clicked = false;
     private float clickedFactor = 0;
 
-    public ButtonArea(ButtonBuilder params) {
+    public ButtonArea(Builder params) {
         super(params.parentArea);
         this.showFactor = 0;
         this.params = params;
@@ -30,7 +30,7 @@ public class ButtonArea extends RenderArea {
     ) {
         width = width <= 0 ? mc.textRenderer.getWidth(params.name) + (padding * 2) : width;
         height = height <= 0 ? mc.textRenderer.fontHeight + (padding * 2): height;
-        if (params.bgRenderType.equals(ButtonBuilder.bgType.full)) {
+        if (params.bgRenderType.equals(Builder.bgType.full)) {
             int bgColor;
             if (params.backgroundColor) {
                 bgColor = ColorUtils.applyOpacity(params.colorProvider.get(), ((80 + (30 * clickedFactor) + (30 * hoveredFactor)) * showFactor) / 255);
@@ -44,7 +44,7 @@ public class ButtonArea extends RenderArea {
                     bgColor,
                     bigPadding, 2
             );
-        } else if (params.bgRenderType.equals(ButtonBuilder.bgType.noBgHover)) {
+        } else if (params.bgRenderType.equals(Builder.bgType.noBgHover)) {
             context.fill(
                 startX, startY,
                 startX + width,
@@ -97,7 +97,7 @@ public class ButtonArea extends RenderArea {
         clickedFactor = AnimHelper.handle(clicked, clickedFactor, GetAnimDiff.get() * 2);
     }
 
-    public static class ButtonBuilder {
+    public static class Builder {
         private Runnable onClick;
 
         private String name;
@@ -119,59 +119,59 @@ public class ButtonArea extends RenderArea {
             full, noBgHover, noBg
         }
 
-        public ButtonBuilder(String name) {
+        public Builder(String name) {
             this.name = name;
         }
-        public ButtonBuilder() {}
+        public Builder() {}
 
         public ButtonArea build() {
             return new ButtonArea(this);
         }
 
-        public ButtonBuilder parentArea(RenderArea parentArea) {
+        public Builder parentArea(RenderArea parentArea) {
             this.parentArea = parentArea;
             return this;
         }
 
-        public ButtonBuilder centered(boolean centered) {
+        public Builder centered(boolean centered) {
             this.centered = centered;
             return this;
         }
 
-        public ButtonBuilder bgRenderType(bgType bgRenderType) {
+        public Builder bgRenderType(bgType bgRenderType) {
             this.bgRenderType = bgRenderType;
             return this;
         }
 
-        public ButtonBuilder onClick(Runnable onClick) {
+        public Builder onClick(Runnable onClick) {
             this.onClick = onClick;
             return this;
         }
 
-        public ButtonBuilder nameProvider(Supplier<String> nameProvider) {
+        public Builder nameProvider(Supplier<String> nameProvider) {
             this.nameProvider = nameProvider;
             return this;
         }
 
-        public ButtonBuilder colorProvider(Supplier<Integer> colorProvider) {
+        public Builder colorProvider(Supplier<Integer> colorProvider) {
             return colorProvider(colorProvider, false);
         }
-        public ButtonBuilder colorProvider(Supplier<Integer> colorProvider, boolean backgroundColor) {
+        public Builder colorProvider(Supplier<Integer> colorProvider, boolean backgroundColor) {
             this.colorProvider = colorProvider;
             this.backgroundColor = backgroundColor;
             return this;
         }
 
-        public ButtonBuilder color(int color) {
+        public Builder color(int color) {
             return color(color, backgroundColor);
         }
-        public ButtonBuilder color(int color, boolean backgroundColor) {
+        public Builder color(int color, boolean backgroundColor) {
             this.color = color;
             this.backgroundColor = backgroundColor;
             return this;
         }
 
-        public ButtonBuilder showFactorProvider(Supplier<Float> showFactorProvider) {
+        public Builder showFactorProvider(Supplier<Float> showFactorProvider) {
             this.showFactorProvider = showFactorProvider;
             return this;
         }

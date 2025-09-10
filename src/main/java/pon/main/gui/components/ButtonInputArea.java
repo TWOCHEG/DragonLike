@@ -17,9 +17,9 @@ public class ButtonInputArea extends RenderArea {
     private float lightFactor = 0;
     private boolean light = false;
 
-    private ButtonInputBuilder params;
+    private Builder params;
 
-    public ButtonInputArea(ButtonInputBuilder params) {
+    public ButtonInputArea(Builder params) {
         super(params.parentArea);
         this.showFactor = 0;
         this.params = params;
@@ -35,7 +35,7 @@ public class ButtonInputArea extends RenderArea {
         width = width <= 0 ? mc.textRenderer.getWidth(params.name) + (padding * 2) : width;
         height = inputting ? this.height : mc.textRenderer.fontHeight + (padding * 2);
 
-        if (params.bgRenderType.equals(ButtonInputBuilder.bgType.full)) {
+        if (params.bgRenderType.equals(Builder.bgType.full)) {
             int bgColor;
             if (params.backgroundColor) {
                 bgColor = ColorUtils.applyOpacity(params.colorProvider.get(), ((80 + (30 * hoveredFactor)) * showFactor) / 255);
@@ -49,7 +49,7 @@ public class ButtonInputArea extends RenderArea {
                 bgColor,
                 bigPadding, 2
             );
-        } else if (params.bgRenderType.equals(ButtonInputBuilder.bgType.noBgHover)) {
+        } else if (params.bgRenderType.equals(Builder.bgType.noBgHover)) {
             context.fill(
                 startX, startY,
                 startX + width,
@@ -143,7 +143,7 @@ public class ButtonInputArea extends RenderArea {
         }
     }
 
-    public static class ButtonInputBuilder {
+    public static class Builder {
         private Consumer<String> onEnter;
 
         private String name;
@@ -167,59 +167,59 @@ public class ButtonInputArea extends RenderArea {
             full, noBgHover, noBg
         }
 
-        public ButtonInputBuilder(String name) {
+        public Builder(String name) {
             this.name = name;
         }
-        public ButtonInputBuilder() {}
+        public Builder() {}
 
         public ButtonInputArea build() {
             return new ButtonInputArea(this);
         }
 
-        public ButtonInputBuilder parentArea(RenderArea parentArea) {
+        public Builder parentArea(RenderArea parentArea) {
             this.parentArea = parentArea;
             return this;
         }
 
-        public ButtonInputBuilder inputHeader(String inputHeader) {
+        public Builder inputHeader(String inputHeader) {
             this.inputHeader = inputHeader;
             return this;
         }
 
-        public ButtonInputBuilder bgRenderType(bgType bgRenderType) {
+        public Builder bgRenderType(bgType bgRenderType) {
             this.bgRenderType = bgRenderType;
             return this;
         }
 
-        public ButtonInputBuilder onEnter(Consumer<String> onEnter) {
+        public Builder onEnter(Consumer<String> onEnter) {
             this.onEnter = onEnter;
             return this;
         }
 
-        public ButtonInputBuilder nameProvider(Supplier<String> nameProvider) {
+        public Builder nameProvider(Supplier<String> nameProvider) {
             this.nameProvider = nameProvider;
             return this;
         }
 
-        public ButtonInputBuilder colorProvider(Supplier<Integer> colorProvider) {
+        public Builder colorProvider(Supplier<Integer> colorProvider) {
             return colorProvider(colorProvider, false);
         }
-        public ButtonInputBuilder colorProvider(Supplier<Integer> colorProvider, boolean backgroundColor) {
+        public Builder colorProvider(Supplier<Integer> colorProvider, boolean backgroundColor) {
             this.colorProvider = colorProvider;
             this.backgroundColor = backgroundColor;
             return this;
         }
 
-        public ButtonInputBuilder color(int color) {
+        public Builder color(int color) {
             return color(color, backgroundColor);
         }
-        public ButtonInputBuilder color(int color, boolean backgroundColor) {
+        public Builder color(int color, boolean backgroundColor) {
             this.color = color;
             this.backgroundColor = backgroundColor;
             return this;
         }
 
-        public ButtonInputBuilder showFactorProvider(Supplier<Float> showFactorProvider) {
+        public Builder showFactorProvider(Supplier<Float> showFactorProvider) {
             this.showFactorProvider = showFactorProvider;
             return this;
         }

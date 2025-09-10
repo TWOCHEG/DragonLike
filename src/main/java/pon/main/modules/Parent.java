@@ -1,11 +1,8 @@
 package pon.main.modules;
 
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.network.PendingUpdateManager;
 import net.minecraft.client.network.SequencedPacketCreator;
 import net.minecraft.client.resource.language.LanguageManager;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.Main.Categories;

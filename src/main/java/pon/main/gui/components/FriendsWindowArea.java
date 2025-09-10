@@ -1,8 +1,11 @@
 package pon.main.gui.components;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
+import pon.main.Main;
 import pon.main.gui.FriendsGui;
 import pon.main.managers.FriendsManager;
 import pon.main.managers.Managers;
@@ -243,10 +246,10 @@ public class FriendsWindowArea extends RenderArea {
         if (super.mouseClicked(mouseX, mouseY, button)) return true;
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             setCM(
-            new ContextMenu.CMBuilder()
+            new ContextMenu.Builder()
                 .position(new double[] {mouseX, mouseY})
                 .areas(
-                    new ButtonInputArea.ButtonInputBuilder("+ add")
+                    new ButtonInputArea.Builder("+ add")
                         .onEnter((s) -> {
                             if (!FriendsManager.friends.contains(s)) {
                                 Managers.FRIENDS.addFriend(s);
@@ -290,13 +293,20 @@ public class FriendsWindowArea extends RenderArea {
 
         private Timer timer = new Timer();
 
+        private Identifier texture;
+
         public FriendArea(RenderArea parent, String name) {
             super(parent);
             this.name = name;
             this.showFactor = 0;
+            try {
+                this.texture = Render2D.textureFromUrl("https://minotar.net/helm/" + name + "/100.png").get();
+            } catch (Exception ignore) {
+                this.texture = Identifier.of(Main.NAME_SPACE, "textures/friends_gui/default.png");
+            }
 
             areas.add(
-                new ButtonArea.ButtonBuilder()
+                new ButtonArea.Builder()
                     .nameProvider(() -> Managers.FRIENDS.isDisable(name) ? "0" : "1")
                     .colorProvider(() -> Managers.FRIENDS.isDisable(name) ? ColorUtils.fromRGB(255, 230, 230) : ColorUtils.fromRGB(230, 252, 230))
                     .showFactorProvider(() -> hoveredFactor * showFactor)
@@ -337,11 +347,13 @@ public class FriendsWindowArea extends RenderArea {
                 startY + height
             );
 
+            int imgHeight = height - (bigPadding * 2);
+
             String d = "(disabled)";
-            int textX = startX;
+            int textX = startX + (imgHeight + (bigPadding * 2));
             int textWidth = (int) ((mc.textRenderer.getWidth(name) + (bigPadding * 2)) + (mc.textRenderer.getWidth(d) * disableFactor)) + bigPadding;
-            if (textWidth + areas.getFirst().width + bigPadding > width) {
-                textX -= (int) (((textWidth + areas.getFirst().width + bigPadding) - width) * hoveredFactor);
+            if (textWidth + areas.getFirst().width + (bigPadding * 2) > width) {
+                textX -= (int) (((textWidth + areas.getFirst().width + (bigPadding * 2)) - width) * hoveredFactor);
             }
             if (hoveredFactor != 0) {
                 areas.getFirst().render(
@@ -365,6 +377,17 @@ public class FriendsWindowArea extends RenderArea {
                 );
             }
 
+            context.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                texture,
+                (textX - imgHeight - (bigPadding * 2)) + bigPadding,
+                startY + bigPadding,
+                0, 0,
+                imgHeight, imgHeight,
+                imgHeight, imgHeight,
+                ColorUtils.fromRGB(255, 255, 255, 255 * showFactor)
+            );
+
             context.disableScissor();
 
             super.render(context, startX, startY, width, (int) (height * showFactor), mouseX, mouseY);
@@ -374,11 +397,11 @@ public class FriendsWindowArea extends RenderArea {
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && checkHovered(mouseX, mouseY) && parentArea instanceof FriendsWindowArea fwa) {
                 fwa.setCM(
-                    new ContextMenu.CMBuilder()
+                    new ContextMenu.Builder()
                         .position(new double[] {mouseX, mouseY})
                         .closeTask(fwa::resetCM)
                         .areas(new RenderArea[] {
-                            new ButtonArea.ButtonBuilder()
+                            new ButtonArea.Builder()
                                 .nameProvider(() -> Managers.FRIENDS.isDisable(name) ? "enable" : "disable")
                                 .onClick(() -> {
                                     if (Managers.FRIENDS.isDisable(name)) {
@@ -388,14 +411,14 @@ public class FriendsWindowArea extends RenderArea {
                                     }
                                 })
                                 .build(),
-                            new ButtonArea.ButtonBuilder("🗑 delete")
+                            new ButtonArea.Builder("🗑 delete")
                                 .onClick(() -> {
                                     delete = true;
                                     Managers.FRIENDS.removeFriend(name);
                                 })
                                 .color(ColorUtils.fromRGB(255, 230, 230))
                                 .build(),
-                            new ButtonInputArea.ButtonInputBuilder("+ add new")
+                            new ButtonInputArea.Builder("+ add new")
                                 .onEnter((s) -> {
                                     if (!FriendsManager.friends.contains(s)) {
                                         Managers.FRIENDS.addFriend(s);

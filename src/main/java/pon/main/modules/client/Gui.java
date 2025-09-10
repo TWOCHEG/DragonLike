@@ -39,8 +39,6 @@ public class Gui extends Parent {
     }
 
     public ColorSet theme = new ColorSet("theme", new Color(0, 0, 0), false);
-    public ColorSet textColor = new ColorSet("text color", new Color(255, 255, 255), false);
-    public Group colors = new Group("colors", theme, textColor).setType(Group.GroupType.Horizontal);
 
     public Setting<Boolean> mouseMove = new Setting<>("mouse move", true);
     public Setting<String> image = new Setting<>(
@@ -85,9 +83,7 @@ public class Gui extends Parent {
 
     @Override
     public void onEnable() {
-        if (imageWidth == 0 || imageHeight == 0) {
-            updateImageSize();
-        }
+        updateImageSize();
         if (mc.currentScreen instanceof TitleScreen || mc.currentScreen == null) {
             choseGuiArea.show = true;
             if (categories == null) {
