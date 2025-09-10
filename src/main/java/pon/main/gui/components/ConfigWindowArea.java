@@ -50,7 +50,7 @@ public class ConfigWindowArea extends RenderArea {
     private Path oldPath;
     private Path currentPath;
 
-    public Identifier folderTexture = Identifier.of("main", "textures/config_gui/folder_icon.png");
+    public Identifier folderTexture = Identifier.of("main", "textures/configs_gui/folder_icon.png");
 
     public ConfigWindowArea() {
         super();

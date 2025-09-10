@@ -30,6 +30,7 @@ public class FreeCam extends Parent {
 
     @Override
     public void onEnable() {
+        if (fullNullCheck()) return;
         mc.chunkCullingEnabled = false;
         trackEntity = null;
 

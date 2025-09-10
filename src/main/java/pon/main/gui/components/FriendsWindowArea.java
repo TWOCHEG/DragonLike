@@ -301,7 +301,8 @@ public class FriendsWindowArea extends RenderArea {
             this.showFactor = 0;
             try {
                 this.texture = Render2D.textureFromUrl("https://minotar.net/helm/" + name + "/100.png").get();
-            } catch (Exception ignore) {
+            } catch (Exception ignore) {}
+            if (texture == null) {
                 this.texture = Identifier.of(Main.NAME_SPACE, "textures/friends_gui/default.png");
             }
 
@@ -351,16 +352,9 @@ public class FriendsWindowArea extends RenderArea {
 
             String d = "(disabled)";
             int textX = startX + (imgHeight + (bigPadding * 2));
-            int textWidth = (int) ((mc.textRenderer.getWidth(name) + (bigPadding * 2)) + (mc.textRenderer.getWidth(d) * disableFactor)) + bigPadding;
-            if (textWidth + areas.getFirst().width + (bigPadding * 2) > width) {
-                textX -= (int) (((textWidth + areas.getFirst().width + (bigPadding * 2)) - width) * hoveredFactor);
-            }
-            if (hoveredFactor != 0) {
-                areas.getFirst().render(
-                    context, (int) ((startX + width) - ((height - padding) * hoveredFactor)),
-                    startY + padding, height - (padding * 2), height - (padding * 2),
-                    mouseX, mouseY
-                );
+            int finalWidth = (int) ((bigPadding * 2) + imgHeight + mc.textRenderer.getWidth(name) + (bigPadding * 2) + (mc.textRenderer.getWidth(d) * disableFactor) + bigPadding);
+            if (finalWidth > width - ((areas.getFirst().width + (padding * 2)) * hoveredFactor)) {
+                textX -= (int) (finalWidth - (width - ((areas.getFirst().width + (padding * 2)) * hoveredFactor)));
             }
             context.drawText(
                 mc.textRenderer, name, textX + bigPadding,
@@ -374,6 +368,14 @@ public class FriendsWindowArea extends RenderArea {
                     startY + ((height / 2) - (mc.textRenderer.fontHeight / 2)),
                     ColorUtils.fromRGB(220, 200, 200, ((200 * disableFactor) * showFactor * parentArea.showFactor)),
                     false
+                );
+            }
+
+            if (hoveredFactor != 0) {
+                areas.getFirst().render(
+                    context, (int) ((startX + width) - ((height - padding) * hoveredFactor)),
+                    startY + padding, height - (padding * 2), height - (padding * 2),
+                    mouseX, mouseY
                 );
             }
 
