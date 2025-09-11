@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.gui.components.ButtonArea;
 import pon.main.gui.components.ContextMenu;
+import pon.main.gui.components.ModuleArea;
 import pon.main.gui.components.RenderArea;
 import pon.main.modules.client.Gui;
 import pon.main.modules.hud.Hud;
@@ -91,19 +92,8 @@ public class HudGui extends Screen {
             List<RenderArea> list = new LinkedList<>();
             for (HudArea area : Hud.areas) {
                 if (area.checkHovered(mouseX, mouseY)) {
+                    list.addAll(ModuleArea.getAreas(area.getSettings(), null));
 
-                    for (Setting set : area.getSettings()) {
-                        if (!(set.getValue() instanceof Boolean)) continue;
-                        list.add(
-                            new ButtonArea.Builder()
-                                .onClick(() -> {
-                                   set.setValue(!((boolean) set.getValue()));
-                                })
-                                .nameProvider(() -> set.getName() + " " + ((boolean) set.getValue() ? "1" : "0"))
-                                .colorProvider(() -> (boolean) set.getValue() ? ColorUtils.fromRGB(220, 255, 220) : ColorUtils.fromRGB(255, 220, 220))
-                                .build()
-                        );
-                    }
                     list.add(
                         new ButtonArea.Builder("🗑 delete")
                             .onClick(() -> {
