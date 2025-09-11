@@ -28,6 +28,7 @@ public class Hud extends Parent {
         areas.add(new CordsHud(this));
         areas.add(new TPSHud(this));
         areas.add(new ArmorHud(this));
+        areas.add(new ArrayListHud(this));
 
         for (HudArea hudArea : areas) {
             LinkedTreeMap<String, Object> map = getValue(getName(hudArea), new LinkedTreeMap<>());
