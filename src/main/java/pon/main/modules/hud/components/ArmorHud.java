@@ -9,16 +9,16 @@ import net.minecraft.registry.tag.FluidTags;
 import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.RenderArea;
 import pon.main.modules.Parent;
-import pon.main.modules.hud.Hud;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 
 public class ArmorHud extends HudArea{
     public Setting<Boolean> linkedToHotbar = new Setting<>("stick to hotbar", true);
+    public Setting<Boolean> renderBG = new Setting<>("render background", true);
 
-    public ArmorHud(Hud hud) {
-        super(hud);
+    public ArmorHud() {
+        super();
     }
 
     @Override
@@ -42,12 +42,14 @@ public class ArmorHud extends HudArea{
             y = mc.getWindow().getScaledHeight() - 62 - (isOxygenHudVisible(mc.player) ? 10 : 0);
         }
 
-        Render2D.fill(
-            context, x, y,
-            x + width, y + height,
-            CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
-            bigPadding, 2
-        );
+        if (renderBG.getValue()) {
+            Render2D.fill(
+                context, x, y,
+                x + width, y + height,
+                CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
+                bigPadding, 2
+            );
+        }
 
         int currentX = x + padding;
         for (RenderArea area : areas) {
@@ -86,14 +88,14 @@ public class ArmorHud extends HudArea{
                     item, x + ((width / 2) - 7), y - 1
                 );
                 Render2D.fill(
-                    context, x, (y + height) - 3,
+                    context, x, (y + height) - 4,
                     x + width, y + height,
                     ColorUtils.fromRGB(100, 100, 100, 100 * showFactor),
-                    1, 2
+                    padding, 2
                 );
                 float durability = getDurabilityPercentage(item);
                 Render2D.fill(
-                    context, x, (y + height) - 3,
+                    context, x, (y + height) - 4,
                     (int) (x + (width * durability)), y + height,
                     ColorUtils.fromRGB(
                         (int) (50 + (100 * (1 - durability))),
@@ -101,7 +103,7 @@ public class ArmorHud extends HudArea{
                         50,
                         150 * showFactor
                     ),
-                    1, 2
+                    padding, 2
                 );
             } else {
                 String s = "-";

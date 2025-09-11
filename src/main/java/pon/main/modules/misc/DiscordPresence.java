@@ -4,6 +4,7 @@ import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.AddServerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import pon.main.Main;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.discord.DiscordEventHandlers;
@@ -60,36 +61,32 @@ public final class DiscordPresence extends Parent {
 
             new Thread(() -> {
                 while (!Thread.currentThread().isInterrupted() && started) {
-                    if (Main.MODULE_MANAGER != null) {
+                    rpc.Discord_RunCallbacks();
+                    presence.details = getDetails();
 
-                        rpc.Discord_RunCallbacks();
-                        presence.details = getDetails();
+                    switch (stateMode.getValue()) {
+                        case stats -> presence.state = "hacks: " + Managers.MODULE_MANAGER.enableModules().size() + " / " + Managers.MODULE_MANAGER.getModules().size();
+                        case custom -> presence.state = state.getValue();
+                        case version -> presence.state = "v" + Main.VERSION + " for mc 1.21.8";
+                    }
 
-                        switch (stateMode.getValue()) {
-                            case stats ->
-                                    presence.state = "hacks: " + Main.MODULE_MANAGER.enableModules().size() + " / " + Main.MODULE_MANAGER.modules.size();
-                            case custom -> presence.state = state.getValue();
-                            case version -> presence.state = "v" + Main.VERSION + " for mc 1.21.8";
-                        }
+                    if (nickname.getValue()) {
+                        presence.smallImageText = "logged as - " + mc.getSession().getUsername();
+                        presence.smallImageKey = "https://minotar.net/helm/" + mc.getSession().getUsername() + "/100.png";
+                    } else {
+                        presence.smallImageText = "";
+                        presence.smallImageKey = "";
+                    }
 
-                        if (nickname.getValue()) {
-                            presence.smallImageText = "logged as - " + mc.getSession().getUsername();
-                            presence.smallImageKey = "https://minotar.net/helm/" + mc.getSession().getUsername() + "/100.png";
-                        } else {
-                            presence.smallImageText = "";
-                            presence.smallImageKey = "";
-                        }
+                    presence.button_label_1 = "download";
+                    presence.button_url_1 = "https://github.com/TWOCHEG/DragonLike";
+                    presence.largeImageKey = "https://raw.githubusercontent.com/TWOCHEG/DragonLike/refs/heads/main/src/main/resources/assets/main/icon.png";
 
-                        presence.button_label_1 = "download";
-                        presence.button_url_1 = "https://github.com/TWOCHEG/DragonLike";
-                        presence.largeImageKey = "https://raw.githubusercontent.com/TWOCHEG/DragonLike/refs/heads/main/src/main/resources/assets/main/icon.png";
+                    rpc.Discord_UpdatePresence(presence);
 
-                        rpc.Discord_UpdatePresence(presence);
-
-                        try {
-                            Thread.sleep(2000L);
-                        } catch (InterruptedException ignored) {
-                        }
+                    try {
+                        Thread.sleep(2000L);
+                    } catch (InterruptedException ignored) {
                     }
                 }
             }, "RPC-Handler").start();

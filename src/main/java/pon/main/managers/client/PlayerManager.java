@@ -1,4 +1,4 @@
-package pon.main.managers;
+package pon.main.managers.client;
 
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import pon.main.Main;
 import pon.main.events.impl.*;
 import pon.main.injection.accesors.IClientPlayerEntity;
+import pon.main.managers.IManager;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.client.Rotations;
 import pon.main.utils.math.Timer;
@@ -87,7 +89,7 @@ public class PlayerManager implements IManager {
         prevBodyYaw = bodyYaw;
         bodyYaw = getBodyYaw();
 
-        Rotations rotations = Main.MODULE_MANAGER.getModule(Rotations.class);
+        Rotations rotations = Managers.MODULE_MANAGER.getModule(Rotations.class);
 
         if (!rotations.clientLook.getValue()) {
             mc.player.setYaw(yaw);
@@ -99,23 +101,22 @@ public class PlayerManager implements IManager {
 
     @EventHandler
     public void onJump(EventPlayerJump e) {
-        Main.MODULE_MANAGER.getModule(Rotations.class).onJump(e);
+        Managers.MODULE_MANAGER.getModule(Rotations.class).onJump(e);
     }
 
     @EventHandler
     public void onPlayerMove(EventFixVelocity e) {
-        Main.MODULE_MANAGER.getModule(Rotations.class).onPlayerMove(e);
+        Managers.MODULE_MANAGER.getModule(Rotations.class).onPlayerMove(e);
     }
 
     @EventHandler
     public void modifyVelocity(EventSetVelocity e) {
-        Main.MODULE_MANAGER.getModule(Rotations.class).modifyVelocity(e);
+        Managers.MODULE_MANAGER.getModule(Rotations.class).modifyVelocity(e);
     }
 
     @EventHandler
     public void onKeyInput(EventKeyboardInput e) {
-        Rotations rotations = Main.MODULE_MANAGER.getModule(Rotations.class);
-        Main.MODULE_MANAGER.getModule(Rotations.class).onKeyInput(e);
+        Managers.MODULE_MANAGER.getModule(Rotations.class).onKeyInput(e);
     }
 
     @EventHandler

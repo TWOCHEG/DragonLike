@@ -8,7 +8,7 @@ import pon.main.Main;
 import pon.main.events.impl.EventOnRender;
 import pon.main.events.impl.EventTick;
 import pon.main.gui.components.CategoryArea;
-import pon.main.modules.ModuleManager;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
 import meteordevelopment.orbit.EventHandler;
@@ -204,7 +204,7 @@ public class Notify extends Parent {
         public NotifyData(String text, NotifyType notifyType) {
             this.notifyText = text;
             this.notifyType = notifyType;
-            this.liveTime = Main.MODULE_MANAGER.getModule(Notify.class).liveTimeSet.getValue();
+            this.liveTime = Managers.MODULE_MANAGER.getModule(Notify.class).liveTimeSet.getValue();
         }
 
         public NotifyData setNotifyTextProvider(Supplier<String> notifyTextProvider) {
@@ -274,7 +274,7 @@ public class Notify extends Parent {
             visibleFactor = AnimHelper.handle(animForward, visibleFactor);
 
             if (visibleFactor == 0 && !animForward) {
-                Notify notify = Main.MODULE_MANAGER.getModule(Notify.class);
+                Notify notify = Managers.MODULE_MANAGER.getModule(Notify.class);
                 if (!notify.toDelete.contains(this)) {
                     notify.toDelete.add(this);
                 }

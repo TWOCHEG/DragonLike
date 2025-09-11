@@ -1,11 +1,11 @@
-package pon.main.managers;
+package pon.main.managers.client;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import pon.main.Main;
 import pon.main.events.impl.OnChangeConfig;
+import pon.main.managers.IManager;
 import pon.main.modules.Parent;
 
 import java.io.IOException;

@@ -16,6 +16,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import pon.main.Main;
 import pon.main.events.impl.*;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.client.Rotations;
 import pon.main.modules.settings.BlockSelectCmd;
@@ -136,7 +137,7 @@ public class Nuker extends Parent {
         float[] angle = InteractionUtility.calculateAngle(blockData.vec3d);
         rotationYaw = angle[0];
         rotationPitch = angle[1];
-        Main.MODULE_MANAGER.getModule(Rotations.class).fixRotation = rotationYaw;
+        Managers.MODULE_MANAGER.getModule(Rotations.class).fixRotation = rotationYaw;
 
         if (mode.getValue() == Mode.normal) {
             breakBlock();

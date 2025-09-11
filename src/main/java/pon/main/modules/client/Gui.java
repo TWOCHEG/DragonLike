@@ -17,6 +17,7 @@ import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.ChoseGuiArea;
 import pon.main.gui.components.ConfigWindowArea;
 import pon.main.gui.components.FriendsWindowArea;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.*;
 
@@ -86,7 +87,7 @@ public class Gui extends Parent {
         if (mc.currentScreen instanceof TitleScreen || mc.currentScreen == null) {
             choseGuiArea.show = true;
             if (categories == null) {
-                Map<Main.Categories, List<Parent>> modules = Main.MODULE_MANAGER.getForGui();
+                Map<Main.Categories, List<Parent>> modules = Managers.MODULE_MANAGER.getForGui();
                 categories = new LinkedList<>();
                 for (Map.Entry<Main.Categories, List<Parent>> entry : modules.entrySet()) {
                     LinkedList<Parent> moduleList = new LinkedList<>(entry.getValue());
@@ -102,6 +103,9 @@ public class Gui extends Parent {
 
     @Override
     public void onDisable() {
+        if (getEnable()) {
+            setEnable(false, false);
+        }
         if (mc.currentScreen != null) {
             choseGuiArea.show = false;
             choseGuiArea.returnToDefault();

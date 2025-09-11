@@ -2,14 +2,13 @@ package pon.main.modules.hud.components;
 
 import net.minecraft.client.gui.DrawContext;
 import pon.main.gui.components.CategoryArea;
-import pon.main.modules.hud.Hud;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.FrameRateCounter;
 import pon.main.utils.render.Render2D;
 
 public class FPSHud extends HudArea {
-    public FPSHud(Hud hud) {
-        super(hud);
+    public FPSHud() {
+        super();
     }
 
     @Override

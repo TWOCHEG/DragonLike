@@ -54,7 +54,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity> {
             livingEntity.lastBodyYaw = Render2D.interpolateFloat(Managers.PLAYER.prevBodyYaw, Managers.PLAYER.bodyYaw, Render3D.getTickDelta());
         }
 
-        FreeCam freeCam = Main.MODULE_MANAGER.getModule(FreeCam.class);
+        FreeCam freeCam = Managers.MODULE_MANAGER.getModule(FreeCam.class);
         if (livingEntity != mc.player && freeCam.getEnable() && freeCam.track.getValue() && freeCam.trackEntity != null && freeCam.trackEntity == livingEntity) {
             ci.cancel();
             return;

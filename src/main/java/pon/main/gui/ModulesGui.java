@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
 import pon.main.gui.components.*;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.client.Gui;
 import pon.main.utils.math.GetAnimDiff;
@@ -51,7 +52,7 @@ public class ModulesGui extends Screen {
 
     public ModulesGui() {
         super(Text.literal("modules"));
-        this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
+        this.gui = Managers.MODULE_MANAGER.getModule(Gui.class);
     }
 
     @Override

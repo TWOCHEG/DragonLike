@@ -6,7 +6,8 @@ import net.minecraft.client.resource.language.LanguageManager;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.Main.Categories;
-import pon.main.managers.ConfigManager;
+import pon.main.managers.Managers;
+import pon.main.managers.client.ConfigManager;
 import pon.main.events.impl.OnChangeConfig;
 import pon.main.modules.settings.Setting;
 import pon.main.modules.client.Notify;
@@ -158,7 +159,7 @@ public abstract class Parent {
     }
 
     public static void notify(Notify.NotifyData n) {
-        Notify notify = Main.MODULE_MANAGER.getModule(Notify.class);
+        Notify notify = Managers.MODULE_MANAGER.getModule(Notify.class);
         notify.add(n);
     }
 
@@ -177,7 +178,7 @@ public abstract class Parent {
     }
 
     public static boolean fullNullCheck() {
-        return mc.player == null || mc.world == null || Main.MODULE_MANAGER == null;
+        return mc.player == null || mc.world == null;
     }
 
     public boolean isKeyPressed(int button) {

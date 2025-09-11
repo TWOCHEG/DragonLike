@@ -7,7 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import pon.main.Main;
 import pon.main.gui.FriendsGui;
-import pon.main.managers.FriendsManager;
+import pon.main.managers.client.FriendsManager;
 import pon.main.managers.Managers;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.TextUtils;

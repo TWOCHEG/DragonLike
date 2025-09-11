@@ -9,10 +9,10 @@ import pon.main.gui.components.ButtonArea;
 import pon.main.gui.components.ContextMenu;
 import pon.main.gui.components.ModuleArea;
 import pon.main.gui.components.RenderArea;
+import pon.main.managers.Managers;
 import pon.main.modules.client.Gui;
-import pon.main.modules.hud.Hud;
+import pon.main.modules.hud.HudModule;
 import pon.main.modules.hud.components.HudArea;
-import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class HudGui extends Screen {
     private final Gui gui;
-    private final Hud hud;
+    private final HudModule hud;
 
     private boolean open = true;
     public float openFactor = 0f;
@@ -37,8 +37,8 @@ public class HudGui extends Screen {
 
     public HudGui() {
         super(Text.literal("hud"));
-        this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
-        this.hud = Main.MODULE_MANAGER.getModule(Hud.class);
+        this.gui = Managers.MODULE_MANAGER.getModule(Gui.class);
+        this.hud = Managers.MODULE_MANAGER.getModule(HudModule.class);
     }
 
     @Override
@@ -90,14 +90,14 @@ public class HudGui extends Screen {
         if (cm != null && cm.mouseClicked(mouseX, mouseY, button)) return true;
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             List<RenderArea> list = new LinkedList<>();
-            for (HudArea area : Hud.areas) {
+            for (HudArea area : Managers.HUD_MANAGER.hudList()) {
                 if (area.checkHovered(mouseX, mouseY)) {
                     list.addAll(ModuleArea.getAreas(area.getSettings(), null));
 
                     list.add(
                         new ButtonArea.Builder("🗑 delete")
                             .onClick(() -> {
-                                hud.setStatusHud(area, false);
+                                area.setEnable(false);
                             })
                             .build()
                     );
@@ -106,20 +106,18 @@ public class HudGui extends Screen {
             }
 
             if (list.isEmpty()) {
-                for (HudArea area : Hud.areas) {
-                    if (hud.checkEnable(area)) {
-                        ButtonArea buttonArea = new ButtonArea.Builder("- " + hud.getName(area))
+                for (HudArea area : Managers.HUD_MANAGER.hudList()) {
+                    if (area.getEnable()) {
+                        ButtonArea buttonArea = new ButtonArea.Builder("- " + area.getName())
                             .onClick(() -> {
-                                hud.setStatusHud(area, false);
+                                area.setEnable(false);
                             })
                             .color(ColorUtils.fromRGB(255, 220, 200))
                             .build();
                         list.add(buttonArea);
                     } else {
-                        ButtonArea buttonArea = new ButtonArea.Builder("+ " + hud.getName(area))
-                            .onClick(() -> {
-                                hud.setStatusHud(area, true);
-                            })
+                        ButtonArea buttonArea = new ButtonArea.Builder("+ " + area.getName())
+                            .onClick(area::onEnableInGui)
                             .build();
 
                         list.add(buttonArea);

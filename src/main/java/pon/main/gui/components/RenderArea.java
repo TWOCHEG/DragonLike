@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import pon.main.Main;
+import pon.main.managers.Managers;
 import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
@@ -58,7 +59,7 @@ public abstract class RenderArea {
 
         hoveredFactor = AnimHelper.handle(checkHovered(mouseX, mouseY), hoveredFactor);
 
-        if (Main.MODULE_MANAGER.getModule(Gui.class).showAreas.getValue()) {
+        if (Managers.MODULE_MANAGER.getModule(Gui.class).showAreas.getValue()) {
             lightArea(context);
         }
     }

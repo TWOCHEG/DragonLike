@@ -4,6 +4,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.screen.TitleScreen;
 import pon.main.Main;
 import pon.main.events.impl.EventKeyPress;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 
 public class Keybinds extends Parent {
@@ -17,11 +18,11 @@ public class Keybinds extends Parent {
         if (
             mc.currentScreen != null &&
             !(mc.currentScreen instanceof TitleScreen) &&
-            e.getKey() != Main.MODULE_MANAGER.getModule(Gui.class).getKeybind()
+            e.getKey() != Managers.MODULE_MANAGER.getModule(Gui.class).getKeybind()
         ) return;
         if (e.getModifiers() == 5) return;  // смена языка
 
-        for (Parent module : Main.MODULE_MANAGER.modules) {
+        for (Parent module : Managers.MODULE_MANAGER.getModules()) {
             module.onKey(e.getKey());
         }
     }

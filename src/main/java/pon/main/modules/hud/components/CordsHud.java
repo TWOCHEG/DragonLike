@@ -4,16 +4,14 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Formatting;
 import pon.main.gui.components.CategoryArea;
 import pon.main.modules.Parent;
-import pon.main.modules.hud.Hud;
+import pon.main.modules.hud.HudModule;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.player.PlayerUtility;
 import pon.main.utils.render.Render2D;
 
-import java.awt.*;
-
 public class CordsHud extends HudArea {
-    public CordsHud(Hud hud) {
-        super(hud);
+    public CordsHud() {
+        super();
     }
 
     @Override

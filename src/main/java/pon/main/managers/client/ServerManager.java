@@ -1,10 +1,11 @@
-package pon.main.managers;
+package pon.main.managers.client;
 
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import org.jetbrains.annotations.NotNull;
 import pon.main.events.impl.PacketEvent;
+import pon.main.managers.IManager;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

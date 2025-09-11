@@ -64,7 +64,11 @@ public class ContextMenu extends RenderArea {
 
         height = padding * 2;
         for (RenderArea area : areas) {
-            height += area.height;
+            if (area instanceof ButtonArea || area instanceof ButtonInputArea) {
+                height += area.height;
+            } else {
+                height += area.height + padding;
+            }
         }
 
         Render2D.fill(
@@ -79,7 +83,11 @@ public class ContextMenu extends RenderArea {
         int y = startY + padding;
         for (RenderArea area : areas) {
             area.render(context, startX + padding, y, width - (padding * 2), -1, mouseX, mouseY);
-            y += area.height;
+            if (area instanceof ButtonArea || area instanceof ButtonInputArea) {
+                y += area.height;
+            } else {
+                y += area.height + padding;
+            }
         }
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);

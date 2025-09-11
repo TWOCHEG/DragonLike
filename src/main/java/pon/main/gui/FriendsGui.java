@@ -10,6 +10,7 @@ import pon.main.Main;
 import pon.main.events.impl.EventChangePlayerLook;
 import pon.main.gui.components.FriendsWindowArea;
 import pon.main.gui.components.RenderArea;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.client.Gui;
 import pon.main.utils.ColorUtils;
@@ -36,7 +37,7 @@ public class FriendsGui extends Screen {
 
     public FriendsGui() {
         super(Text.literal("friends"));
-        this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
+        this.gui = Managers.MODULE_MANAGER.getModule(Gui.class);
         this.fwa = gui.friendsWindowArea;
         areas.add(gui.choseGuiArea);
         areas.add(gui.friendsWindowArea);

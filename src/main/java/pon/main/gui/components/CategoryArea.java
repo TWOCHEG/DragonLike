@@ -3,6 +3,7 @@ package pon.main.gui.components;
 import net.minecraft.client.gui.DrawContext;
 import pon.main.Main;
 import pon.main.Main.Categories;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.ColorSet;
 import pon.main.modules.client.Gui;
@@ -36,7 +37,7 @@ public class CategoryArea extends RenderArea {
         } else {
             diff = -(255 * darkness);
         }
-        ColorSet c = Main.MODULE_MANAGER.getModule(Gui.class).theme;
+        ColorSet c = Managers.MODULE_MANAGER.getModule(Gui.class).theme;
         return ColorUtils.fromRGB(
             (int) (c.r() + diff),
             (int) (c.g() + diff),

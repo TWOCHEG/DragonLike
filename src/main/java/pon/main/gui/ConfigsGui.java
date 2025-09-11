@@ -35,7 +35,7 @@ public class ConfigsGui extends Screen {
 
     public ConfigsGui() {
         super(Text.literal("configs"));
-        this.gui = Main.MODULE_MANAGER.getModule(Gui.class);
+        this.gui = Managers.MODULE_MANAGER.getModule(Gui.class);
         this.cwa = gui.configWindowArea;
         areas.add(gui.choseGuiArea);
         areas.add(gui.configWindowArea);

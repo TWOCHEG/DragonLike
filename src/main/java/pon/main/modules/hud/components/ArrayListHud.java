@@ -4,22 +4,23 @@ import net.minecraft.client.gui.DrawContext;
 import pon.main.Main;
 import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.RenderArea;
+import pon.main.managers.Managers;
 import pon.main.modules.Parent;
-import pon.main.modules.hud.Hud;
+import pon.main.modules.hud.HudModule;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
 import pon.main.utils.render.Render2D;
 
 public class ArrayListHud extends HudArea {
-    public ArrayListHud(Hud hud) {
-        super(hud);
+    public ArrayListHud() {
+        super();
     }
 
     @Override
     public void render(DrawContext context, int x, int y, int width, int height, double mouseX, double mouseY) {
         if (areas.isEmpty()) {
-            for (Parent module : Main.MODULE_MANAGER.modules) {
-                if (module.getName() == null || module.getName().isEmpty()) continue;
+            for (Parent module : Managers.MODULE_MANAGER.getModules()) {
+                if (module.getName() == null || module.getName().isEmpty() || !module.isToggleable()) continue;
                 areas.add(new ModuleNameArea(this, module));
             }
         }
@@ -56,39 +57,23 @@ public class ArrayListHud extends HudArea {
         @Override
         public void render(DrawContext context, int x, int y, int width, int height, double mouseX, double mouseY) {
             height = mc.textRenderer.fontHeight + (padding * 2);
-            if (x > context.getScaledWindowWidth() / 2) {
-                Render2D.fill(
-                    context,
-                    x + width - nameWidth, y,
-                    x + width,
-                    y + height,
-                    CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
-                    bigPadding, 2
-                );
-                context.drawText(
-                    mc.textRenderer, module.getName(),
-                    x + width - nameWidth + padding,
-                    y + padding,
-                    ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
-                    false
-                );
-            } else {
-                Render2D.fill(
-                    context,
-                    x, y,
-                    x + nameWidth,
-                    y + height,
-                    CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
-                    bigPadding, 2
-                );
-                context.drawText(
-                    mc.textRenderer, module.getName(),
-                    x + padding,
-                    y + padding,
-                    ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
-                    false
-                );
-            }
+            boolean right = x < context.getScaledWindowWidth() / 2;
+
+            Render2D.fill(
+                context,
+                right ? x : x + width - nameWidth, y,
+                right ? x + nameWidth : x + width, y + height,
+                CategoryArea.makeAColor((100 + (30 * draggedFactor)) * showFactor),
+                bigPadding, 2
+            );
+            context.drawText(
+                mc.textRenderer, module.getName(),
+                right ? x + padding : x + width - nameWidth + padding,
+                y + padding,
+                ColorUtils.fromRGB(255, 255, 255, 200 * showFactor),
+                false
+            );
+            width = nameWidth;
             super.render(context, x, y, width, (int) (height * showFactor), mouseX, mouseY);
         }
 

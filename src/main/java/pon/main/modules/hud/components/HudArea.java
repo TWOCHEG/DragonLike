@@ -2,15 +2,16 @@ package pon.main.modules.hud.components;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
-import pon.main.Main;
 import pon.main.gui.HudGui;
 import pon.main.gui.components.RenderArea;
-import pon.main.managers.ConfigManager;
+import pon.main.managers.client.ConfigManager;
+import pon.main.managers.Managers;
 import pon.main.modules.client.Gui;
-import pon.main.modules.hud.Hud;
+import pon.main.modules.hud.HudModule;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.math.AnimHelper;
+import pon.main.utils.math.MouseUtils;
 import pon.main.utils.math.Timer;
 
 import java.lang.reflect.Field;
@@ -18,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class HudArea extends RenderArea {
-    protected Hud hud;
+    protected HudModule hud;
 
     protected final ConfigManager CONFIG;
 
@@ -29,20 +30,53 @@ public abstract class HudArea extends RenderArea {
 
     private Timer timer = new Timer();
 
-    private float colisionBorderFactor = 0;
-    private boolean colisionBorderShow = false;
+    private float collisionBorderFactor = 0;
+    private boolean collisionBorderShow = false;
 
     public List<Setting> settings = new LinkedList();
 
-    public HudArea(Hud hud) {
+    public HudArea() {
         super();
-        this.hud = hud;
-        this.CONFIG = new ConfigManager(hud.getName(this));
+        this.hud = Managers.MODULE_MANAGER.getModule(HudModule.class);
+        this.CONFIG = new ConfigManager(getName());
+
+        int[] savePos = getPos();
+        setPos(savePos[0], savePos[1]);
+    }
+
+    public void setEnable(boolean enable) {
+        CONFIG.set("enable", enable);
+    }
+    public boolean getEnable() {
+        return CONFIG.get("enable", false);
     }
 
     public void setPos(double x, double y) {
-        this.x = (int) x;
-        this.y = (int) y;
+        CONFIG.set("x", x);
+        CONFIG.set("y", y);
+        setRenderPos((int) x, (int) y);
+    }
+
+    public int[] getPos() {
+        return new int[]{CONFIG.get("x", 0), CONFIG.get("y", 0)};
+    }
+
+    public int[] getRenderPos() {
+        return new int[]{x, y};
+    }
+
+    public void setRenderPos(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void onEnableInGui() {
+        setEnable(true);
+        double[] mousePos = MouseUtils.getPos();
+        setRenderPos((int) mousePos[0], (int) mousePos[1]);
+        dragged = true;
+        areaClickX = mousePos[0] - x;
+        areaClickY = mousePos[1] - y;
     }
 
     @Override
@@ -54,30 +88,30 @@ public abstract class HudArea extends RenderArea {
         animHandler();
         draggedFactor = AnimHelper.handle(dragged, draggedFactor);
 
-        if (timer.getTimeMs() > 250 && colisionBorderShow) {
-            colisionBorderShow = false;
+        if (timer.getTimeMs() > 250 && collisionBorderShow) {
+            collisionBorderShow = false;
         }
-        colisionBorderFactor = AnimHelper.handle(colisionBorderShow, colisionBorderFactor);
+        collisionBorderFactor = AnimHelper.handle(collisionBorderShow, collisionBorderFactor);
 
-        if (Main.MODULE_MANAGER.getModule(Gui.class).showAreas.getValue()) {
+        if (Managers.MODULE_MANAGER.getModule(Gui.class).showAreas.getValue()) {
             lightArea(context);
         }
 
-        if (colisionBorderFactor > 0) {
+        if (collisionBorderFactor > 0) {
             context.drawBorder(
                 x - hud.areasOffset,
                 y - hud.areasOffset,
                 width + hud.areasOffset,
                 height + hud.areasOffset,
-                ColorUtils.fromRGB(255, 255, 255, (150 * colisionBorderFactor) * showFactor)
+                ColorUtils.fromRGB(255, 255, 255, (150 * collisionBorderFactor) * showFactor)
             );
         }
 
         if (draggedFactor != 0) {
             context.drawBorder(
-                (int) (Hud.offset * draggedFactor), (int) (Hud.offset * draggedFactor),
-                (int) (context.getScaledWindowWidth() - ((Hud.offset * 2) * draggedFactor)),
-                (int) (context.getScaledWindowHeight() - ((Hud.offset * 2) * draggedFactor)),
+                (int) (HudModule.offset * draggedFactor), (int) (HudModule.offset * draggedFactor),
+                (int) (context.getScaledWindowWidth() - ((HudModule.offset * 2) * draggedFactor)),
+                (int) (context.getScaledWindowHeight() - ((HudModule.offset * 2) * draggedFactor)),
                 ColorUtils.fromRGB(255, 255, 255, 150 * draggedFactor)
             );
         }
@@ -108,7 +142,7 @@ public abstract class HudArea extends RenderArea {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (dragged) {
             dragged = false;
-            hud.changeHudPos(this, x, y);
+            setPos(x, y);
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
@@ -119,14 +153,14 @@ public abstract class HudArea extends RenderArea {
             double x = mouseX - areaClickX;
             double y = mouseY - areaClickY;
 
-            setPos(x, y);
+            setRenderPos((int) x, (int) y);
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
-    public void showColisionBorders() {
+    public void showCollisionBorders() {
         timer.reset();
-        colisionBorderShow = true;
+        collisionBorderShow = true;
     }
 
     public List<Setting> getSettings() {
@@ -150,5 +184,12 @@ public abstract class HudArea extends RenderArea {
         }
         settings.forEach(s -> s.init(CONFIG));
         return settings;
+    }
+
+    public String getName() {
+        return this.getClass().getSimpleName().replaceAll(
+                "(?<=[a-z])([A-Z])|(?<=[A-Z])([A-Z][a-z])",
+                " $1$2"
+        ).trim().toLowerCase();
     }
 }

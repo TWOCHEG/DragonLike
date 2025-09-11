@@ -1,8 +1,10 @@
-package pon.main.managers;
+package pon.main.managers.client;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.NotNull;
+import pon.main.managers.IManager;
+import pon.main.managers.Managers;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

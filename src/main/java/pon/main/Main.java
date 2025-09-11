@@ -9,17 +9,10 @@ import java.util.List;
 import net.fabricmc.loader.api.FabricLoader;
 import org.lwjgl.glfw.GLFW;
 import pon.main.managers.Managers;
-import pon.main.modules.ModuleManager;
-
-import pon.main.modules.hud.Hud;
-import pon.main.modules.misc.*;
 import pon.main.modules.client.*;
-import pon.main.modules.render.*;
-import pon.main.modules.world.*;
 
 public class Main implements ModInitializer {
 	public static IEventBus EVENT_BUS = new EventBus();
-	public static ModuleManager MODULE_MANAGER = null;
     public static final String VERSION = "0.0.1";
     public static final String NAME_SPACE = "main";
 
@@ -45,20 +38,6 @@ public class Main implements ModInitializer {
 		);
 		Managers.init();
         Managers.subscribe();
-
-		MODULE_MANAGER = new ModuleManager(
-			new Gui(),
-			new Keybinds(),
-			new FakePlayer(),
-			new Nuker(),
-			new Notify(),
-			new AutoResponser(),
-            new LagNotifier(),
-            new DiscordPresence(),
-            new Rotations(),
-            new FreeCam(),
-            new Hud()
-		);
 	}
 
     public static boolean isFuturePresent() {

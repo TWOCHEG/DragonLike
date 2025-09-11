@@ -3,13 +3,12 @@ package pon.main.modules.hud.components;
 import net.minecraft.client.gui.DrawContext;
 import pon.main.gui.components.CategoryArea;
 import pon.main.managers.Managers;
-import pon.main.modules.hud.Hud;
 import pon.main.utils.ColorUtils;
 import pon.main.utils.render.Render2D;
 
 public class TPSHud extends HudArea {
-    public TPSHud(Hud hud) {
-        super(hud);
+    public TPSHud() {
+        super();
     }
 
     @Override

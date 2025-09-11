@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import pon.main.Main;
 import pon.main.events.impl.EventPositionCamera;
 import pon.main.events.impl.EventRotateCamera;
+import pon.main.managers.Managers;
 import pon.main.modules.render.FreeCam;
 import pon.main.utils.render.Render3D;
 
@@ -60,20 +61,20 @@ public abstract class MixinCamera {
 
     @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setPos(DDD)V"))
     private void setPosHook(Args args) {
-        FreeCam freeCam = Main.MODULE_MANAGER.getModule(FreeCam.class);
+        FreeCam freeCam = Managers.MODULE_MANAGER.getModule(FreeCam.class);
         if (freeCam.getEnable())
             args.setAll(freeCam.getFakeX(), freeCam.getFakeY(), freeCam.getFakeZ());
     }
     @Inject(method = "update", at = @At("TAIL"))
     private void updateHook(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
-        FreeCam freeCam = Main.MODULE_MANAGER.getModule(FreeCam.class);
+        FreeCam freeCam = Managers.MODULE_MANAGER.getModule(FreeCam.class);
         if (freeCam.getEnable()) {
             this.thirdPerson = true;
         }
     }
     @ModifyArgs(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setRotation(FF)V"))
     private void setRotationHook(Args args) {
-        FreeCam freeCam = Main.MODULE_MANAGER.getModule(FreeCam.class);
+        FreeCam freeCam = Managers.MODULE_MANAGER.getModule(FreeCam.class);
         if(freeCam.getEnable())
             args.setAll(freeCam.getFakeYaw(), freeCam.getFakePitch());
     }

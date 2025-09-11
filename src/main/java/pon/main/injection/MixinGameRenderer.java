@@ -103,7 +103,7 @@ public abstract class MixinGameRenderer {
         }
          */
 
-        FreeCam freeCam = Main.MODULE_MANAGER.getModule(FreeCam.class);
+        FreeCam freeCam = Managers.MODULE_MANAGER.getModule(FreeCam.class);
         if (freeCam.getEnable()) {
             Profilers.get().pop();
             info.cancel();

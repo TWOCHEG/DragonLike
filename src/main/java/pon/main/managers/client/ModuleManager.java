@@ -1,10 +1,12 @@
-package pon.main.modules;
+package pon.main.managers.client;
 
 import pon.main.Main;
+import pon.main.modules.Parent;
+
 import java.util.*;
 
 public class ModuleManager {
-    public final List<Parent> modules;
+    private final List<Parent> modules;
 
     public ModuleManager(Parent... modules) {
         this.modules = List.of(modules);
@@ -13,6 +15,10 @@ public class ModuleManager {
             Main.EVENT_BUS.subscribe(m);
             m.getSettings();
         });
+    }
+
+    public List<Parent> getModules() {
+        return modules;
     }
 
     public Map<Main.Categories, List<Parent>> getForGui() {

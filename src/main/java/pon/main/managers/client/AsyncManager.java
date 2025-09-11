@@ -1,4 +1,4 @@
-package pon.main.managers;
+package pon.main.managers.client;
 
 import com.google.common.collect.Lists;
 import meteordevelopment.orbit.EventHandler;
@@ -8,7 +8,7 @@ import net.minecraft.entity.Entity;
 import pon.main.events.impl.EventPostTick;
 import pon.main.events.impl.EventSync;
 import pon.main.events.impl.EventTick;
-import pon.main.modules.Parent;
+import pon.main.managers.IManager;
 
 import java.util.Collections;
 import java.util.List;
