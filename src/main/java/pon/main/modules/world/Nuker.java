@@ -1,4 +1,4 @@
-package pon.main.modules.misc;
+package pon.main.modules.world;
 
 import meteordevelopment.orbit.EventHandler;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -31,7 +31,7 @@ import static net.minecraft.block.Blocks.*;
 
 public class Nuker extends Parent {
     public Nuker() {
-        super("nuker", Main.Categories.misc);
+        super("nuker", Main.Categories.world);
         setEnable(false, false);
 
         WorldRenderEvents.START.register(context -> {

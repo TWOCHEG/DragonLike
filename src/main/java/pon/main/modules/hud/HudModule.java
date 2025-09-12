@@ -20,9 +20,7 @@ public class HudModule extends Parent {
     public HudModule() {
         super(null, null);
 
-        HudRenderCallback.EVENT.register((context, tickDelta) -> {
-            render(context);
-        });
+        HudRenderCallback.EVENT.register((context, tickDelta) -> render(context));
     }
 
     @EventHandler

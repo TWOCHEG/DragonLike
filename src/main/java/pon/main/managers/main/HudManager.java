@@ -1,4 +1,4 @@
-package pon.main.managers.client;
+package pon.main.managers.main;
 
 import pon.main.modules.hud.components.HudArea;
 

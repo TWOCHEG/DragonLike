@@ -1,4 +1,4 @@
-package pon.main.managers.client;
+package pon.main.managers.main;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

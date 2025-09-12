@@ -1,6 +1,8 @@
 package pon.main.events.impl;
 
-public class EventPlayerJump {
+import pon.main.events.Event;
+
+public class EventPlayerJump extends Event {
     private boolean pre;
 
     public EventPlayerJump(boolean pre) {

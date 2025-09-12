@@ -1,6 +1,9 @@
 package pon.main.modules.hud.components;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.BufferBuilder;
 import pon.main.Main;
 import pon.main.gui.components.CategoryArea;
 import pon.main.gui.components.RenderArea;

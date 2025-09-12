@@ -1,6 +1,6 @@
 package pon.main.modules.settings;
 
-import pon.main.managers.client.ConfigManager;
+import pon.main.managers.main.ConfigManager;
 import pon.main.utils.EnumHelper;
 
 import java.util.Arrays;

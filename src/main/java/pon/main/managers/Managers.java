@@ -4,6 +4,7 @@ import pon.main.modules.hud.HudModule;
 import pon.main.modules.hud.components.*;
 
 import pon.main.managers.client.*;
+import pon.main.managers.main.*;
 
 import pon.main.modules.client.*;
 import pon.main.modules.misc.*;

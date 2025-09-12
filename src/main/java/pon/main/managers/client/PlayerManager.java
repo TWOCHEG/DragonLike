@@ -110,7 +110,7 @@ public class PlayerManager implements IManager {
     }
 
     @EventHandler
-    public void modifyVelocity(EventSetVelocity e) {
+    public void modifyVelocity(EventPlayerTravel e) {
         Managers.MODULE_MANAGER.getModule(Rotations.class).modifyVelocity(e);
     }
 

@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import pon.main.gui.HudGui;
 import pon.main.gui.components.RenderArea;
-import pon.main.managers.client.ConfigManager;
+import pon.main.managers.main.ConfigManager;
 import pon.main.managers.Managers;
 import pon.main.modules.client.Gui;
 import pon.main.modules.hud.HudModule;

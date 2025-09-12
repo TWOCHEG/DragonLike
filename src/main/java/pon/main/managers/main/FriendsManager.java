@@ -1,4 +1,4 @@
-package pon.main.managers.client;
+package pon.main.managers.main;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;

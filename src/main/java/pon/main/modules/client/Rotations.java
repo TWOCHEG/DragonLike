@@ -3,10 +3,7 @@ package pon.main.modules.client;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import pon.main.Main;
-import pon.main.events.impl.EventFixVelocity;
-import pon.main.events.impl.EventKeyboardInput;
-import pon.main.events.impl.EventPlayerJump;
-import pon.main.events.impl.EventSetVelocity;
+import pon.main.events.impl.*;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
 
@@ -36,23 +33,36 @@ public class Rotations extends Parent {
     }
 
     public void onPlayerMove(EventFixVelocity event) {
-        if (moveFix.getValue() == MoveFix.free) {
+        if (moveFix.getValue() == MoveFix.focused) {
             if (Float.isNaN(fixRotation) || mc.player.isRiding())
                 return;
             event.setVelocity(fix(fixRotation, event.getMovementInput(), event.getSpeed()));
         }
     }
 
-    public void modifyVelocity(EventSetVelocity e) {
+    public void modifyVelocity(EventPlayerTravel e) {
 //        if (ModuleManager.aura.isEnabled() && ModuleManager.aura.target != null && ModuleManager.aura.rotationMode.not(Aura.Mode.None)
 //                && ModuleManager.aura.elytraTarget.getValue() && Managers.PLAYER.ticksElytraFlying > 5) {
-//            mc.player.setYaw(prevYaw);
-//            mc.player.setPitch(prevPitch);
+//            if (e.isPre()) {
+//                prevYaw = mc.player.getYaw();
+//                prevPitch = mc.player.getPitch();
+//
+//                mc.player.setYaw(fixRotation);
+//                mc.player.setPitch(ModuleManager.aura.rotationPitch);
+//            } else {
+//                mc.player.setYaw(prevYaw);
+//                mc.player.setPitch(prevPitch);
+//            }
 //            return;
 //        }
 
         if (moveFix.getValue() == MoveFix.focused && !Float.isNaN(fixRotation) && !mc.player.isRiding()) {
-            mc.player.setYaw(prevYaw);
+            if (e.isPre()) {
+                prevYaw = mc.player.getYaw();
+                mc.player.setYaw(fixRotation);
+            } else {
+                mc.player.setYaw(prevYaw);
+            }
         }
     }
 
