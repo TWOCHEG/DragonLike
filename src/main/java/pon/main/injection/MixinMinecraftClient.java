@@ -1,5 +1,6 @@
 package pon.main.injection;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
@@ -7,6 +8,7 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.util.Icons;
+import net.minecraft.client.util.MacWindowUtil;
 import net.minecraft.client.util.Window;
 import net.minecraft.resource.ResourcePack;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +33,7 @@ import java.util.*;
 
 import pon.main.Main;
 import pon.main.events.impl.*;
+import pon.main.modules.Parent;
 import pon.main.utils.math.FrameRateCounter;
 
 @Mixin(MinecraftClient.class)
@@ -64,11 +67,6 @@ public abstract class MixinMinecraftClient {
         Main.EVENT_BUS.post(new EventPostTick());
     }
 
-    @Inject(method = "onResolutionChanged", at = @At("TAIL"))
-    private void captureResize(CallbackInfo ci) {
-        // WindowResizeCallback.EVENT.invoker().onResized((MixinMinecraftClient) (Object) this, this.window);
-    }
-
 
     @Inject(method = "doItemPick", at = @At("HEAD"), cancellable = true)
     private void doItemPickHook(CallbackInfo ci) {
@@ -84,7 +82,7 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     public void setScreenHookPre(Screen screen, CallbackInfo ci) {
-        // if (Module.fullNullCheck()) return;
+        if (Parent.fullNullCheck()) return;
         EventScreen event = new EventScreen(screen);
         Main.EVENT_BUS.post(event);
         if (event.isCancelled()) ci.cancel();
@@ -92,7 +90,7 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "setScreen", at = @At("RETURN"))
     public void setScreenHookPost(Screen screen, CallbackInfo ci) {
-        // if (Module.fullNullCheck()) return;
+        if (Parent.fullNullCheck()) return;
         if (screen instanceof MultiplayerScreen mScreen && mScreen.getServerList() != null) { // ModuleManager.antiServerAdd.isEnabled() &&
             for (int i = 0; i < mScreen.getServerList().size(); i++) {
                 ServerInfo info = mScreen.getServerList().get(i);
@@ -108,17 +106,15 @@ public abstract class MixinMinecraftClient {
         }
     }
 
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/Window;setIcon(Lnet/minecraft/resource/ResourcePack;Lnet/minecraft/client/util/Icons;)V"))
-    private void onChangeIcon(Window instance, ResourcePack resourcePack, Icons icons) throws IOException {
-        // RenderSystem.assertInInitPhase();
-
+//    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/Window;setIcon(Lnet/minecraft/resource/ResourcePack;Lnet/minecraft/client/util/Icons;)V"))
+//    private void onChangeIcon(Window instance, ResourcePack resourcePack, Icons icons) throws IOException {
 //        if (GLFW.glfwGetPlatform() == 393218) {
 //            MacWindowUtil.setApplicationIconImage(icons.getMacIcon(resourcePack));
 //            return;
 //        }
 //
-//        setWindowIcon(ThunderHack.class.getResourceAsStream("/icon.png"), ThunderHack.class.getResourceAsStream("/icon.png"));
-    }
+//        setWindowIcon(Main.class.getResourceAsStream("/icon.png"), Main.class.getResourceAsStream("/icon.png"));
+//    }
 
     public void setWindowIcon(InputStream img16x16, InputStream img32x32) {
         try (MemoryStack memorystack = MemoryStack.stackPush()) {

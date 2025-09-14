@@ -33,7 +33,7 @@ public class AnimHelper {
 
         float finalDiff = diff;
         if (mode != null) {
-            finalDiff = Math.max(mode.getDiff(factor, finalDiff), 0.01f);
+            finalDiff = Math.max(mode.getDiff(factor, finalDiff), 0.005f);
         }
 
         factor = !forward ? factor - finalDiff : factor + finalDiff;

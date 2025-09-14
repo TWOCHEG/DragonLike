@@ -2,16 +2,22 @@ package pon.main.utils.world;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.DamageUtil;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.explosion.Explosion;
-// import pon.purr.mixins.accesors.IExplosion;
+import pon.main.utils.math.PredictUtility;
+import pon.main.utils.player.InventoryUtility;
 
+import static net.minecraft.enchantment.EnchantmentHelper.getProtectionAmount;
 import static pon.main.gui.components.RenderArea.mc;
 
 public final class ExplosionUtility {
@@ -27,11 +33,11 @@ public final class ExplosionUtility {
      * @param optimized  use light calculate
      * @return damage value in Float format
      */
-//    public static float getAutoCrystalDamage(Vec3d crystalPos, PlayerEntity target, int predictTicks, boolean optimized) {
-//        if (predictTicks == 0) return getExplosionDamage(crystalPos, target, optimized);
-//        else
-//            return getExplosionDamageWPredict(crystalPos, target, PredictUtility.predictBox(target, predictTicks), optimized);
-//    }
+    public static float getAutoCrystalDamage(Vec3d crystalPos, PlayerEntity target, int predictTicks, boolean optimized) {
+        if (predictTicks == 0) return 1;  // getExplosionDamage(crystalPos, target, optimized);
+        else
+            return 1;  // getExplosionDamageWPredict(crystalPos, target, PredictUtility.predictBox(target, predictTicks), optimized);
+    }
 
     /**
      * Calculate self damage based on crystal position and self extrapolation (predict).
@@ -91,7 +97,7 @@ public final class ExplosionUtility {
 //
 //                if (toDamage <= 0f) toDamage = 0f;
 //                else {
-//                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(target.getArmorItems());
+//                    float protAmount = ModuleManager.autoCrystal.assumeBestArmor.getValue() ? 32f : getProtectionAmount(InventoryUtility.getArmor(target));
 //
 //                    if (protAmount > 0)
 //                        toDamage = DamageUtil.getInflictedDamage(toDamage, protAmount);

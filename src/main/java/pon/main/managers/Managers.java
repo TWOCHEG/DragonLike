@@ -9,7 +9,7 @@ import pon.main.managers.main.*;
 import pon.main.modules.client.*;
 import pon.main.modules.misc.*;
 import pon.main.modules.render.*;
-import pon.main.modules.world.*;
+import pon.main.modules.combat.*;
 
 import static pon.main.Main.EVENT_BUS;
 
@@ -27,7 +27,9 @@ public class Managers {
         new DiscordPresence(),
         new Rotations(),
         new FreeCam(),
-        new HudModule()
+        new HudModule(),
+        new AntiBot(),
+        new KillAura()
     );
 
     public static final HudManager HUD_MANAGER = new HudManager(

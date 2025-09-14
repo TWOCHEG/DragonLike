@@ -1,7 +1,9 @@
 package pon.main.utils.player;
 
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
@@ -12,6 +14,13 @@ import java.util.Objects;
 import static pon.main.modules.Parent.mc;
 
 public final class PlayerUtility {
+    public static int getEntityPing(PlayerEntity entity) {
+        if (mc.getNetworkHandler() == null) return 0;
+        PlayerListEntry playerListEntry = mc.getNetworkHandler().getPlayerListEntry(entity.getUuid());
+        if (playerListEntry == null) return 0;
+        return playerListEntry.getLatency();
+    }
+
     public static boolean isInHell() {
         if (mc.world == null) return false;
         return Objects.equals(mc.world.getRegistryKey().getValue().getPath(), "the_nether");

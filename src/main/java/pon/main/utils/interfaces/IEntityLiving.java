@@ -1,5 +1,9 @@
 package pon.main.utils.interfaces;
 
+import pon.main.modules.combat.KillAura;
+
+import java.util.List;
+
 public interface IEntityLiving {
     double getPrevServerX();
 
@@ -7,6 +11,6 @@ public interface IEntityLiving {
 
     double getPrevServerZ();
 
-    // List<Aura.Position> getPositionHistory();
+    List<KillAura.Position> getPositionHistory();
 }
 

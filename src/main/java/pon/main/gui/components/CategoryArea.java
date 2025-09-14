@@ -16,9 +16,6 @@ import java.util.*;
 public class CategoryArea extends RenderArea {
     private final Categories name;
 
-    private float hoverFactor = 0f;
-    private boolean hovered = false;
-
     public boolean show = false;
 
     public CategoryArea(LinkedList<Parent> modules, Categories name) {
@@ -59,14 +56,12 @@ public class CategoryArea extends RenderArea {
         startY -= offset;
 
         int modulesStartY = startY + 26;
-        int modulePadding = 2;
 
         for (RenderArea m : areas) {
-            height += m.height + modulePadding;
+            height += m.height + padding;
         }
-        height += (modulesStartY - startY) + modulePadding;
+        height += (modulesStartY - startY) + padding;
 
-        hovered = checkHovered(mouseX, mouseY);
         int radius = 7;
 
         Render2D.fill(
@@ -74,7 +69,7 @@ public class CategoryArea extends RenderArea {
             startX, startY,
             startX + width,
             (startY + height),
-            makeAColor((150 + (10 * hoverFactor)) * showFactor),
+            makeAColor((150 + (10 * hoveredFactor)) * showFactor),
             radius, 3
         );
         Render2D.fillPart(
@@ -116,8 +111,8 @@ public class CategoryArea extends RenderArea {
         context.drawHorizontalLine(startX + nameContainerPadding + 12, startX + width - 20, (modulesStartY - 5), ColorUtils.fromRGB(255, 255, 255, 50 * showFactor));
 
         for (RenderArea m : areas) {
-            m.render(context, startX + modulePadding, modulesStartY, width - (modulePadding * 2), 0, mouseX, mouseY);
-            modulesStartY += m.height + modulePadding;
+            m.render(context, startX + padding, modulesStartY, width - (padding * 2), 0, mouseX, mouseY);
+            modulesStartY += m.height + padding;
         }
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);
@@ -125,7 +120,6 @@ public class CategoryArea extends RenderArea {
 
     @Override
     public void animHandler() {
-        hoverFactor = AnimHelper.handle(hovered, hoverFactor);
         showFactor = AnimHelper.handle(show, showFactor, AnimHelper.AnimMode.EaseOut);
     }
 }

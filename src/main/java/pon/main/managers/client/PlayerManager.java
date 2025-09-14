@@ -26,6 +26,7 @@ import pon.main.managers.IManager;
 import pon.main.managers.Managers;
 import pon.main.modules.Parent;
 import pon.main.modules.client.Rotations;
+import pon.main.modules.combat.KillAura;
 import pon.main.utils.math.Timer;
 import pon.main.utils.world.ExplosionUtility;
 
@@ -152,75 +153,75 @@ public class PlayerManager implements IManager {
         return (deltaBodyYaw > 50f ? deltaBodyYaw * 0.2f : 0) + ((IClientPlayerEntity) MinecraftClient.getInstance().player).getLastYaw() - deltaBodyYaw;
     }
 
-//    public boolean checkRtx(float yaw, float pitch, float distance, float wallDistance, Aura.RayTrace rt) {
-//        if (rt == Aura.RayTrace.OFF)
-//            return true;
-//
-//        HitResult result = rayTrace(distance, yaw, pitch);
-//        Vec3d startPoint = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
-//        double distancePow2 = Math.pow(distance, 2);
-//
-//        if (result != null)
-//            distancePow2 = startPoint.squaredDistanceTo(result.getPos());
-//
-//        Vec3d rotationVector = getRotationVector(pitch, yaw).multiply(distance);
-//        Vec3d endPoint = startPoint.add(rotationVector);
-//
-//        Box entityArea = mc.player.getBoundingBox().stretch(rotationVector).expand(1.0, 1.0, 1.0);
-//
-//        EntityHitResult ehr;
-//
-//        double maxDistance = Math.max(distancePow2, Math.pow(wallDistance, 2));
-//
-//        if (rt == Aura.RayTrace.OnlyTarget && Aura.target != null)
-//            ehr = ProjectileUtil.raycast(mc.player, startPoint, endPoint, entityArea, e -> !e.isSpectator() && e.canHit() && e == Aura.target, maxDistance);
-//        else
-//            ehr = ProjectileUtil.raycast(mc.player, startPoint, endPoint, entityArea, e -> !e.isSpectator() && e.canHit(), maxDistance);
-//
-//        if (ehr != null) {
-//            boolean allowedWallDistance = startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(wallDistance, 2);
-//            boolean wallMissing = result == null;
-//            boolean wallBehindEntity = startPoint.squaredDistanceTo(ehr.getPos()) < distancePow2;
-//            boolean allowWallHit = wallMissing || allowedWallDistance || wallBehindEntity;
-//
-//            if (allowWallHit && startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(distance, 2))
-//                return ehr.getEntity() == Aura.target || Aura.target == null || rt == Aura.RayTrace.OnlyTarget;
-//        }
-//
-//        return false;
-//    }
-//
-//    public boolean checkRtx(float yaw, float pitch, float distance, float wallDistance, Entity entity) {
-//        HitResult result = rayTrace(distance, yaw, pitch);
-//        Vec3d startPoint = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
-//        double distancePow2 = Math.pow(distance, 2);
-//
-//        if (result != null)
-//            distancePow2 = startPoint.squaredDistanceTo(result.getPos());
-//
-//        Vec3d rotationVector = getRotationVector(pitch, yaw).multiply(distance);
-//        Vec3d endPoint = startPoint.add(rotationVector);
-//
-//        Box entityArea = mc.player.getBoundingBox().stretch(rotationVector).expand(1.0, 1.0, 1.0);
-//
-//        EntityHitResult ehr;
-//
-//        double maxDistance = Math.max(distancePow2, Math.pow(wallDistance, 2));
-//
-//        ehr = ProjectileUtil.raycast(mc.player, startPoint, endPoint, entityArea, e -> !e.isSpectator() && e.canHit() && e == entity, maxDistance);
-//
-//        if (ehr != null) {
-//            boolean allowedWallDistance = startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(wallDistance, 2);
-//            boolean wallMissing = result == null;
-//            boolean wallBehindEntity = startPoint.squaredDistanceTo(ehr.getPos()) < distancePow2;
-//            boolean allowWallHit = wallMissing || allowedWallDistance || wallBehindEntity;
-//
-//            if (allowWallHit && startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(distance, 2))
-//                return ehr.getEntity() == entity;
-//        }
-//
-//        return false;
-//    }
+    public boolean checkRtx(float yaw, float pitch, float distance, float wallDistance, KillAura.RayTrace rt) {
+        if (rt == KillAura.RayTrace.OFF)
+            return true;
+
+        HitResult result = rayTrace(distance, yaw, pitch);
+        Vec3d startPoint = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+        double distancePow2 = Math.pow(distance, 2);
+
+        if (result != null)
+            distancePow2 = startPoint.squaredDistanceTo(result.getPos());
+
+        Vec3d rotationVector = getRotationVector(pitch, yaw).multiply(distance);
+        Vec3d endPoint = startPoint.add(rotationVector);
+
+        Box entityArea = mc.player.getBoundingBox().stretch(rotationVector).expand(1.0, 1.0, 1.0);
+
+        EntityHitResult ehr;
+
+        double maxDistance = Math.max(distancePow2, Math.pow(wallDistance, 2));
+
+        if (rt == KillAura.RayTrace.OnlyTarget && KillAura.target != null)
+            ehr = ProjectileUtil.raycast(mc.player, startPoint, endPoint, entityArea, e -> !e.isSpectator() && e.canHit() && e == KillAura.target, maxDistance);
+        else
+            ehr = ProjectileUtil.raycast(mc.player, startPoint, endPoint, entityArea, e -> !e.isSpectator() && e.canHit(), maxDistance);
+
+        if (ehr != null) {
+            boolean allowedWallDistance = startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(wallDistance, 2);
+            boolean wallMissing = result == null;
+            boolean wallBehindEntity = startPoint.squaredDistanceTo(ehr.getPos()) < distancePow2;
+            boolean allowWallHit = wallMissing || allowedWallDistance || wallBehindEntity;
+
+            if (allowWallHit && startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(distance, 2))
+                return ehr.getEntity() == KillAura.target || KillAura.target == null || rt == KillAura.RayTrace.OnlyTarget;
+        }
+
+        return false;
+    }
+
+    public boolean checkRtx(float yaw, float pitch, float distance, float wallDistance, Entity entity) {
+        HitResult result = rayTrace(distance, yaw, pitch);
+        Vec3d startPoint = mc.player.getPos().add(0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+        double distancePow2 = Math.pow(distance, 2);
+
+        if (result != null)
+            distancePow2 = startPoint.squaredDistanceTo(result.getPos());
+
+        Vec3d rotationVector = getRotationVector(pitch, yaw).multiply(distance);
+        Vec3d endPoint = startPoint.add(rotationVector);
+
+        Box entityArea = mc.player.getBoundingBox().stretch(rotationVector).expand(1.0, 1.0, 1.0);
+
+        EntityHitResult ehr;
+
+        double maxDistance = Math.max(distancePow2, Math.pow(wallDistance, 2));
+
+        ehr = ProjectileUtil.raycast(mc.player, startPoint, endPoint, entityArea, e -> !e.isSpectator() && e.canHit() && e == entity, maxDistance);
+
+        if (ehr != null) {
+            boolean allowedWallDistance = startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(wallDistance, 2);
+            boolean wallMissing = result == null;
+            boolean wallBehindEntity = startPoint.squaredDistanceTo(ehr.getPos()) < distancePow2;
+            boolean allowWallHit = wallMissing || allowedWallDistance || wallBehindEntity;
+
+            if (allowWallHit && startPoint.squaredDistanceTo(ehr.getPos()) <= Math.pow(distance, 2))
+                return ehr.getEntity() == entity;
+        }
+
+        return false;
+    }
 
     public Entity getRtxTarget(float yaw, float pitch, float distance, boolean ignoreWalls) {
         Entity targetedEntity = null;

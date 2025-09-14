@@ -1,6 +1,6 @@
 package pon.main.modules.settings;
 
-import java.util.*;
+import java.util.function.Predicate;
 
 public class Group extends Setting<Setting> {
     public boolean open;

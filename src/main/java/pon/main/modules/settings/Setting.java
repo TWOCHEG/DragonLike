@@ -14,7 +14,7 @@ public class Setting<T> {
     protected T value = null;
     public T min, max;
     public ConfigManager CONFIG;
-    public Group group = null;
+    public Setting group = null;
     private Predicate<T> visibility;
     public Consumer<Setting<T>> onChange;
 

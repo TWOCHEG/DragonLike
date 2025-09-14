@@ -16,6 +16,7 @@
     "MixinClientPlayerInteractionManager",
     "MixinLivingEntityRenderer",
     "MixinPlayerEntity",
+    "MixinOtherClientPlayerEntity",
     "accesors.IClientPlayerEntity",
     "accesors.IInteractionManager"
   ],

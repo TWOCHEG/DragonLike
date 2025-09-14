@@ -3,11 +3,15 @@ package pon.main.modules;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.network.SequencedPacketCreator;
 import net.minecraft.client.resource.language.LanguageManager;
+import net.minecraft.network.packet.Packet;
 import org.lwjgl.glfw.GLFW;
+import pon.main.Main;
 import pon.main.Main.Categories;
+import pon.main.events.impl.EventSync;
 import pon.main.managers.Managers;
 import pon.main.managers.main.ConfigManager;
 import pon.main.events.impl.OnChangeConfig;
+import pon.main.modules.client.Rotations;
 import pon.main.modules.settings.Setting;
 import pon.main.modules.client.Notify;
 import net.minecraft.client.MinecraftClient;
@@ -24,6 +28,8 @@ public abstract class Parent {
     private int defaultKeybind;
     private boolean defaultEnable;
     public static MinecraftClient mc = MinecraftClient.getInstance();
+
+    protected float rotationYaw = -999, rotationPitch = -999;
 
     public List<Setting> settings = new LinkedList();
 
@@ -44,6 +50,24 @@ public abstract class Parent {
         this.enable = getValue(ConfigManager.enableKeyName, defaultEnable);
         setKeybind(getValue(ConfigManager.keybindKeyName, defaultKeybind));
         this.CATEGORY = category;
+    }
+
+    @EventHandler
+    public void onSync(EventSync e) {
+        if (rotationYaw != -999) {
+            mc.player.setYaw(rotationYaw);
+            mc.player.setPitch(rotationPitch);
+            rotationYaw = -999;
+        }
+    }
+
+    public void rotate(float yaw, float pitch) {
+        rotationYaw = yaw;
+        rotationPitch = pitch;
+        Managers.MODULE_MANAGER.getModule(Rotations.class).fixRotation = rotationYaw;
+    }
+    public void rotate(float[] angles) {
+        rotate(angles[0], angles[1]);
     }
 
     public void onSettingUpdate(Setting setting) {}
@@ -70,18 +94,13 @@ public abstract class Parent {
         }
     }
 
-    public void setEnable(boolean value, boolean showNotify) {
-        if (showNotify) {
-            String text = value ? "enable" : "disable";
-            notify(
-                new Notify.NotifyData(
-                    text + " " + NAME,
-                    Notify.NotifyType.Module
-                )
-            );
-        }
+    public void setEnable(boolean value, Notify.NotifyData notify) {
         CONFIG.set(ConfigManager.enableKeyName, value);
         enable = value;
+
+        if (notify != null) {
+            notify(notify);
+        }
 
         if (getEnable()) {
             onEnable();
@@ -90,7 +109,10 @@ public abstract class Parent {
         }
     }
     public void setEnable(boolean value) {
-        setEnable(value, true);
+        setEnable(value, new Notify.NotifyData(
+            getName() + (value ? " enable" : " disable"),
+            Notify.NotifyType.Module
+        ));
     }
 
     public boolean getEnable() {
@@ -174,6 +196,11 @@ public abstract class Parent {
         int sequence = Math.toIntExact(mc.world.getTime());
 
         mc.getNetworkHandler().sendPacket(packetCreator.predict(sequence));
+    }
+    protected void sendPacket(Packet<?> packet) {
+        if (mc.getNetworkHandler() == null) return;
+
+        mc.getNetworkHandler().sendPacket(packet);
     }
 
     public static boolean fullNullCheck() {

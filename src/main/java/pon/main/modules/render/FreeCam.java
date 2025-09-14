@@ -16,7 +16,7 @@ import pon.main.utils.render.Render3D;
 public class FreeCam extends Parent {
     public FreeCam() {
         super("free cam", Main.Categories.render);
-        setEnable(false, false);
+        setEnable(false, null);
     }
 
     private final Setting<Float> speed = new Setting<>("h speed", 1f, 0.1f, 3f);

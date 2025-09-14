@@ -1,19 +1,28 @@
 package pon.main.utils.player;
 
+import net.minecraft.enchantment.provider.EnchantmentProvider;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.block.Block;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.DamageUtil;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
-import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.ItemTags;
 import org.jetbrains.annotations.NotNull;
 import pon.main.injection.accesors.IInteractionManager;
 import pon.main.managers.Managers;
+import pon.main.modules.Parent;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,91 +47,91 @@ public final class InventoryUtility {
         return counter;
     }
 
-//    public static SearchInvResult getAxe() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//        int slot = -1;
-//        float f = 1.0F;
-//
-//        for (int b1 = 9; b1 < 45; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1 >= 36 ? b1 - 36 : b1);
-//            if (itemStack != null && itemStack.getItem() instanceof AxeItem axe) {
-//                float f1 = axe.getComponents().get(DataComponentTypes.MAX_DAMAGE);
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.SHARPNESS.getRegistryRef()).getEntry(Enchantments.SHARPNESS).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot >= 36) slot = slot - 36;
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+    public static SearchInvResult getAxe() {
+        if (mc.player == null) return SearchInvResult.notFound();
+        int slot = -1;
+        float f = 1.0F;
 
-//    public static SearchInvResult getPickAxeHotbar() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        int slot = -1;
-//        float f = 1.0F;
-//        for (int b1 = 0; b1 < 9; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1);
-//            if (itemStack != null && itemStack.getItem() instanceof HoeItem) {
-//                float f1 = 0;
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.EFFICIENCY.getRegistryRef()).getEntry(Enchantments.EFFICIENCY).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+        for (int b1 = 9; b1 < 45; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1 >= 36 ? b1 - 36 : b1);
+            if (itemStack != null && itemStack.getItem() instanceof AxeItem axe) {
+                float f1 = axe.getComponents().get(DataComponentTypes.MAX_DAMAGE);
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.SHARPNESS.getRegistryRef()).get().getEntry(Enchantments.SHARPNESS.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
 
-//    public static SearchInvResult getPickAxe() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        int slot = -1;
-//        float f = 1.0F;
-//        for (int b1 = 9; b1 < 45; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1);
-//            if (itemStack != null && itemStack.getItem() instanceof PickaxeItem) {
-//                float f1 = 0;
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.EFFICIENCY.getRegistryRef()).getEntry(Enchantments.EFFICIENCY).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+        if (slot >= 36) slot = slot - 36;
 
-//    public static SearchInvResult getPickAxeHotBar() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        int slot = -1;
-//        float f = 1.0F;
-//        for (int b1 = 0; b1 < 9; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1);
-//            if (itemStack != null && itemStack.getItem() instanceof PickaxeItem) {
-//                float f1 = 0;
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.EFFICIENCY.getRegistryRef()).getEntry(Enchantments.EFFICIENCY).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
+
+    public static SearchInvResult getPickAxeHotbar() {
+        if (mc.player == null) return SearchInvResult.notFound();
+
+        int slot = -1;
+        float f = 1.0F;
+        for (int b1 = 0; b1 < 9; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1);
+            if (itemStack != null && itemStack.getItem() instanceof HoeItem) {
+                float f1 = 0;
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.EFFICIENCY.getRegistryRef()).get().getEntry(Enchantments.EFFICIENCY.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
+
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
+
+    public static SearchInvResult getPickAxe() {
+        if (mc.player == null) return SearchInvResult.notFound();
+
+        int slot = -1;
+        float f = 1.0F;
+        for (int b1 = 9; b1 < 45; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1);
+            if (itemStack != null && itemStack.getItem() instanceof HoeItem) {
+                float f1 = 0;
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.EFFICIENCY.getRegistryRef()).get().getEntry(Enchantments.EFFICIENCY.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
+
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
+
+    public static SearchInvResult getPickAxeHotBar() {
+        if (mc.player == null) return SearchInvResult.notFound();
+
+        int slot = -1;
+        float f = 1.0F;
+        for (int b1 = 0; b1 < 9; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1);
+            if (itemStack != null && itemStack.getItem() instanceof HoeItem) {
+                float f1 = 0;
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.EFFICIENCY.getRegistryRef()).get().getEntry(Enchantments.EFFICIENCY.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
+
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
 
     public static SearchInvResult getSkull() {
         if (mc.player == null) return SearchInvResult.notFound();
@@ -143,89 +152,101 @@ public final class InventoryUtility {
         return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
     }
 
-//    public static SearchInvResult getSword() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        int slot = -1;
-//        float f = 1.0F;
-//        for (int b1 = 9; b1 < 45; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1);
-//            if (itemStack != null && itemStack.getItem() instanceof SwordItem sword) {
-//                float f1 = sword.get(DataComponentTypes.MAX_DAMAGE);
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.SHARPNESS.getRegistryRef()).getEntry(Enchantments.SHARPNESS).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+    public static SearchInvResult getSword() {
+        if (mc.player == null) return SearchInvResult.notFound();
 
-//    public static SearchInvResult getSwordHotBar() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        int slot = -1;
-//        float f = 1.0F;
-//        for (int b1 = 0; b1 < 9; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1);
-//            if (itemStack != null && itemStack.getItem() instanceof SwordItem sword) {
-//                float f1 = sword.getComponents().get(DataComponentTypes.MAX_DAMAGE);
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.SHARPNESS.getRegistryRef()).getEntry(Enchantments.SHARPNESS).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+        int slot = -1;
+        float f = 1.0F;
+        for (int b1 = 9; b1 < 45; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1);
+            if (itemStack != null && itemStack.isIn(ItemTags.SWORDS)) {
+                float f1 = itemStack.get(DataComponentTypes.MAX_DAMAGE);
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.SHARPNESS.getRegistryRef()).get().getEntry(Enchantments.SHARPNESS.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
 
-//    public static SearchInvResult getAxeHotBar() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        int slot = -1;
-//        float f = 1.0F;
-//        for (int b1 = 0; b1 < 9; b1++) {
-//            ItemStack itemStack = mc.player.getInventory().getStack(b1);
-//            if (itemStack != null && itemStack.getItem() instanceof AxeItem axe) {
-//                float f1 = axe.getComponents().get(DataComponentTypes.MAX_DAMAGE);
-//                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().get(Enchantments.SHARPNESS.getRegistryRef()).getEntry(Enchantments.SHARPNESS).get(), itemStack);
-//                if (f1 > f) {
-//                    f = f1;
-//                    slot = b1;
-//                }
-//            }
-//        }
-//
-//        if (slot == -1) return SearchInvResult.notFound();
-//        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
-//    }
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
 
+    public static SearchInvResult getSwordHotBar() {
+        if (mc.player == null) return SearchInvResult.notFound();
 
-//    public static int getElytra() {
-//        for (ItemStack stack : mc.player.getInventory().armor)
-//            if (stack.getItem() == Items.ELYTRA && stack.getDamage() < 430)
-//                return -2;
-//
-//        int slot = -1;
-//        for (int i = 0; i < 36; i++) {
-//            ItemStack s = mc.player.getInventory().getStack(i);
-//            if (s.getItem() == Items.ELYTRA && s.getDamage() < 430) {
-//                slot = i;
-//                break;
-//            }
-//        }
-//
-//        if (slot < 9 && slot != -1)
-//            slot = slot + 36;
-//
-//        return slot;
-//    }
+        int slot = -1;
+        float f = 1.0F;
+        for (int b1 = 0; b1 < 9; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1);
+            if (itemStack != null && itemStack.isIn(ItemTags.SWORDS)) {
+                float f1 = itemStack.getComponents().get(DataComponentTypes.MAX_DAMAGE);
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.SHARPNESS.getRegistryRef()).get().getEntry(Enchantments.SHARPNESS.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
+
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
+
+    public static SearchInvResult getAxeHotBar() {
+        if (mc.player == null) return SearchInvResult.notFound();
+
+        int slot = -1;
+        float f = 1.0F;
+        for (int b1 = 0; b1 < 9; b1++) {
+            ItemStack itemStack = mc.player.getInventory().getStack(b1);
+            if (itemStack != null && itemStack.getItem() instanceof AxeItem axe) {
+                float f1 = axe.getComponents().get(DataComponentTypes.MAX_DAMAGE);
+                f1 += EnchantmentHelper.getLevel(mc.world.getRegistryManager().getOptional(Enchantments.SHARPNESS.getRegistryRef()).get().getEntry(Enchantments.SHARPNESS.getRegistry()).get(), itemStack);
+                if (f1 > f) {
+                    f = f1;
+                    slot = b1;
+                }
+            }
+        }
+
+        if (slot == -1) return SearchInvResult.notFound();
+        return new SearchInvResult(slot, true, mc.player.getInventory().getStack(slot));
+    }
+
+    private static ItemStack getItem(EquipmentSlot slot, LivingEntity p) {
+        if (Parent.fullNullCheck()) return null;
+        ItemStack stack = p.getEquippedStack(slot);
+        return stack;
+    }
+    public static ItemStack[] getArmor(LivingEntity p) {
+        ItemStack[] armor = new ItemStack[]{getItem(EquipmentSlot.FEET, p), getItem(EquipmentSlot.LEGS, p), getItem(EquipmentSlot.CHEST, p), getItem(EquipmentSlot.HEAD, p)};
+        return armor;
+    }
+    public static ItemStack[] getArmor() {
+        return getArmor(mc.player);
+    }
+
+    public static int getElytra() {
+        for (ItemStack stack : getArmor())
+            if (stack.getItem() == Items.ELYTRA && stack.getDamage() < 430)
+                return -2;
+
+        int slot = -1;
+        for (int i = 0; i < 36; i++) {
+            ItemStack s = mc.player.getInventory().getStack(i);
+            if (s.getItem() == Items.ELYTRA && s.getDamage() < 430) {
+                slot = i;
+                break;
+            }
+        }
+
+        if (slot < 9 && slot != -1)
+            slot = slot + 36;
+
+        return slot;
+    }
 
     public static SearchInvResult findInHotBar(Searcher searcher) {
         if (mc.player != null) {
@@ -318,47 +339,47 @@ public final class InventoryUtility {
         mc.getNetworkHandler().sendPacket(new UpdateSelectedSlotC2SPacket(slot));
     }
 
-//    public static SearchInvResult getAntiWeaknessItem() {
-//        if (mc.player == null) return SearchInvResult.notFound();
-//
-//        Item mainHand = mc.player.getMainHandStack().getItem();
-//        if (mainHand instanceof SwordItem
-//                || mainHand instanceof HoeItem
-//                || mainHand instanceof AxeItem
-//                || mainHand instanceof ShovelItem) {
-//            return new SearchInvResult(mc.player.getInventory().getSelectedSlot(), true, mc.player.getMainHandStack());
-//        }
-//
-//        return findInHotBar(
-//                itemStack -> itemStack.getItem() instanceof SwordItem
-//                        || itemStack.getItem() instanceof HoeItem
-//                        || itemStack.getItem() instanceof AxeItem
-//                        || itemStack.getItem() instanceof ShovelItem
-//        );
-//    }
+    public static SearchInvResult getAntiWeaknessItem() {
+        if (mc.player == null) return SearchInvResult.notFound();
 
-//    public static float getHitDamage(@NotNull ItemStack weapon, PlayerEntity ent) {
-//        if (mc.player == null) return 0;
-//        float baseDamage = 1f;
-//
-//        if (weapon.getItem() instanceof SwordItem swordItem)
-//            baseDamage = 7;
-//
-//        if (weapon.getItem() instanceof AxeItem axeItem)
-//            baseDamage = 9;
-//
-//        if (mc.player.fallDistance > 0 || ModuleManager.criticals.isEnabled())
+        Item mainHand = mc.player.getMainHandStack().getItem();
+        if (new ItemStack(mainHand).isIn(ItemTags.SWORDS)
+                || mainHand instanceof HoeItem
+                || mainHand instanceof AxeItem
+                || mainHand instanceof ShovelItem) {
+            return new SearchInvResult(mc.player.getInventory().getSelectedSlot(), true, mc.player.getMainHandStack());
+        }
+
+        return findInHotBar(
+                itemStack -> itemStack.isIn(ItemTags.SWORDS)
+                        || itemStack.getItem() instanceof HoeItem
+                        || itemStack.getItem() instanceof AxeItem
+                        || itemStack.getItem() instanceof ShovelItem
+        );
+    }
+
+    public static float getHitDamage(@NotNull ItemStack weapon, PlayerEntity ent) {
+        if (mc.player == null) return 0;
+        float baseDamage = 1f;
+
+        if (new ItemStack(weapon.getItem()).isIn(ItemTags.SWORDS))
+            baseDamage = 7;
+
+        if (weapon.getItem() instanceof AxeItem axeItem)
+            baseDamage = 9;
+
+//        if (mc.player.fallDistance > 0 || Managers.MODULE_MANAGER.getModule(Criticals.class).getEnable())
 //            baseDamage += baseDamage / 2f;
-//
-//        if (mc.player.hasStatusEffect(StatusEffects.STRENGTH)) {
-//            int strength = Objects.requireNonNull(mc.player.getStatusEffect(StatusEffects.STRENGTH)).getAmplifier() + 1;
-//            baseDamage += 3 * strength;
-//        }
-//
-//        // Reduce by armour
-//        baseDamage = DamageUtil.getDamageLeft(ent, baseDamage, mc.world.getDamageSources().generic(), ent.getArmor(), (float) ent.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).getValue());
-//        return baseDamage;
-//    }
+
+        if (mc.player.hasStatusEffect(StatusEffects.STRENGTH)) {
+            int strength = Objects.requireNonNull(mc.player.getStatusEffect(StatusEffects.STRENGTH)).getAmplifier() + 1;
+            baseDamage += 3 * strength;
+        }
+
+        // Reduce by armour
+        baseDamage = DamageUtil.getDamageLeft(ent, baseDamage, mc.world.getDamageSources().generic(), ent.getArmor(), (float) ent.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).getValue());
+        return baseDamage;
+    }
 
     public static SearchInvResult findBedInHotBar() {
         if (mc.player == null) return SearchInvResult.notFound();

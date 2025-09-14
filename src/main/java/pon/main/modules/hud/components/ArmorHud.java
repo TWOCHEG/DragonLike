@@ -11,6 +11,7 @@ import pon.main.gui.components.RenderArea;
 import pon.main.modules.Parent;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.ColorUtils;
+import pon.main.utils.player.InventoryUtility;
 import pon.main.utils.render.Render2D;
 
 public class ArmorHud extends HudArea{
@@ -26,9 +27,8 @@ public class ArmorHud extends HudArea{
         height = 22;
         int areaWidth = height - (padding * 2);
         areas.clear();
-        ItemStack[] armor = new ItemStack[]{getItem(EquipmentSlot.FEET), getItem(EquipmentSlot.LEGS), getItem(EquipmentSlot.CHEST), getItem(EquipmentSlot.HEAD)};
 
-        for (ItemStack item : armor) {
+        for (ItemStack item : InventoryUtility.getArmor()) {
             areas.add(new ArmorElement(this, item));
         }
 
@@ -68,12 +68,6 @@ public class ArmorHud extends HudArea{
         return true;
     }
 
-    private ItemStack getItem(EquipmentSlot slot) {
-        if (Parent.fullNullCheck()) return null;
-        ItemStack stack = mc.player.getEquippedStack(slot);
-        return stack;
-    }
-
     public class ArmorElement extends RenderArea {
         private ItemStack item;
         public ArmorElement(RenderArea parentArea, ItemStack item) {
@@ -85,25 +79,23 @@ public class ArmorHud extends HudArea{
         public void render(DrawContext context, int x, int y, int width, int height, double mouseX, double mouseY) {
             if (item != null && item != ItemStack.EMPTY) {
                 context.drawItem(
-                    item, x + ((width / 2) - 7), y - 1
+                    item, x + ((width / 2) - 8), y - 1
                 );
-                Render2D.fill(
-                    context, x, (y + height) - 4,
+                context.fill(
+                    x, (y + height) - 2,
                     x + width, y + height,
-                    ColorUtils.fromRGB(100, 100, 100, 100 * showFactor),
-                    padding, 2
+                    ColorUtils.fromRGB(0, 0, 0, 255 * showFactor)
                 );
                 float durability = getDurabilityPercentage(item);
-                Render2D.fill(
-                    context, x, (y + height) - 4,
-                    (int) (x + (width * durability)), y + height,
+                context.fill(
+                    x, (y + height) - 2,
+                    (int) (x + ((width - 1) * durability)), y + height - 1,
                     ColorUtils.fromRGB(
-                        (int) (50 + (100 * (1 - durability))),
-                        (int) (50 + (100 * durability)),
-                        50,
-                        150 * showFactor
-                    ),
-                    padding, 2
+                        (int) (255 * (1 - durability)),
+                        (int) (255 * durability),
+                        0,
+                        255 * showFactor
+                    )
                 );
             } else {
                 String s = "-";

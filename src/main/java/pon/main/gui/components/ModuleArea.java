@@ -7,6 +7,7 @@ import pon.main.modules.Parent;
 import pon.main.modules.settings.*;
 import pon.main.utils.KeyName;
 import pon.main.utils.ColorUtils;
+import pon.main.utils.math.Timer;
 import pon.main.utils.render.Render2D;
 import pon.main.utils.math.AnimHelper;
 
@@ -27,9 +28,15 @@ public class ModuleArea extends RenderArea {
 
     private boolean open = false;
 
+    private float shakeFactor = 0;
+    private boolean shake = false;
+    private final int shakeTime = 500;
+
     private boolean binding = false;
     private float bindingAnimFactor = 0f;
     private int pressKey = -1;
+
+    private Timer timer = new Timer();
 
     public ModuleArea(Parent module, CategoryArea category) {
         super();
@@ -54,6 +61,8 @@ public class ModuleArea extends RenderArea {
                 } else if (g.groupType.equals(Group.GroupType.Horizontal)) {
                     areas.add(new SetsHGroupArea(g, parent));
                 }
+            } else if (set instanceof EnableableGroup eg) {
+                areas.add(new SetsVGroupArea(eg, parent));
             } else if (set instanceof BlockSelectCmd) {
                 areas.add(new HeaderSetArea(set, parent));
             } else if (set.isList()) {
@@ -80,7 +89,11 @@ public class ModuleArea extends RenderArea {
         hovered = checkHovered(mouseX, mouseY);
         int settingsHeight = 0;
         for (RenderArea area : areas) {
-            settingsHeight += area.height + bigPadding;
+            if (area instanceof SetsVGroupArea sga) {
+                settingsHeight += (int) (area.height + (bigPadding * sga.visibleFactor));
+            } else {
+                settingsHeight += (int) (area.height + (bigPadding * area.showFactor));
+            }
         }
         height = (int) (textRenderer.fontHeight + (padding * 2) + (settingsHeight * showFactor));
 
@@ -143,10 +156,11 @@ public class ModuleArea extends RenderArea {
         }
         if (bindingAnimFactor == 0 && pressKey != -1) pressKey = -1;
 
+        int nameStartX = (int) (startX + (5 * shakeFactor));
         context.drawText(
             textRenderer,
             name,
-            startX + (width / 2 - textRenderer.getWidth(name) / 2),
+            nameStartX + (width / 2 - textRenderer.getWidth(name) / 2),
             startY + padding,
             ColorUtils.fromRGB(255, 255, 255, 200 * parentArea.showFactor),
             false
@@ -172,9 +186,9 @@ public class ModuleArea extends RenderArea {
                     mouseX, mouseY
                 );
                 if (area instanceof SetsVGroupArea sga) {
-                    settingsStartY += sga.height + (bigPadding * sga.visibleFactor);
+                    settingsStartY += (int) (area.height + (bigPadding * sga.visibleFactor));
                 } else {
-                    settingsStartY += area.height + (bigPadding * area.showFactor);
+                    settingsStartY += (int) (area.height + (bigPadding * area.showFactor));
                 }
             }
         }
@@ -182,6 +196,11 @@ public class ModuleArea extends RenderArea {
         context.disableScissor();
 
         super.render(context, startX, startY, width, height, mouseX, mouseY);
+    }
+
+    public void shakeModule() {
+        timer.reset();
+        shake = true;
     }
 
     @Override
@@ -194,6 +213,20 @@ public class ModuleArea extends RenderArea {
         enableFactor = AnimHelper.handle(module.getEnable(), enableFactor);
         bindingAnimFactor = AnimHelper.handle(binding, bindingAnimFactor);
         showFactor = AnimHelper.handle(open, showFactor * category.showFactor);
+
+        if (timer.getTimeMs() > shakeTime) {
+            shake = false;
+        }
+        if (shake) {
+            float timeLeft = shakeTime - timer.getTimeMs();
+            float t = timeLeft / shakeTime;
+            t = Math.clamp(t, 0f, 1f);
+            float amplitude = t * t;
+            float oscillation = (float) Math.sin(timer.getTimeMs() * 0.05f);
+            shakeFactor = oscillation * amplitude;
+        } else {
+            shakeFactor = 0;
+        }
     }
 
     @Override
@@ -207,8 +240,12 @@ public class ModuleArea extends RenderArea {
             } else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
                 pressKey = -1;
                 binding = true;
-            } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && !areas.isEmpty()) {
-                open = !open;
+            } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                if (areas.isEmpty()) {
+                    shakeModule();
+                } else {
+                    open = !open;
+                }
             }
             return true;
         }

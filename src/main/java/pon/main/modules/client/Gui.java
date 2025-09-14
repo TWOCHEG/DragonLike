@@ -74,7 +74,7 @@ public class Gui extends Parent {
 
     public Gui() {
         super("click gui", Main.Categories.client, GLFW.GLFW_KEY_RIGHT_SHIFT);
-        setEnable(false, false);
+        setEnable(false, null);
     }
 
     public Map<String, String> getImages() {
@@ -104,7 +104,7 @@ public class Gui extends Parent {
     @Override
     public void onDisable() {
         if (getEnable()) {
-            setEnable(false, false);
+            setEnable(false, null);
         }
         if (mc.currentScreen != null) {
             choseGuiArea.show = false;
@@ -115,7 +115,7 @@ public class Gui extends Parent {
 
     @Override
     public void setEnable(boolean value) {
-        setEnable(value, false);
+        setEnable(value, null);
     }
 
     @Override

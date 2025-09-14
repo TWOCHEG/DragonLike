@@ -144,13 +144,13 @@ public class SetsListArea extends RenderArea {
             ) * lst.lowShowFactor);
             context.drawText(
                 textRenderer,
-                value.toString(),
+                getName(value),
                 startX + padding,
                 startY + (this.height / 2 - textRenderer.fontHeight / 2),
                 ColorUtils.fromRGB(255, 255, 255, alpha),
                 false
             );
-            width = textRenderer.getWidth(value.toString()) + padding * 2;
+            width = textRenderer.getWidth(getName(value)) + padding * 2;
 
             super.render(context, startX, startY, width, this.height, mouseX, mouseY);
         }
@@ -166,6 +166,13 @@ public class SetsListArea extends RenderArea {
                 lst.set.setValue(value);
             }
             return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        private String getName(Object value) {
+            return value.toString().replaceAll(
+                "(?<=[a-z])([A-Z])|(?<=[A-Z])([A-Z][a-z])",
+                " $1$2"
+            ).trim().toLowerCase();
         }
     }
 }

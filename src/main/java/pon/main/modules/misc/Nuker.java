@@ -1,4 +1,4 @@
-package pon.main.modules.world;
+package pon.main.modules.misc;
 
 import meteordevelopment.orbit.EventHandler;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -16,9 +16,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import pon.main.Main;
 import pon.main.events.impl.*;
-import pon.main.managers.Managers;
 import pon.main.modules.Parent;
-import pon.main.modules.client.Rotations;
 import pon.main.modules.settings.BlockSelectCmd;
 import pon.main.modules.settings.Setting;
 import pon.main.utils.math.Timer;
@@ -31,8 +29,8 @@ import static net.minecraft.block.Blocks.*;
 
 public class Nuker extends Parent {
     public Nuker() {
-        super("nuker", Main.Categories.world);
-        setEnable(false, false);
+        super("nuker", Main.Categories.misc);
+        setEnable(false, null);
 
         WorldRenderEvents.START.register(context -> {
             if (!getEnable()) {
@@ -75,7 +73,6 @@ public class Nuker extends Parent {
     private Timer breakTimer = new Timer();
 
     private NukerThread nukerThread = new NukerThread();
-    private float rotationYaw, rotationPitch;
 
     @Override
     public void onEnable() {
@@ -113,16 +110,6 @@ public class Nuker extends Parent {
     }
 
     @EventHandler
-    public void onSync(EventSync e) {
-        if(rotationYaw != -999) {
-            mc.player.setYaw(rotationYaw);
-            mc.player.setPitch(rotationPitch);
-            rotationYaw = -999;
-        }
-    }
-
-
-    @EventHandler
     public void onPlayerUpdate(EventPlayerUpdate e) {
         if (blockData != null) {
             if (PlayerUtility.squaredDistanceFromEyes(blockData.bp.toCenterPos()) > range.getPow2Value()
@@ -134,10 +121,7 @@ public class Nuker extends Parent {
 
         if (blockData == null || mc.options.attackKey.isPressed()) return;
 
-        float[] angle = InteractionUtility.calculateAngle(blockData.vec3d);
-        rotationYaw = angle[0];
-        rotationPitch = angle[1];
-        Managers.MODULE_MANAGER.getModule(Rotations.class).fixRotation = rotationYaw;
+        rotate(InteractionUtility.calculateAngle(blockData.vec3d));
 
         if (mode.getValue() == Mode.normal) {
             breakBlock();
